@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class SwapBoard : MonoBehaviour {
 
 	public GameObject swapTilePrefab;
+	public GameObject swapTokenPrefab;
 
 	private int _width = 8;
 	private int _height = 8;
@@ -15,6 +16,7 @@ public class SwapBoard : MonoBehaviour {
 	void Start () {
 		sBoardManager.Instance.width = _width;
 		sBoardManager.Instance.height = _height;
+		sBoardManager.Instance.boardView = this;
 		_xOffset = _width / -2 + 0.5f;
 		_yOffset = _height / -2 + 0.5f;
 
@@ -31,9 +33,11 @@ public class SwapBoard : MonoBehaviour {
 			}
 		}
 	}
-	
-	// Update is called once per frame
-	void Update () {
 
+	public void AddTokenOnTile(int tileId)
+	{
+		Debug.Log ("AddTokenOnTile");
+//		Instantiate (swapTilePrefab, transform.position, transform.rotation);
+		Instantiate (swapTokenPrefab.gameObject, sBoardManager.Instance.boardList [tileId].gameObject.transform.position, sBoardManager.Instance.boardList [tileId].gameObject.transform.rotation);
 	}
 }

@@ -29,60 +29,60 @@ public class ContiguousBlockSearch : MonoBehaviour {
 			return;
 		}
 	}
-//	
-//	static void recursiveLeft(vector<int>& idCollector, int arrs[], int counter, int width, int height){
-//		int checkerInt = (counter+1)%(width+1);
-//		//cout << "recursiveLeft: " << checkerInt << endl;
-//		if (arrs[counter] == 0 || checkerInt == 0) {
-//			return;
-//		}else{
-//			//cout << &idCollector << " ";
-//			if(!verifyDouble(idCollector, counter)){
-//				idCollector.push_back(counter);
-//			}
-//			//cout << counter << ": " << arrs[counter] << endl;
-//			recursiveLeft(idCollector, arrs, --counter, width, height);
-//			return;
-//		}
-//	}
-//	
-//	static void recursiveTop(vector<int>& idCollector, int arrs[], int counter, int width, int height){
-//		//cout << "recursiveTop: " << counter << endl;
-//		if (arrs[counter] == 0 || counter < 0) {
-//			return;
-//		}else{
-//			//cout << &idCollector << " ";
-//			if(!verifyDouble(idCollector, counter)){
-//				idCollector.push_back(counter);
-//			}
-//			//cout << counter << ": " << arrs[counter] << endl;
-//			counter = counter - width;
-//			recursiveTop(idCollector, arrs, counter, width, height);
-//			return;
-//		}
-//	}
-//	
-//	static void recursiveBottom(vector<int>& idCollector, int arrs[], int counter, int width, int height){
-//		//cout << "recursiveBottom: " << counter << endl;
-//		if (arrs[counter] == 0 || counter > (width*height)-1) {
-//			return;
-//		}else{
-//			//cout << &idCollector << " ";
-//			if(!verifyDouble(idCollector, counter)){
-//				idCollector.push_back(counter);
-//			}
-//			//cout << counter << ": " << arrs[counter] << endl;
-//			counter = counter + width;
-//			recursiveBottom(idCollector, arrs, counter, width, height);
-//			return;
-//		}
-//	}
-//	
+	
+	static void recursiveLeft(List<int> idCollector, List<int> arrs, int counter, int width, int height){
+		int checkerInt = (counter+1)%(width);
+		//cout << "recursiveLeft: " << checkerInt << endl;
+		if (arrs[counter] == 0 || checkerInt == 0) {
+			return;
+		}else{
+			//cout << &idCollector << " ";
+			if(!verifyDouble(idCollector, counter)){
+				idCollector.Add(counter);
+			}
+			//cout << counter << ": " << arrs[counter] << endl;
+			recursiveLeft(idCollector, arrs, --counter, width, height);
+			return;
+		}
+	}
+	
+	static void recursiveTop(List<int> idCollector, List<int> arrs, int counter, int width, int height){
+		//cout << "recursiveTop: " << counter << endl;
+		if (arrs[counter] == 0 || counter < 0) {
+			return;
+		}else{
+			//cout << &idCollector << " ";
+			if(!verifyDouble(idCollector, counter)){
+				idCollector.Add(counter);
+			}
+			//cout << counter << ": " << arrs[counter] << endl;
+			counter = counter - width;
+			recursiveTop(idCollector, arrs, counter, width, height);
+			return;
+		}
+	}
+	
+	static void recursiveBottom(List<int> idCollector, List<int> arrs, int counter, int width, int height){
+		//cout << "recursiveBottom: " << counter << endl;
+		if (arrs[counter] == 0 || counter > (width*height)-1) {
+			return;
+		}else{
+			//cout << &idCollector << " ";
+			if(!verifyDouble(idCollector, counter)){
+				idCollector.Add(counter);
+			}
+			//cout << counter << ": " << arrs[counter] << endl;
+			counter = counter + width;
+			recursiveBottom(idCollector, arrs, counter, width, height);
+			return;
+		}
+	}
+	
 	public static void verifyTopBottomLeftAndRight(List<int> idCollector, List<int> intArray, int placement, int width, int height){
 		recursiveRight(idCollector, intArray, placement, width, height);
-//		recursiveLeft(idCollector, intArray, placement, width, height);
-//		recursiveTop(idCollector, intArray, placement, width, height);
-//		recursiveBottom(idCollector, intArray, placement, width, height);
+		recursiveLeft(idCollector, intArray, placement, width, height);
+		recursiveTop(idCollector, intArray, placement, width, height);
+		recursiveBottom(idCollector, intArray, placement, width, height);
 	}
 	
 	public static int coordToIndex(int xPos, int yPos, int width){
@@ -189,16 +189,9 @@ public class ContiguousBlockSearch : MonoBehaviour {
 		
 		int initialCoord_x = initialCoord_x2;
 		int initialCoord_y = initialCoord_y2;
-//		
-//		//		int intArray[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//		//						0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-//		//						0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
-//		//						0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-//		//						0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//		
+
 		List<int> giveMeIds = new List<int>();
 		int previousGiveMeIdsSize = giveMeIds.Count;
-//		//cout << intArray << endl;
 		int placement = coordToIndex(initialCoord_x, initialCoord_y, width);
 		
 		verifyTopBottomLeftAndRight(giveMeIds, intArray, placement, width, height);
@@ -206,40 +199,10 @@ public class ContiguousBlockSearch : MonoBehaviour {
 		while(giveMeIds.Count != previousGiveMeIdsSize){
 			previousGiveMeIdsSize = giveMeIds.Count;
 			for (int i=giveMeIds.Count-1; i>=0; i--) {
-				//cout << "Checking id: " << giveMeIds.at(i) << "." << endl;
 				verifyTopBottomLeftAndRight(giveMeIds, intArray, giveMeIds[i], width, height);
 			}
-//			//cout << "previousGiveMeIdsSize: " << previousGiveMeIdsSize << ". " << "giveMeIds: " << giveMeIds.size() << "." << endl;
 		}
-//		
-//		cout << giveMeIds.size() << endl;
-//		for (long index=0; index<(long)giveMeIds.size(); ++index) cout << giveMeIds.at(index) << " ";
-//		cout << endl;
-//		
-//		cout << endl;
-//		for(int i=0; i<width*height; i++){
-//			int checkerInt = (i+1)%(width);
-//			bool isAmatch = false;
-//			for(int j=0; j<giveMeIds.size(); j++){
-//				if(i == giveMeIds.at(j)){
-//					isAmatch = true;
-//				}
-//			}
-//			if(isAmatch){
-//				cout << "X";
-//			}else{
-//				cout << intArray[i];
-//			}
-//			if(checkerInt == 0){
-//				cout << endl;
-//			}
-//		}
-//		cout << endl;
-//		
-//		//cout << "colomnMatch: " << giveMeColomnMatchesForCoord(giveMeIds, initialCoord_x, initialCoord_y, width, height) << endl;
-//		//cout << "rowMatch: " << giveMeRowMatchesForCoord(giveMeIds, initialCoord_x, initialCoord_y, width, height).size() << endl;
-//		
 		return giveMeIds;
 	}
-//
+
 }

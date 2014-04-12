@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class sBoardManager
+public class sBoardManager : MonoBehaviour
 {
 	private static sBoardManager instance;
+
+	public SwapBoard boardView;
 
 	public List<Tile> boardList;
 	public int width;
@@ -18,7 +20,8 @@ public class sBoardManager
 		{
 			if (instance == null)
 			{
-				instance = new sBoardManager();
+				GameObject go = new GameObject();
+				instance = go.AddComponent<sBoardManager>();
 				instance.boardList = new List<Tile>();
 			}
 			return instance;
@@ -26,6 +29,19 @@ public class sBoardManager
 	}
 
 	public void TileClicked(int tileId)
+	{
+//		if(sGameManager.Instance.currentGameState == sGameManager.GameState.placingTokens)
+//		{
+		boardView.AddTokenOnTile (tileId);
+//		}
+//		else
+//		{
+			SelectingTilesToMove(tileId);
+//		}
+		UpdateBoard();
+	}
+
+	void SelectingTilesToMove(int tileId)
 	{
 		if(boardList [tileId].currentTileState == Tile.TileState.selected)
 		{
@@ -37,19 +53,16 @@ public class sBoardManager
 			boardList [tileId].currentTileState = Tile.TileState.selected;
 			boardList [tileId].currentTileVisualState = Tile.TileVisualState.unselected;
 		}
-
+		
 		UnhighlightBoard ();
-
+		
 		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (Tile.TileState.selected), width, height, boardList [tileId].xPos, boardList [tileId].yPos); 
+		Debug.Log ("contiguousTiles: " + ListsToStrings(contiguousTiles));
 
 		for(int i = 0; i<contiguousTiles.Count; i++)
 		{
 			boardList [contiguousTiles[i]].currentTileVisualState = Tile.TileVisualState.highlighted;
 		}
-
-		Debug.Log ("contiguousTiles: " + ListsToStrings(contiguousTiles));
-//		Debug.Log("sBoardManager - TileClicked: " + tileId + " " + ContiguousBlockSearch.indexToCoordX(tileId, width) + ":" + ContiguousBlockSearch.indexToCoordY(tileId, width));
-		UpdateBoard();
 	}
 
 	void UnhighlightBoard()
