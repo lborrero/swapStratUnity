@@ -14,18 +14,15 @@ public class sGameManager : MonoBehaviour {
 	}
 	public GameState currentGameState = GameState.placingTokens;
 	
-	private static sGameManager mInstance;
-	
 	public static sGameManager Instance
 	{
-		get		
-		{	
-			if(mInstance == null)
+		get 
+		{
+			if (instance == null)
 			{
-				GameObject go = new GameObject();
-				mInstance = go.AddComponent<sGameManager>();
+				instance = new sGameManager();
 			}
-			return mInstance;
+			return instance;
 		}
 	}
 

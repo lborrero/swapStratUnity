@@ -34,10 +34,13 @@ public class SwapBoard : MonoBehaviour {
 		}
 	}
 
-	public void AddTokenOnTile(int tileId)
+	public void AddTokenOnTile(int tileId, Token.TokenType tt)
 	{
 		Debug.Log ("AddTokenOnTile");
-//		Instantiate (swapTilePrefab, transform.position, transform.rotation);
-		Instantiate (swapTokenPrefab.gameObject, sBoardManager.Instance.boardList [tileId].gameObject.transform.position, sBoardManager.Instance.boardList [tileId].gameObject.transform.rotation);
+		GameObject tmp = (GameObject)Instantiate (swapTokenPrefab.gameObject, sBoardManager.Instance.boardList [tileId].gameObject.transform.position, sBoardManager.Instance.boardList [tileId].gameObject.transform.rotation);
+		tmp.GetComponent<Token> ().SetTokenId (sBoardManager.Instance.tokenList.Count);
+		tmp.GetComponent<Token> ().currentTokenType = tt;
+		tmp.GetComponent<Token> ().UpdateState ();
+		sBoardManager.Instance.tokenList.Add(tmp.GetComponent<Token>());
 	}
 }

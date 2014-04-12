@@ -9,6 +9,7 @@ public class sBoardManager : MonoBehaviour
 	public SwapBoard boardView;
 
 	public List<Tile> boardList;
+	public List<Token> tokenList;
 	public int width;
 	public int height;
 	
@@ -23,6 +24,7 @@ public class sBoardManager : MonoBehaviour
 				GameObject go = new GameObject();
 				instance = go.AddComponent<sBoardManager>();
 				instance.boardList = new List<Tile>();
+				instance.tokenList = new List<Token>();
 			}
 			return instance;
 		}
@@ -32,7 +34,7 @@ public class sBoardManager : MonoBehaviour
 	{
 //		if(sGameManager.Instance.currentGameState == sGameManager.GameState.placingTokens)
 //		{
-		boardView.AddTokenOnTile (tileId);
+			boardView.AddTokenOnTile (tileId, Token.TokenType.friendly);
 //		}
 //		else
 //		{
