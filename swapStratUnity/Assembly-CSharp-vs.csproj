@@ -47,8 +47,10 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\PhysicalTile.cs" />
+     <Compile Include="Assets\Scripts\ContiguousBlockSearch.cs" />
      <Compile Include="Assets\SwapBoard.cs" />
      <Compile Include="Assets\Tile.cs" />
+     <Compile Include="Assets\sBoardManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
