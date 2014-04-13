@@ -14,6 +14,9 @@ public class SwapBoard : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+		sBoardManager.Instance.currentlySelectedTile = new Tile();
+		sBoardManager.Instance.currentlySelectedToken = new Token();
 		sBoardManager.Instance.width = _width;
 		sBoardManager.Instance.height = _height;
 		sBoardManager.Instance.boardView = this;
@@ -28,6 +31,17 @@ public class SwapBoard : MonoBehaviour {
 				GameObject tmp = (GameObject)Instantiate(swapTilePrefab.gameObject, new Vector3(_xOffset + i,0,_yOffset + j) , transform.rotation);
 				tmp.GetComponent<Tile>().SetCoordinates(j, i);
 				tmp.GetComponent<Tile>().SetTileId(idCounter);
+
+				if(i==0 || i==_height-1 || j==0 || j==_width-1)
+				{
+					tmp.GetComponent<Tile>().currentTileType = Tile.TileType.nothing;
+				}
+				else
+				{
+					tmp.GetComponent<Tile>().currentTileType = Tile.TileType.empty;
+				}
+				tmp.GetComponent<Tile>().UpdateState();
+
 				sBoardManager.Instance.boardList.Add(tmp.GetComponent<Tile>());
 				idCounter++;
 			}
@@ -36,7 +50,7 @@ public class SwapBoard : MonoBehaviour {
 
 	public void AddTokenOnTile(int tileId, Token.TokenType tt)
 	{
-		Debug.Log ("AddTokenOnTile");
+//		Debug.Log ("AddTokenOnTile");
 		GameObject tmp = (GameObject)Instantiate (swapTokenPrefab.gameObject, sBoardManager.Instance.boardList [tileId].gameObject.transform.position, sBoardManager.Instance.boardList [tileId].gameObject.transform.rotation);
 		tmp.GetComponent<Token> ().SetTokenId (sBoardManager.Instance.tokenList.Count);
 		tmp.GetComponent<Token> ().currentTokenType = tt;

@@ -17,6 +17,7 @@ public class Tile : MonoBehaviour {
 	public Material selectedMaterial;
 	public Material unselectedMaterial;
 	public Material highlightedMaterial;
+	public Material nothingdMaterial;
 
 	public enum TileState
 		{
@@ -39,7 +40,7 @@ public class Tile : MonoBehaviour {
 		empty,
 		occupied
 	}
-	public TileType currentTileType = TileType.nothing;
+	public TileType currentTileType = TileType.empty;
 
 	public void SetTileId(int tildeId)
 	{
@@ -59,16 +60,25 @@ public class Tile : MonoBehaviour {
 
 	public void UpdateState()
 	{
-		switch(currentTileVisualState)
+		switch(currentTileType)
 		{
-		case TileVisualState.selected:
-			physicalTile.gameObject.renderer.material = selectedMaterial;
+		case TileType.nothing:
+			physicalTile.gameObject.renderer.material = nothingdMaterial;
 			break;
-		case TileVisualState.unselected:
-			physicalTile.gameObject.renderer.material = unselectedMaterial;
-			break;
-		case TileVisualState.highlighted:
-			physicalTile.gameObject.renderer.material = highlightedMaterial;
+		case TileType.empty:
+		case TileType.occupied:
+			switch(currentTileVisualState)
+			{
+			case TileVisualState.selected:
+				physicalTile.gameObject.renderer.material = selectedMaterial;
+				break;
+			case TileVisualState.unselected:
+				physicalTile.gameObject.renderer.material = unselectedMaterial;
+				break;
+			case TileVisualState.highlighted:
+				physicalTile.gameObject.renderer.material = highlightedMaterial;
+				break;
+			}
 			break;
 		}
 	}

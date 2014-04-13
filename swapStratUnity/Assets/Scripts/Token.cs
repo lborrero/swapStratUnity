@@ -1,0 +1,117 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class Token : MonoBehaviour {
+
+	public GameObject physicalToken;
+	private int _tokenId;
+	public int tokenId{
+		get { return this._tokenId; }
+	}
+	private int _xPos;
+	private int _yPos;
+	public int xPos{
+		get { return this._xPos; }
+	}
+	public int yPos{
+		get { return this._yPos; }
+	}
+	
+	public Material blueMaterial;
+	public Material blueUsedMaterial;
+	public Material blueSelectedMaterial;
+	public Material redMaterial;
+	public Material redUsedMaterial;
+	public Material redSelectedMaterial;
+	
+	public enum TokenState
+	{
+		unselected = 0,
+		selected
+	}
+	public TokenState currentTokenState = TokenState.unselected;
+
+	public bool hasTokenBeenUsed = false;
+	public bool isTokenOnBoard = false;
+	
+	public enum TokenType
+	{
+		normal = 0,
+		friendly,
+		benchFriendly,
+		enemy,
+		benchEnemy
+	}
+	public TokenType currentTokenType = TokenType.normal;
+	
+	public void SetTokenId(int tokenId)
+	{
+		_tokenId = tokenId;
+	}
+	
+	public void SetCoordinates(int x, int y)
+	{
+		_xPos = x;
+		_yPos = y;
+	}
+
+	public void UpdateState()
+	{
+		switch(currentTokenType)
+		{
+		case TokenType.friendly:
+		case TokenType.benchFriendly:
+			setBlueColor();
+			break;
+		case TokenType.enemy:
+		case TokenType.benchEnemy:
+			setRedColor();
+			break;
+		}
+	}
+
+	void setBlueColor()
+	{
+		if(hasTokenBeenUsed == true)
+			physicalToken.gameObject.renderer.material = blueUsedMaterial;
+		else
+		{
+			switch(currentTokenState)
+			{
+			case TokenState.selected:
+				physicalToken.gameObject.renderer.material = blueSelectedMaterial;
+				break;
+			case TokenState.unselected:
+				physicalToken.gameObject.renderer.material = blueMaterial;
+				break;
+			}
+		}
+	}
+
+	void setRedColor()
+	{
+		if(hasTokenBeenUsed == true)
+			physicalToken.gameObject.renderer.material = redUsedMaterial;
+		else
+		{
+			switch(currentTokenState)
+			{
+			case TokenState.selected:
+				physicalToken.gameObject.renderer.material = redSelectedMaterial;
+				break;
+			case TokenState.unselected:
+				physicalToken.gameObject.renderer.material = redMaterial;
+				break;
+			}
+		}
+	}
+
+	void OnMouseDown()
+	{
+		Debug.Log ("Token: " + _tokenId);
+		if(currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly)
+		{
+			sBoardManager.Instance.TokenClicked(_tokenId, currentTokenType);
+		}
+	}
+}
