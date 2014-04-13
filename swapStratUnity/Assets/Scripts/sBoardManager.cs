@@ -7,8 +7,10 @@ public class sBoardManager : MonoBehaviour
 	private static sBoardManager instance;
 
 	public SwapBoard boardView;
-	public TokenBench enemyBench;
-	public TokenBench friendlyBench;
+
+	public PlayerVO player1 = new PlayerVO();
+	public PlayerVO player2 = new PlayerVO();
+	public PlayerVO currentPlayerTurn = new PlayerVO();
 
 	public List<Tile> boardList;
 	public List<Token> tokenList;
@@ -35,12 +37,28 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
+	void GameAction()
+	{
+		switch(sGameManager.Instance.currentTurnLoop)
+		{
+
+		}
+
+		if(currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend)
+		{
+			if(currentPlayerTurn.playerTokenBench.HasAvailableTokens())
+			{
+				sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
+				boardView.SetGameActionLabel(sGameManager.TurnLoop.placeSelectedTokenFromBench.ToString());
+			}
+		}
+	}
+
 	public void TileClicked(int tileId)
 	{
-//		Debug.Log ("TileClicked: " + sGameManager.Instance.currentTurnLoop + " " + boardList [tileId].currentTileType);
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && boardList [tileId].currentTileType == Tile.TileType.empty)
 		{
-			boardView.AddTokenOnTile (tileId, Token.TokenType.friendly);
+			boardView.AddTokenOnTile (tileId);
 			SelectingTilesToMove(tileId);
 			boardList [tileId].currentTileType = Tile.TileType.occupied;
 			sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.moveSelectedToken;
@@ -56,32 +74,16 @@ public class sBoardManager : MonoBehaviour
 
 	public void TokenClicked(int tokenId, Token.TokenType tokt)
 	{
-		Debug.Log ("TokenClicked: " + sGameManager.Instance.currentTurnLoop);
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBench)
 		{
-			Debug.Log ("TokenClicked: A");
-			if(tokt == Token.TokenType.benchFriendly)
+			if(currentPlayerTurn.playerTokenBench.isTokenUsed(tokenId))
 			{
-				Debug.Log ("TokenClicked: B");
-				if(friendlyBench.isTokenUsed(tokenId))
-				{
-					Debug.Log ("TokenClicked: C");
-					currentlySelectedToken.SetTokenId(tokenId);
-					currentlySelectedToken.currentTokenType = Token.TokenType.friendly;
-					friendlyBench.SelectAToken(tokenId);
-				}
+				currentlySelectedToken.SetTokenId(tokenId);
+				currentlySelectedToken.currentTokenType = (currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
+				currentPlayerTurn.playerTokenBench.SelectAToken(tokenId);
 			}
-			else
-			{
-				Debug.Log ("TokenClicked: D");
-				if(enemyBench.isTokenUsed(tokenId))
-				{
-					Debug.Log ("TokenClicked: E");
-					currentlySelectedToken.SetTokenId(tokenId);
-					currentlySelectedToken.currentTokenType = Token.TokenType.enemy;
-					enemyBench.SelectAToken(tokenId);
-				}
-			}
+			HighlighEmptyTiles();
+			sGameManager.Instance.ContinueTurnLoop();
 		}
 	}
 
@@ -107,6 +109,18 @@ public class sBoardManager : MonoBehaviour
 		for(int i = 0; i<contiguousTiles.Count; i++)
 		{
 			boardList [contiguousTiles[i]].currentTileVisualState = Tile.TileVisualState.highlighted;
+		}
+	}
+
+	void HighlighEmptyTiles()
+	{
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if(boardList[i].currentTileType == Tile.TileType.empty)
+			{
+				boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
+				boardList[i].UpdateState();
+			}
 		}
 	}
 

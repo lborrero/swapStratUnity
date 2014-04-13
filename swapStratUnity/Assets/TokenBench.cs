@@ -6,28 +6,40 @@ public class TokenBench : MonoBehaviour {
 	
 	public List<GameObject> benchedTokens;
 
-	public enum PlayerType
-	{
-		friend = 0,
-		enemy
-	}
-	public PlayerType currentPlayer;
+	public PlayerVO.PlayerType currentPlayerType;
 
-	void Start()
+	public void InitialitializeBench(PlayerVO.PlayerType plt)
 	{
-		if(currentPlayer == PlayerType.enemy)
-			sBoardManager.Instance.enemyBench = this;
-		else
-			sBoardManager.Instance.friendlyBench = this;
-
+		Debug.Log ("InitialitializeBench: " + currentPlayerType);
+		currentPlayerType = plt;
 		for(int i=0; i<benchedTokens.Count; i++)
 		{
-			benchedTokens[i].GetComponent<Token>().currentTokenType = (currentPlayer == PlayerType.friend) ? Token.TokenType.benchFriendly : Token.TokenType.benchEnemy;
+			benchedTokens[i].GetComponent<Token>().currentTokenType = (currentPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.benchFriendly : Token.TokenType.benchEnemy;
 			benchedTokens[i].GetComponent<Token>().SetTokenId(i);
 			benchedTokens[i].GetComponent<Token>().UpdateState();
 		}
 	}
 
+	public void SetTokenAsUsed(int tokenId)
+	{
+		benchedTokens [tokenId].GetComponent<Token> ().isTokenOnBoard = true;
+		benchedTokens [tokenId].GetComponent<Token> ().UpdateState ();
+	}
+
+	public bool HasAvailableTokens()
+	{
+		bool has = false;
+		for(int i=0; i<benchedTokens.Count; i++)
+		{
+			if(!benchedTokens[i].GetComponent<Token>().hasTokenBeenUsed)
+			{
+				has = true;
+				break;
+			}
+		}
+		return has;
+	}
+	
 	public bool isTokenUsed(int tokenId)
 	{
 		bool isUsed = false;
@@ -51,6 +63,15 @@ public class TokenBench : MonoBehaviour {
 			{
 				benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.unselected;
 			}
+			benchedTokens[i].GetComponent<Token>().UpdateState();
+		}
+	}
+
+	public void UnSelectAllBenchTokens()
+	{
+		for(int i=0; i<benchedTokens.Count; i++)
+		{
+			benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.unselected;
 			benchedTokens[i].GetComponent<Token>().UpdateState();
 		}
 	}

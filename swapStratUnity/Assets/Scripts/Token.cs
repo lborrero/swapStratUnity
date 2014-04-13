@@ -8,14 +8,8 @@ public class Token : MonoBehaviour {
 	public int tokenId{
 		get { return this._tokenId; }
 	}
-	private int _xPos;
-	private int _yPos;
-	public int xPos{
-		get { return this._xPos; }
-	}
-	public int yPos{
-		get { return this._yPos; }
-	}
+	public int xPos;
+	public int yPos;
 	
 	public Material blueMaterial;
 	public Material blueUsedMaterial;
@@ -51,12 +45,13 @@ public class Token : MonoBehaviour {
 	
 	public void SetCoordinates(int x, int y)
 	{
-		_xPos = x;
-		_yPos = y;
+		xPos = x;
+		yPos = y;
 	}
 
 	public void UpdateState()
 	{
+		Debug.Log ("UpdateState: " + currentTokenType);
 		switch(currentTokenType)
 		{
 		case TokenType.friendly:
@@ -72,7 +67,7 @@ public class Token : MonoBehaviour {
 
 	void setBlueColor()
 	{
-		if(hasTokenBeenUsed == true)
+		if(isTokenOnBoard == true)
 			physicalToken.gameObject.renderer.material = blueUsedMaterial;
 		else
 		{
@@ -90,7 +85,7 @@ public class Token : MonoBehaviour {
 
 	void setRedColor()
 	{
-		if(hasTokenBeenUsed == true)
+		if(isTokenOnBoard == true)
 			physicalToken.gameObject.renderer.material = redUsedMaterial;
 		else
 		{
@@ -108,7 +103,6 @@ public class Token : MonoBehaviour {
 
 	void OnMouseDown()
 	{
-		Debug.Log ("Token: " + _tokenId);
 		if(currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly)
 		{
 			sBoardManager.Instance.TokenClicked(_tokenId, currentTokenType);

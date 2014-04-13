@@ -7,6 +7,14 @@ public class SwapBoard : MonoBehaviour {
 	public GameObject swapTilePrefab;
 	public GameObject swapTokenPrefab;
 
+	public GUIText playerMoveCounterFriend;
+	public GUIText playerMoveCounterEnemy;
+	
+	public TokenBench friendlyBench;
+	public TokenBench enemyBench;
+
+	public GUIText gameActionLabel;
+
 	private int _width = 8;
 	private int _height = 8;
 	private float _xOffset;
@@ -20,6 +28,9 @@ public class SwapBoard : MonoBehaviour {
 		sBoardManager.Instance.width = _width;
 		sBoardManager.Instance.height = _height;
 		sBoardManager.Instance.boardView = this;
+		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
+		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
+		sBoardManager.Instance.currentPlayerTurn = sBoardManager.Instance.player1;
 		_xOffset = _width / -2 + 0.5f;
 		_yOffset = _height / -2 + 0.5f;
 
@@ -48,13 +59,32 @@ public class SwapBoard : MonoBehaviour {
 		}
 	}
 
-	public void AddTokenOnTile(int tileId, Token.TokenType tt)
+	public void AddTokenOnTile(int tileId)
 	{
 //		Debug.Log ("AddTokenOnTile");
-		GameObject tmp = (GameObject)Instantiate (swapTokenPrefab.gameObject, sBoardManager.Instance.boardList [tileId].gameObject.transform.position, sBoardManager.Instance.boardList [tileId].gameObject.transform.rotation);
-		tmp.GetComponent<Token> ().SetTokenId (sBoardManager.Instance.tokenList.Count);
-		tmp.GetComponent<Token> ().currentTokenType = tt;
-		tmp.GetComponent<Token> ().UpdateState ();
+		sBoardManager sb = sBoardManager.Instance;
+		Tile tmpTile = sb.boardList [tileId];
+
+		//occupy tile
+		tmpTile.currentTileType = Tile.TileType.occupied;
+
+		//set selected bench token as used
+		sb.currentPlayerTurn.playerTokenBench.UnSelectAllBenchTokens();
+		sb.currentPlayerTurn.playerTokenBench.SetTokenAsUsed(sb.currentlySelectedToken.tokenId);
+
+		//define placed token
+		GameObject tmp = (GameObject)Instantiate (swapTokenPrefab.gameObject, tmpTile.gameObject.transform.position, tmpTile.gameObject.transform.rotation);
+		Token tmpToken = tmp.GetComponent<Token> ();
+		tmpToken.SetTokenId (sb.currentlySelectedToken.tokenId);
+		tmpToken.currentTokenType = sb.currentlySelectedToken.currentTokenType;
+		tmpToken.xPos = tmpTile.xPos;
+		tmpToken.yPos = tmpTile.yPos;
+		tmpToken.UpdateState ();
 		sBoardManager.Instance.tokenList.Add(tmp.GetComponent<Token>());
+	}
+
+	public void SetGameActionLabel(string str)
+	{
+		gameActionLabel.text = str;
 	}
 }
