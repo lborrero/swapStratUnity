@@ -37,6 +37,17 @@ public class Token : MonoBehaviour {
 		benchEnemy
 	}
 	public TokenType currentTokenType = TokenType.normal;
+
+	public PlayerVO.PlayerType tokenPlayerType{
+		get { 
+			PlayerVO.PlayerType tmpppt = new PlayerVO.PlayerType();
+			if(currentTokenType == TokenType.benchFriendly || currentTokenType == TokenType.friendly)
+				tmpppt = PlayerVO.PlayerType.friend;
+			else if (currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.enemy)
+				tmpppt = PlayerVO.PlayerType.enemy;
+			return tmpppt;
+		}
+	}
 	
 	public void SetTokenId(int tokenId)
 	{
@@ -102,7 +113,7 @@ public class Token : MonoBehaviour {
 
 	void OnMouseDown()
 	{
-		if(currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly)
+		if((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard)
 		{
 			sBoardManager.Instance.TokenClicked(_tokenId, currentTokenType);
 		}

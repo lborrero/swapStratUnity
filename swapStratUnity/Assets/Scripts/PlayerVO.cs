@@ -3,8 +3,8 @@ using System.Collections;
 
 public class PlayerVO{
 	static public int MAX_PLAYS = 8;
-	public int currentAllowedPlays;
-	public int currentTurnPlays;
+	public int currentTurnMoveLimit;
+	public int currentTurnMoveCount;
 	public int benchedTokens;
 	public TokenBench playerTokenBench;
 	public bool hasPlacedPieceFromBench;
@@ -14,7 +14,8 @@ public class PlayerVO{
 
 	public enum PlayerType
 	{
-		friend = 0,
+		none = 0,
+		friend,
 		enemy
 	}
 	public PlayerType currentPlayerType;
@@ -24,8 +25,8 @@ public class PlayerVO{
 		currentPlayerType = playerType;
 		playerTokenBench = tb;
 		playerTokenBench.InitialitializeBench (currentPlayerType);
-		currentAllowedPlays = 1;
-		currentTurnPlays = 1;
+		currentTurnMoveLimit = 0;
+		currentTurnMoveCount = 0;
 		hasPlacedPieceFromBench = false;
 		hasSelectedTokenFromBench = false;
 		hasSelectedTokenFromBoard = false;
@@ -34,23 +35,23 @@ public class PlayerVO{
 
 	public bool HasAvailableMoves()
 	{
-		return (currentTurnPlays > 0);
+		return (currentTurnMoveCount > 0);
 	}
 
 	public void MoveMade()
 	{
-		if(currentTurnPlays > 0)
+		if(currentTurnMoveCount > 0)
 		{
-			currentTurnPlays -= 1;
+			currentTurnMoveCount -= 1;
 		}
 	}
 
 	public void StartPlayerTurn()
 	{
-		if(currentTurnPlays < 8)
+		if(currentTurnMoveLimit < 8)
 		{
-			currentAllowedPlays += 1;
-			currentTurnPlays = currentAllowedPlays;
+			currentTurnMoveLimit += 1;
+			currentTurnMoveCount = currentTurnMoveLimit;
 		}
 	}
 }

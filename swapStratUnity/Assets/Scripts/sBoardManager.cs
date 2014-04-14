@@ -37,10 +37,29 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	void ContinueGameAction()
+	public void ContinueInnerGameAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
-		Debug.Log ("currentTurnLoop: " + sgm.currentTurnLoop);
+		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
+		switch(sgm.currentInnerGameLoop)
+		{
+		case sGameManager.InnerGameLoop.playerOneTurn:
+			sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
+			currentPlayerTurn = player2;
+			currentPlayerTurn.StartPlayerTurn();
+			break;
+		case sGameManager.InnerGameLoop.playerTwoTurn:
+			sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
+			currentPlayerTurn = player1;
+			currentPlayerTurn.StartPlayerTurn();
+			break;
+		}
+		UpdateHud ();
+	}
+
+	void ContinueInnerGameTurnAction()
+	{
+		sGameManager sgm = sGameManager.Instance;
 		switch(sgm.currentTurnLoop)
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
@@ -53,11 +72,12 @@ public class sBoardManager : MonoBehaviour
 			if(currentPlayerTurn.hasPlacedPieceFromBench && currentPlayerTurn.HasAvailableMoves())
 			{
 				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+				HighlightCurrentPlayerMovableToken();
 			}
 			else
 			{
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-				ContinueGameAction();
+				ContinueInnerGameTurnAction();
 			}
 			break;
 		case sGameManager.TurnLoop.selectATokenFromBoard:
@@ -73,10 +93,10 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.hasSelectedTokenFromBoard = false;
 				currentPlayerTurn.hasMovedTokenFromBoard = false;
 			}
-			else if(currentPlayerTurn.hasMovedTokenFromBoard)
+			else if(currentPlayerTurn.hasMovedTokenFromBoard && !currentPlayerTurn.HasAvailableMoves())
 			{
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-				ContinueGameAction();
+				ContinueInnerGameTurnAction();
 			}
 			break;
 		case sGameManager.TurnLoop.endLoopTurn:
@@ -85,30 +105,84 @@ public class sBoardManager : MonoBehaviour
 			currentPlayerTurn.hasSelectedTokenFromBoard = false;
 			currentPlayerTurn.hasMovedTokenFromBoard = false;
 			sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+			ContinueInnerGameAction();
 			break;
 		}
-		boardView.SetGameActionLabel(sgm.currentTurnLoop.ToString());
+		UpdateHud ();
+	}
+
+	public void UpdateHud()
+	{
+		boardView.UpdateCounters ();
+		boardView.SetGameActionLabel(sGameManager.Instance.currentInnerGameLoop.ToString() + " " + sGameManager.Instance.currentTurnLoop.ToString());
 	}
 
 	public void TileClicked(int tileId)
 	{
-		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && boardList [tileId].currentTileType == Tile.TileType.empty && !currentPlayerTurn.hasPlacedPieceFromBench)
+		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 
+		   boardList [tileId].currentTileType == Tile.TileType.empty && 
+		   !currentPlayerTurn.hasPlacedPieceFromBench)
 		{
 			boardView.AddTokenOnTile (tileId);
-			SelectingTilesToMove(tileId);
+			HighlightingTilesToMoveTo(tileId);
 			boardList [tileId].currentTileType = Tile.TileType.occupied;
+			boardList[tileId].occupyingTokenId = currentlySelectedToken.tokenId;
+			boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
 			currentPlayerTurn.hasPlacedPieceFromBench = true;
 			currentPlayerTurn.MoveMade();
 			boardView.UpdateCounters();
-			ContinueGameAction();
+			ContinueInnerGameTurnAction();
 		}
-//		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
-//		{
-//			UnhighlightBoard ();
-//			tokenList[tokenList.Count-1].gameObject.transform.position = boardList[tileId].gameObject.transform.position;
-//			sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
-//		}
+		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard && 
+		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
+		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType)
+		{
+			currentlySelectedTile = boardList[tileId];
+			currentlySelectedToken = getTokenFromTokenListWithIdAndType(boardList[tileId].occupyingTokenId, boardList[tileId].occupyingTokenPlayerType);
+			HighlightingTilesToMoveTo(tileId);
+			boardList[tileId].currentTileState = Tile.TileState.selected;
+			boardList[tileId].currentTileVisualState = Tile.TileVisualState.selected;
+
+			currentPlayerTurn.hasSelectedTokenFromBoard = true;
+
+			ContinueInnerGameTurnAction();
+		}
+		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
+		{
+			boardList [tileId].currentTileType = Tile.TileType.occupied;
+			boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
+			boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
+
+			currentlySelectedTile.currentTileState = Tile.TileState.unselected;
+			currentlySelectedTile.currentTileVisualState = Tile.TileVisualState.unselected;
+			currentlySelectedTile.currentTileType = Tile.TileType.empty;
+			currentlySelectedTile.occupyingTokenId = -1;
+			currentlySelectedTile.occupyingTokenPlayerType = PlayerVO.PlayerType.none;
+
+			currentlySelectedTile = boardList [tileId];
+
+			UnhighlightBoard ();
+
+			currentlySelectedToken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+			currentPlayerTurn.hasMovedTokenFromBoard = true;
+			currentPlayerTurn.MoveMade();
+
+			ContinueInnerGameTurnAction();
+		}
 		UpdateBoard();
+	}
+
+	Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
+	{
+		Token t = new Token ();
+		for(int i =0; i<tokenList.Count; i++)
+		{
+			if(tokenList[i].tokenId == tokenId && tokenList[i].tokenPlayerType == token_pt)
+			{
+				return tokenList[i];
+			}
+		}
+		return t;
 	}
 
 	public void TokenClicked(int tokenId, Token.TokenType tokt)
@@ -123,32 +197,30 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.hasSelectedTokenFromBench = true;
 			}
 			HighlighEmptyTiles();
-			ContinueGameAction();
+			ContinueInnerGameTurnAction();
 		}
 	}
 
-	void SelectingTilesToMove(int tileId)
-	{
-//		if(boardList [tileId].currentTileState == Tile.TileState.selected)
-//		{
-//			boardList [tileId].currentTileState = Tile.TileState.unselected;
-//			boardList [tileId].currentTileVisualState = Tile.TileVisualState.unselected;
-//		}
-//		else
-//		{
-//			boardList [tileId].currentTileState = Tile.TileState.selected;
-//			boardList [tileId].currentTileVisualState = Tile.TileVisualState.unselected;
-//		}
-		
+	void HighlightingTilesToMoveTo(int tileId)
+	{	
 		UnhighlightBoard ();
 
-//		Debug.Log ("SelectingTilesToMove: " + ListsToStrings (boardListIntoBinaryList (Tile.TileType.empty)));
-		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (Tile.TileType.empty), width, height, boardList [tileId].xPos, boardList [tileId].yPos); 
-//		Debug.Log ("SelectingTilesToMove: " + ListsToStrings (contiguousTiles));
-
+		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (), width, height, boardList [tileId].xPos, boardList [tileId].yPos); 
 		for(int i = 0; i<contiguousTiles.Count; i++)
 		{
 			boardList [contiguousTiles[i]].currentTileVisualState = Tile.TileVisualState.highlighted;
+		}
+	}
+
+	void HighlightCurrentPlayerMovableToken()
+	{
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if(boardList[i].currentTileType == Tile.TileType.occupied && boardList[i].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType)
+			{
+				boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
+				boardList[i].UpdateState();
+			}
 		}
 	}
 
@@ -183,12 +255,12 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	List<int> boardListIntoBinaryList(Tile.TileType tileType)
+	List<int> boardListIntoBinaryList()
 	{
 		List<int> tmpArray = new List<int> ();
 		for(int i = 0; i<boardList.Count; i++)
 		{
-			tmpArray.Add((boardList[i].currentTileType == tileType)?1:0);
+			tmpArray.Add((boardList[i].currentTileType == Tile.TileType.empty || i == currentlySelectedTile.tileId)?1:0);
 		}
 		return tmpArray;
 	}

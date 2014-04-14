@@ -4,7 +4,14 @@ using System.Collections;
 public class Tile : MonoBehaviour {
 
 	public GameObject physicalTile;
+
+	public int occupyingTokenId = -1;
+	public PlayerVO.PlayerType occupyingTokenPlayerType = PlayerVO.PlayerType.none;
+
 	private int _tileId;
+	public int tileId{
+		get { return this._tileId; }
+	}
 	private int _xPos;
 	private int _yPos;
 	public int xPos{
@@ -18,6 +25,7 @@ public class Tile : MonoBehaviour {
 	public Material unselectedMaterial;
 	public Material highlightedMaterial;
 	public Material nothingdMaterial;
+
 
 	public enum TileState
 		{

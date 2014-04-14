@@ -22,6 +22,7 @@ public class SwapBoard : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		sGameManager.Instance.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
 		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
 		sBoardManager.Instance.currentlySelectedToken = new Token();
@@ -31,7 +32,6 @@ public class SwapBoard : MonoBehaviour {
 		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
 		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
 		sBoardManager.Instance.currentPlayerTurn = sBoardManager.Instance.player1;
-		SetGameActionLabel (sGameManager.Instance.currentTurnLoop.ToString());
 		UpdateCounters ();
 		_xOffset = _width / -2 + 0.5f;
 		_yOffset = _height / -2 + 0.5f;
@@ -87,8 +87,8 @@ public class SwapBoard : MonoBehaviour {
 
 	public void UpdateCounters()
 	{
-		playerMoveCounterFriend.text = sBoardManager.Instance.player1.currentTurnPlays.ToString();
-		playerMoveCounterEnemy.text = sBoardManager.Instance.player2.currentTurnPlays.ToString();
+		playerMoveCounterFriend.text = sBoardManager.Instance.player1.currentTurnMoveCount.ToString();
+		playerMoveCounterEnemy.text = sBoardManager.Instance.player2.currentTurnMoveCount.ToString();
 	}
 
 	public void SetGameActionLabel(string str)
