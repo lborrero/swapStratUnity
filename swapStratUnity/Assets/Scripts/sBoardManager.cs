@@ -37,38 +37,77 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	void GameAction()
+	void ContinueGameAction()
 	{
-		switch(sGameManager.Instance.currentTurnLoop)
+		sGameManager sgm = sGameManager.Instance;
+		Debug.Log ("currentTurnLoop: " + sgm.currentTurnLoop);
+		switch(sgm.currentTurnLoop)
 		{
-
-		}
-
-		if(currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend)
-		{
-			if(currentPlayerTurn.playerTokenBench.HasAvailableTokens())
+		case sGameManager.TurnLoop.selectATokenFromBench:
+			if(currentPlayerTurn.hasSelectedTokenFromBench)
 			{
-				sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
-				boardView.SetGameActionLabel(sGameManager.TurnLoop.placeSelectedTokenFromBench.ToString());
+				sgm.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
 			}
+			break;
+		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
+			if(currentPlayerTurn.hasPlacedPieceFromBench && currentPlayerTurn.HasAvailableMoves())
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+			}
+			else
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
+				ContinueGameAction();
+			}
+			break;
+		case sGameManager.TurnLoop.selectATokenFromBoard:
+			if(currentPlayerTurn.hasSelectedTokenFromBoard)
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.moveSelectedToken;
+			}
+			break;
+		case sGameManager.TurnLoop.moveSelectedToken:
+			if(currentPlayerTurn.hasMovedTokenFromBoard && currentPlayerTurn.HasAvailableMoves())
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+				currentPlayerTurn.hasSelectedTokenFromBoard = false;
+				currentPlayerTurn.hasMovedTokenFromBoard = false;
+			}
+			else if(currentPlayerTurn.hasMovedTokenFromBoard)
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
+				ContinueGameAction();
+			}
+			break;
+		case sGameManager.TurnLoop.endLoopTurn:
+			currentPlayerTurn.hasSelectedTokenFromBench = false;
+			currentPlayerTurn.hasPlacedPieceFromBench = false;
+			currentPlayerTurn.hasSelectedTokenFromBoard = false;
+			currentPlayerTurn.hasMovedTokenFromBoard = false;
+			sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+			break;
 		}
+		boardView.SetGameActionLabel(sgm.currentTurnLoop.ToString());
 	}
 
 	public void TileClicked(int tileId)
 	{
-		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && boardList [tileId].currentTileType == Tile.TileType.empty)
+		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && boardList [tileId].currentTileType == Tile.TileType.empty && !currentPlayerTurn.hasPlacedPieceFromBench)
 		{
 			boardView.AddTokenOnTile (tileId);
 			SelectingTilesToMove(tileId);
 			boardList [tileId].currentTileType = Tile.TileType.occupied;
-			sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.moveSelectedToken;
+			currentPlayerTurn.hasPlacedPieceFromBench = true;
+			currentPlayerTurn.MoveMade();
+			boardView.UpdateCounters();
+			ContinueGameAction();
 		}
-		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
-		{
-			UnhighlightBoard ();
-			tokenList[tokenList.Count-1].gameObject.transform.position = boardList[tileId].gameObject.transform.position;
-			sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
-		}
+//		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
+//		{
+//			UnhighlightBoard ();
+//			tokenList[tokenList.Count-1].gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+//			sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
+//		}
 		UpdateBoard();
 	}
 
@@ -81,9 +120,10 @@ public class sBoardManager : MonoBehaviour
 				currentlySelectedToken.SetTokenId(tokenId);
 				currentlySelectedToken.currentTokenType = (currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
 				currentPlayerTurn.playerTokenBench.SelectAToken(tokenId);
+				currentPlayerTurn.hasSelectedTokenFromBench = true;
 			}
 			HighlighEmptyTiles();
-			sGameManager.Instance.ContinueTurnLoop();
+			ContinueGameAction();
 		}
 	}
 

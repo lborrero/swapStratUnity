@@ -10,7 +10,6 @@ public class TokenBench : MonoBehaviour {
 
 	public void InitialitializeBench(PlayerVO.PlayerType plt)
 	{
-		Debug.Log ("InitialitializeBench: " + currentPlayerType);
 		currentPlayerType = plt;
 		for(int i=0; i<benchedTokens.Count; i++)
 		{

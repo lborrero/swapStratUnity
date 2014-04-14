@@ -40,24 +40,8 @@ public class sGameManager : MonoBehaviour {
 		selectATokenFromBench = 0,
 		placeSelectedTokenFromBench,
 		selectATokenFromBoard,
-		moveSelectedToken
+		moveSelectedToken,
+		endLoopTurn
 	}
 	public TurnLoop currentTurnLoop = TurnLoop.selectATokenFromBench;
-
-	public void ContinueTurnLoop()
-	{
-		switch(currentTurnLoop)
-		{
-		case TurnLoop.selectATokenFromBench:
-			currentTurnLoop = TurnLoop.placeSelectedTokenFromBench;
-			break;
-		case TurnLoop.placeSelectedTokenFromBench:
-			break;
-		case TurnLoop.selectATokenFromBoard:
-			break;
-		case TurnLoop.moveSelectedToken:
-			break;
-		}
-	}
-
 }

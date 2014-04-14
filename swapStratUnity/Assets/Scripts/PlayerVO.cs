@@ -7,6 +7,10 @@ public class PlayerVO{
 	public int currentTurnPlays;
 	public int benchedTokens;
 	public TokenBench playerTokenBench;
+	public bool hasPlacedPieceFromBench;
+	public bool hasSelectedTokenFromBench;
+	public bool hasSelectedTokenFromBoard;
+	public bool hasMovedTokenFromBoard;
 
 	public enum PlayerType
 	{
@@ -17,17 +21,25 @@ public class PlayerVO{
 
 	public void InitializePlayCount(PlayerType playerType, TokenBench tb)
 	{
-		Debug.Log ("InitializePlayCount: " + playerType);
 		currentPlayerType = playerType;
 		playerTokenBench = tb;
 		playerTokenBench.InitialitializeBench (currentPlayerType);
 		currentAllowedPlays = 1;
 		currentTurnPlays = 1;
+		hasPlacedPieceFromBench = false;
+		hasSelectedTokenFromBench = false;
+		hasSelectedTokenFromBoard = false;
+		hasMovedTokenFromBoard = false;
+	}
+
+	public bool HasAvailableMoves()
+	{
+		return (currentTurnPlays > 0);
 	}
 
 	public void MoveMade()
 	{
-		if(currentTurnPlays < 0)
+		if(currentTurnPlays > 0)
 		{
 			currentTurnPlays -= 1;
 		}
@@ -35,7 +47,7 @@ public class PlayerVO{
 
 	public void StartPlayerTurn()
 	{
-		if(currentTurnPlays > 8)
+		if(currentTurnPlays < 8)
 		{
 			currentAllowedPlays += 1;
 			currentTurnPlays = currentAllowedPlays;

@@ -31,6 +31,8 @@ public class SwapBoard : MonoBehaviour {
 		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
 		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
 		sBoardManager.Instance.currentPlayerTurn = sBoardManager.Instance.player1;
+		SetGameActionLabel (sGameManager.Instance.currentTurnLoop.ToString());
+		UpdateCounters ();
 		_xOffset = _width / -2 + 0.5f;
 		_yOffset = _height / -2 + 0.5f;
 
@@ -81,6 +83,12 @@ public class SwapBoard : MonoBehaviour {
 		tmpToken.yPos = tmpTile.yPos;
 		tmpToken.UpdateState ();
 		sBoardManager.Instance.tokenList.Add(tmp.GetComponent<Token>());
+	}
+
+	public void UpdateCounters()
+	{
+		playerMoveCounterFriend.text = sBoardManager.Instance.player1.currentTurnPlays.ToString();
+		playerMoveCounterEnemy.text = sBoardManager.Instance.player2.currentTurnPlays.ToString();
 	}
 
 	public void SetGameActionLabel(string str)

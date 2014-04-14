@@ -51,7 +51,6 @@ public class Token : MonoBehaviour {
 
 	public void UpdateState()
 	{
-		Debug.Log ("UpdateState: " + currentTokenType);
 		switch(currentTokenType)
 		{
 		case TokenType.friendly:
