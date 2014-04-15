@@ -21,11 +21,19 @@ public class Tile : MonoBehaviour {
 		get { return this._yPos; }
 	}
 
+	public PlayerVO.PlayerType currentTilePlayerType = PlayerVO.PlayerType.none;
+
 	public Material selectedMaterial;
 	public Material unselectedMaterial;
 	public Material highlightedMaterial;
 	public Material nothingdMaterial;
 
+	public Material blueMaterial;
+	public Material blueHighlightMaterial;
+	public Material blueSelectedMaterial;
+	public Material redMaterial;
+	public Material redHighlightMaterial;
+	public Material redSelectedMaterial;
 
 	public enum TileState
 		{
@@ -78,13 +86,46 @@ public class Tile : MonoBehaviour {
 			switch(currentTileVisualState)
 			{
 			case TileVisualState.selected:
-				physicalTile.gameObject.renderer.material = selectedMaterial;
+				switch(currentTilePlayerType)
+				{
+				case PlayerVO.PlayerType.none:
+					physicalTile.gameObject.renderer.material = selectedMaterial;
+					break;
+				case PlayerVO.PlayerType.friend:
+					physicalTile.gameObject.renderer.material = blueSelectedMaterial;
+					break;
+				case PlayerVO.PlayerType.enemy:
+					physicalTile.gameObject.renderer.material = redSelectedMaterial;
+					break;
+				}
 				break;
 			case TileVisualState.unselected:
-				physicalTile.gameObject.renderer.material = unselectedMaterial;
+				switch(currentTilePlayerType)
+				{
+				case PlayerVO.PlayerType.none:
+					physicalTile.gameObject.renderer.material = unselectedMaterial;
+					break;
+				case PlayerVO.PlayerType.friend:
+					physicalTile.gameObject.renderer.material = blueMaterial;
+					break;
+				case PlayerVO.PlayerType.enemy:
+					physicalTile.gameObject.renderer.material = redMaterial;
+					break;
+				}
 				break;
 			case TileVisualState.highlighted:
-				physicalTile.gameObject.renderer.material = highlightedMaterial;
+				switch(currentTilePlayerType)
+				{
+				case PlayerVO.PlayerType.none:
+					physicalTile.gameObject.renderer.material = highlightedMaterial;
+					break;
+				case PlayerVO.PlayerType.friend:
+					physicalTile.gameObject.renderer.material = blueHighlightMaterial;
+					break;
+				case PlayerVO.PlayerType.enemy:
+					physicalTile.gameObject.renderer.material = redHighlightMaterial;
+					break;
+				}
 				break;
 			}
 			break;

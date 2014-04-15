@@ -106,6 +106,9 @@ public class sBoardManager : MonoBehaviour
 			currentPlayerTurn.hasSelectedTokenFromBoard = false;
 			currentPlayerTurn.hasMovedTokenFromBoard = false;
 			sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+
+			currentPlayerTurn.currentTurnPointCount += CountTilesForPlayer(currentPlayerTurn.currentPlayerType);
+
 			ContinueInnerGameAction();
 			break;
 		}
@@ -126,9 +129,12 @@ public class sBoardManager : MonoBehaviour
 		{
 			boardView.AddTokenOnTile (tileId);
 			HighlightingTilesToMoveTo(tileId);
+
 			boardList [tileId].currentTileType = Tile.TileType.occupied;
-			boardList[tileId].occupyingTokenId = currentlySelectedToken.tokenId;
+			boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 			boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
+			boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+
 			currentPlayerTurn.hasPlacedPieceFromBench = true;
 			currentPlayerTurn.MoveMade();
 			boardView.UpdateCounters();
@@ -159,6 +165,7 @@ public class sBoardManager : MonoBehaviour
 			boardList [tileId].currentTileType = Tile.TileType.occupied;
 			boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 			boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
+			boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
 
 			currentlySelectedTile.currentTileState = Tile.TileState.unselected;
 			currentlySelectedTile.currentTileVisualState = Tile.TileVisualState.unselected;
@@ -254,6 +261,17 @@ public class sBoardManager : MonoBehaviour
 			if(boardList [i].currentTileState == Tile.TileState.unselected)
 				boardList [i].currentTileVisualState = Tile.TileVisualState.unselected;
 		}
+	}
+
+	int CountTilesForPlayer(PlayerVO.PlayerType pt)
+	{
+		int counter = 0;
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if(boardList [i].currentTilePlayerType == pt)
+				counter++;
+		}
+		return counter;
 	}
 
 	void UpdateBoard()

@@ -5,6 +5,9 @@ public class PlayerVO{
 	static public int MAX_PLAYS = 8;
 	public int currentTurnMoveLimit;
 	public int currentTurnMoveCount;
+
+	public int currentTurnPointCount;
+
 	public int benchedTokens;
 	public TokenBench playerTokenBench;
 	public bool hasPlacedPieceFromBench;

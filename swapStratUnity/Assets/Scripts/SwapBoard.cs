@@ -9,6 +9,9 @@ public class SwapBoard : MonoBehaviour {
 
 	public GUIText playerMoveCounterFriend;
 	public GUIText playerMoveCounterEnemy;
+
+	public GUIText playerPointCounterFriend;
+	public GUIText playerPointCounterEnemy;
 	
 	public TokenBench friendlyBench;
 	public TokenBench enemyBench;
@@ -87,6 +90,8 @@ public class SwapBoard : MonoBehaviour {
 
 	public void UpdateCounters()
 	{
+		playerPointCounterFriend.text = sBoardManager.Instance.player1.currentTurnPointCount.ToString ();
+		playerPointCounterEnemy.text = sBoardManager.Instance.player2.currentTurnPointCount.ToString ();
 		playerMoveCounterFriend.text = sBoardManager.Instance.player1.currentTurnMoveCount.ToString();
 		playerMoveCounterEnemy.text = sBoardManager.Instance.player2.currentTurnMoveCount.ToString();
 	}
