@@ -92,6 +92,7 @@ public class sBoardManager : MonoBehaviour
 				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
 				currentPlayerTurn.hasSelectedTokenFromBoard = false;
 				currentPlayerTurn.hasMovedTokenFromBoard = false;
+				HighlightCurrentPlayerMovableToken();
 			}
 			else if(currentPlayerTurn.hasMovedTokenFromBoard && !currentPlayerTurn.HasAvailableMoves())
 			{
@@ -135,10 +136,16 @@ public class sBoardManager : MonoBehaviour
 		}
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard && 
 		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
-		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType)
+		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType &&
+		        !currentPlayerTurn.hasSelectedTokenFromBoard)
 		{
+
 			currentlySelectedTile = boardList[tileId];
-			currentlySelectedToken = getTokenFromTokenListWithIdAndType(boardList[tileId].occupyingTokenId, boardList[tileId].occupyingTokenPlayerType);
+
+			Token tmptoken = getTokenFromTokenListWithIdAndType(boardList[tileId].occupyingTokenId, boardList[tileId].occupyingTokenPlayerType);
+			currentlySelectedToken.SetTokenId(tmptoken.tokenId);
+			currentlySelectedToken.currentTokenType = (tmptoken.tokenPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
+
 			HighlightingTilesToMoveTo(tileId);
 			boardList[tileId].currentTileState = Tile.TileState.selected;
 			boardList[tileId].currentTileVisualState = Tile.TileVisualState.selected;
@@ -163,7 +170,9 @@ public class sBoardManager : MonoBehaviour
 
 			UnhighlightBoard ();
 
-			currentlySelectedToken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+			Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
+			tmptoken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+
 			currentPlayerTurn.hasMovedTokenFromBoard = true;
 			currentPlayerTurn.MoveMade();
 
@@ -174,15 +183,15 @@ public class sBoardManager : MonoBehaviour
 
 	Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
 	{
-		Token t = new Token ();
+		int tId = -1;
 		for(int i =0; i<tokenList.Count; i++)
 		{
 			if(tokenList[i].tokenId == tokenId && tokenList[i].tokenPlayerType == token_pt)
 			{
-				return tokenList[i];
+				tId = i;
 			}
 		}
-		return t;
+		return tokenList[tId];
 	}
 
 	public void TokenClicked(int tokenId, Token.TokenType tokt)
