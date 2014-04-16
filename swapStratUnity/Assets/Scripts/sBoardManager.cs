@@ -44,17 +44,71 @@ public class sBoardManager : MonoBehaviour
 		switch(sgm.currentInnerGameLoop)
 		{
 		case sGameManager.InnerGameLoop.playerOneTurn:
-			sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
-			currentPlayerTurn = player2;
-			currentPlayerTurn.StartPlayerTurn();
+			if(!CheckToSeeIfGameIsFinished())
+			{
+				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
+				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
+				currentPlayerTurn = player2;
+				currentPlayerTurn.StartPlayerTurn();
+			}
+			else
+			{
+				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.endInnerGameLoop;
+				ContinueInnerGameAction();
+			}
 			break;
 		case sGameManager.InnerGameLoop.playerTwoTurn:
-			sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
-			currentPlayerTurn = player1;
-			currentPlayerTurn.StartPlayerTurn();
+			if(!CheckToSeeIfGameIsFinished())
+			{
+				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
+				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
+				currentPlayerTurn = player1;
+				currentPlayerTurn.StartPlayerTurn();
+			}
+			else
+			{
+				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.endInnerGameLoop;
+				ContinueInnerGameAction();
+			}
+			break;
+		case sGameManager.InnerGameLoop.endInnerGameLoop:
+			if(player1.currentTurnPointCount > player2.currentTurnPointCount)
+			{
+				boardView.SetGameActionLabel("player 1 wins");
+			}
+			else
+			{
+				boardView.SetGameActionLabel("player 2 wins");
+			}
+			boardView.UpdateCounters();
 			break;
 		}
 		UpdateHud ();
+	}
+
+	bool CheckToSeeIfGameIsFinished()
+	{
+		bool boardComplete = true;
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if(boardList[i].currentTilePlayerType == PlayerVO.PlayerType.none && boardList[i].currentTileType != Tile.TileType.nothing)
+			{
+				boardComplete = false;
+			}
+		}
+		Debug.Log ("CheckToSeeIfGameIsFinished: " + boardComplete); 
+		return boardComplete;
+	}
+
+	void ResetPlayersTokens(PlayerVO.PlayerType pt)
+	{
+		for(int i = 0; i<tokenList.Count; i++)
+		{
+			if(tokenList[i].tokenPlayerType == pt)
+			{
+				tokenList[i].hasTokenBeenMoved = false;
+			}
+		}
 	}
 
 	void ContinueInnerGameTurnAction()
@@ -118,7 +172,25 @@ public class sBoardManager : MonoBehaviour
 	public void UpdateHud()
 	{
 		boardView.UpdateCounters ();
-		boardView.SetGameActionLabel(sGameManager.Instance.currentInnerGameLoop.ToString() + " " + sGameManager.Instance.currentTurnLoop.ToString());
+		if(sGameManager.Instance.currentInnerGameLoop == sGameManager.InnerGameLoop.endInnerGameLoop)
+		{
+			if(player1.currentTurnPointCount > player2.currentTurnPointCount)
+			{
+				boardView.SetGameActionLabel("player 1 wins");
+			}
+			else if (player1.currentTurnPointCount < player2.currentTurnPointCount)
+			{
+				boardView.SetGameActionLabel("player 2 wins");
+			}
+			else
+			{
+				boardView.SetGameActionLabel("tie game");
+			}
+		}
+		else
+		{
+			boardView.SetGameActionLabel(sGameManager.Instance.currentInnerGameLoop.ToString() + " " + sGameManager.Instance.currentTurnLoop.ToString());
+		}
 	}
 
 	public void TileClicked(int tileId)
@@ -138,52 +210,75 @@ public class sBoardManager : MonoBehaviour
 			currentPlayerTurn.hasPlacedPieceFromBench = true;
 			currentPlayerTurn.MoveMade();
 			boardView.UpdateCounters();
-			ContinueInnerGameTurnAction();
+
+			if(CheckToSeeIfGameIsFinished())
+			{
+				sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
+				ContinueInnerGameTurnAction();
+			}
+			else
+			{
+				ContinueInnerGameTurnAction();
+			}
 		}
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard && 
 		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
 		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType &&
 		        !currentPlayerTurn.hasSelectedTokenFromBoard)
 		{
-
-			currentlySelectedTile = boardList[tileId];
-
 			Token tmptoken = getTokenFromTokenListWithIdAndType(boardList[tileId].occupyingTokenId, boardList[tileId].occupyingTokenPlayerType);
-			currentlySelectedToken.SetTokenId(tmptoken.tokenId);
-			currentlySelectedToken.currentTokenType = (tmptoken.tokenPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
+			if(!tmptoken.hasTokenBeenMoved)
+			{
+				currentlySelectedTile = boardList[tileId];
 
-			HighlightingTilesToMoveTo(tileId);
-			boardList[tileId].currentTileState = Tile.TileState.selected;
-			boardList[tileId].currentTileVisualState = Tile.TileVisualState.selected;
+				currentlySelectedToken.SetTokenId(tmptoken.tokenId);
+				currentlySelectedToken.currentTokenType = (tmptoken.tokenPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
 
-			currentPlayerTurn.hasSelectedTokenFromBoard = true;
+				HighlightingTilesToMoveTo(tileId);
+				boardList[tileId].currentTileState = Tile.TileState.selected;
+				boardList[tileId].currentTileVisualState = Tile.TileVisualState.selected;
 
-			ContinueInnerGameTurnAction();
+				currentPlayerTurn.hasSelectedTokenFromBoard = true;
+
+				ContinueInnerGameTurnAction();
+			}
 		}
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
 		{
-			boardList [tileId].currentTileType = Tile.TileType.occupied;
-			boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
-			boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
-			boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+			if(currentlySelectedTile.tileId != tileId)
+			{
+				boardList [tileId].currentTileType = Tile.TileType.occupied;
+				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
+				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
+				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
 
-			currentlySelectedTile.currentTileState = Tile.TileState.unselected;
-			currentlySelectedTile.currentTileVisualState = Tile.TileVisualState.unselected;
-			currentlySelectedTile.currentTileType = Tile.TileType.empty;
-			currentlySelectedTile.occupyingTokenId = -1;
-			currentlySelectedTile.occupyingTokenPlayerType = PlayerVO.PlayerType.none;
+				currentlySelectedTile.currentTileState = Tile.TileState.unselected;
+				currentlySelectedTile.currentTileVisualState = Tile.TileVisualState.unselected;
+				currentlySelectedTile.currentTileType = Tile.TileType.empty;
+				currentlySelectedTile.occupyingTokenId = -1;
+				currentlySelectedTile.occupyingTokenPlayerType = PlayerVO.PlayerType.none;
 
-			currentlySelectedTile = boardList [tileId];
+				currentlySelectedTile = boardList [tileId];
 
-			UnhighlightBoard ();
+				UnhighlightBoard ();
 
-			Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
-			tmptoken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
+				tmptoken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+				tmptoken.hasTokenBeenMoved = true;
 
-			currentPlayerTurn.hasMovedTokenFromBoard = true;
-			currentPlayerTurn.MoveMade();
+				currentPlayerTurn.hasMovedTokenFromBoard = true;
+				currentPlayerTurn.MoveMade();
 
-			ContinueInnerGameTurnAction();
+				if(CheckToSeeIfGameIsFinished())
+				{
+					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
+					ContinueInnerGameTurnAction();
+				}
+				else
+				{
+					ContinueInnerGameTurnAction();
+				}
+			}
 		}
 		UpdateBoard();
 	}
@@ -230,12 +325,18 @@ public class sBoardManager : MonoBehaviour
 
 	void HighlightCurrentPlayerMovableToken()
 	{
+		Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
+
 		for(int i = 0; i<boardList.Count; i++)
 		{
 			if(boardList[i].currentTileType == Tile.TileType.occupied && boardList[i].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType)
 			{
-				boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
-				boardList[i].UpdateState();
+				tmptoken = getTokenFromTokenListWithIdAndType(boardList[i].occupyingTokenId, boardList[i].occupyingTokenPlayerType);
+				if(!tmptoken.hasTokenBeenMoved)
+				{
+					boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
+					boardList[i].UpdateState();
+				}
 			}
 		}
 	}

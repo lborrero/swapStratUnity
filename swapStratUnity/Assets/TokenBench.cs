@@ -30,7 +30,7 @@ public class TokenBench : MonoBehaviour {
 		bool has = false;
 		for(int i=0; i<benchedTokens.Count; i++)
 		{
-			if(!benchedTokens[i].GetComponent<Token>().hasTokenBeenUsed)
+			if(!benchedTokens[i].GetComponent<Token>().hasTokenBeenMoved)
 			{
 				has = true;
 				break;
@@ -44,7 +44,7 @@ public class TokenBench : MonoBehaviour {
 		bool isUsed = false;
 		for(int i=0; i<benchedTokens.Count; i++)
 		{
-			if(tokenId == benchedTokens[i].GetComponent<Token>().tokenId && !benchedTokens[i].GetComponent<Token>().hasTokenBeenUsed)
+			if(tokenId == benchedTokens[i].GetComponent<Token>().tokenId && !benchedTokens[i].GetComponent<Token>().hasTokenBeenMoved)
 				isUsed = true;
 		}
 		return isUsed;

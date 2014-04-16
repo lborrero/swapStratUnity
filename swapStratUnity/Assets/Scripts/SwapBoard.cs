@@ -18,8 +18,8 @@ public class SwapBoard : MonoBehaviour {
 
 	public GUIText gameActionLabel;
 
-	private int _width = 8;
-	private int _height = 8;
+	private int _width = 6;
+	private int _height = 6;
 	private float _xOffset;
 	private float _yOffset;
 

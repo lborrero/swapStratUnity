@@ -31,7 +31,8 @@ public class sGameManager : MonoBehaviour {
 	public enum InnerGameLoop
 	{
 		playerOneTurn = 0,
-		playerTwoTurn
+		playerTwoTurn,
+		endInnerGameLoop
 	}
 	public InnerGameLoop currentInnerGameLoop;
 

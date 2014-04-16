@@ -25,7 +25,7 @@ public class Token : MonoBehaviour {
 	}
 	public TokenState currentTokenState = TokenState.unselected;
 
-	public bool hasTokenBeenUsed = false;
+	public bool hasTokenBeenMoved = false;
 	public bool isTokenOnBoard = false;
 	
 	public enum TokenType
