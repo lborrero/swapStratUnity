@@ -18,8 +18,8 @@ public class SwapBoard : MonoBehaviour {
 
 	public GUIText gameActionLabel;
 
-	private int _width = 6;
-	private int _height = 6;
+	public int width = 6;
+	public int height = 6;
 	private float _xOffset;
 	private float _yOffset;
 
@@ -29,26 +29,26 @@ public class SwapBoard : MonoBehaviour {
 		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
 		sBoardManager.Instance.currentlySelectedToken = new Token();
-		sBoardManager.Instance.width = _width;
-		sBoardManager.Instance.height = _height;
+		sBoardManager.Instance.width = width;
+		sBoardManager.Instance.height = height;
 		sBoardManager.Instance.boardView = this;
 		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
 		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
 		sBoardManager.Instance.currentPlayerTurn = sBoardManager.Instance.player1;
 		UpdateCounters ();
-		_xOffset = _width / -2 + 0.5f;
-		_yOffset = _height / -2 + 0.5f;
+		_xOffset = width / -2 + 0.5f;
+		_yOffset = height / -2 + 0.5f;
 
 		int idCounter = 0;
-		for(int i=0; i<_height; i++)
+		for(int i=0; i<height; i++)
 		{
-			for(int j=0; j<_width; j++)
+			for(int j=0; j<width; j++)
 			{
 				GameObject tmp = (GameObject)Instantiate(swapTilePrefab.gameObject, new Vector3(_xOffset + i,0,_yOffset + j) , transform.rotation);
 				tmp.GetComponent<Tile>().SetCoordinates(j, i);
 				tmp.GetComponent<Tile>().SetTileId(idCounter);
 
-				if(i==0 || i==_height-1 || j==0 || j==_width-1)
+				if(i==0 || i==height-1 || j==0 || j==width-1)
 				{
 					tmp.GetComponent<Tile>().currentTileType = Tile.TileType.nothing;
 				}
