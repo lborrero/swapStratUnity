@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System;
 
 public class AstarPathfinding : MonoBehaviour {
+
 	List<AstarPathfinding_TileData> board_map = new List<AstarPathfinding_TileData>();
 
 	int boardWidth;
@@ -20,6 +21,8 @@ public class AstarPathfinding : MonoBehaviour {
 
 	public void GenerateBoard(List<int> intArray, int width2, int _source_id, int _target_id)
 	{
+		board_map.Clear ();
+
 		checkingNode_id = _source_id;
 		source_id = _source_id;
 		target_id = _target_id;
@@ -91,7 +94,7 @@ public class AstarPathfinding : MonoBehaviour {
 				toPrint += "\n";
 			toPrint += " " + board_map[i].parent_id.ToString() + ",";
 		}
-		Debug.Log (toPrint);
+//		Debug.Log (toPrint);
 	}
 
 	public void ComputePathSequence()
@@ -104,7 +107,7 @@ public class AstarPathfinding : MonoBehaviour {
 			whileCounter++;
 		}
 
-		Debug.Log ("whileCounter: " + whileCounter);
+//		Debug.Log ("whileCounter: " + whileCounter);
 
 		if(foundtarget == true)
 			printList(TraceBackPath());
@@ -112,10 +115,10 @@ public class AstarPathfinding : MonoBehaviour {
 
 	void FindPath()
 	{
-		Debug.Log ("FindPath: A: " + checkingNode_id);
+//		Debug.Log ("FindPath: A: " + checkingNode_id);
 		if(foundtarget == false)
 		{
-			Debug.Log ("FindPath: B");
+//			Debug.Log ("FindPath: B");
 			if(board_map[checkingNode_id].north != -1)
 				DetermineNodeValue(checkingNode_id, board_map[checkingNode_id].north);
 
@@ -130,7 +133,7 @@ public class AstarPathfinding : MonoBehaviour {
 
 			if(foundtarget == false)
 			{
-				Debug.Log ("FindPath: C");
+//				Debug.Log ("FindPath: C");
 
 				AddToClosedList(checkingNode_id);
 				RemoveFromOpenList(checkingNode_id);
@@ -145,8 +148,8 @@ public class AstarPathfinding : MonoBehaviour {
 	{
 		int smallestFValue = 100000;
 		int smalleFValue_id = -1;
-		Debug.Log ("GetSmallestFValue: ");
-		printList(open_list);
+//		Debug.Log ("GetSmallestFValue: ");
+//		printList(open_list);
 		for(int i = 0; i<open_list.Count; i++)
 		{
 			if(!board_map[open_list[i]].isObstacle && board_map[open_list[i]].f_totalCost < smallestFValue)
@@ -175,20 +178,20 @@ public class AstarPathfinding : MonoBehaviour {
 
 	void DetermineNodeValue(int currentNode, int testing)
 	{
-		Debug.Log ("DetermineNodeValue: A: " + checkingNode_id + " " + testing);
-		printList (open_list);
-		printList (closed_list);
+//		Debug.Log ("DetermineNodeValue: A: " + checkingNode_id + " " + testing);
+//		printList (open_list);
+//		printList (closed_list);
 		//don't work on null tiles
 		if (testing == -1)
 		{
-			Debug.Log ("DetermineNodeValue: B");
+//			Debug.Log ("DetermineNodeValue: B");
 			return;
 		}
 
 		//check to see if the node is the target
 		if (testing == target_id)
 		{
-			Debug.Log ("DetermineNodeValue: C");
+//			Debug.Log ("DetermineNodeValue: C");
 			board_map [target_id].parent_id = currentNode;
 			foundtarget = true;
 			return;
@@ -197,21 +200,21 @@ public class AstarPathfinding : MonoBehaviour {
 		//ignore obstacles
 		if (board_map [testing].isObstacle == true)
 		{
-			Debug.Log ("DetermineNodeValue: D");
+//			Debug.Log ("DetermineNodeValue: D");
 			return;
 		}
 
 		if(closed_list.Contains(testing) == false)
 		{
-			Debug.Log ("DetermineNodeValue: E");
+//			Debug.Log ("DetermineNodeValue: E");
 			if(open_list.Contains(testing) == true)
 			{
 				int newCost = board_map[currentNode].g_movementCost + baseMovementCost;
-				Debug.Log ("DetermineNodeValue: F: " + newCost + "<" + board_map[testing].g_movementCost);
+//				Debug.Log ("DetermineNodeValue: F: " + newCost + "<" + board_map[testing].g_movementCost);
 
 				if(newCost < board_map[testing].g_movementCost)
 				{
-					Debug.Log ("DetermineNodeValue: G");
+//					Debug.Log ("DetermineNodeValue: G");
 					board_map[testing].parent_id = currentNode; //setting parent
 					board_map[testing].g_movementCost = newCost; //setting g value
 					board_map[testing].f_totalCost = board_map[testing].h_heuristicValue + newCost;//calculate f cost
@@ -219,7 +222,7 @@ public class AstarPathfinding : MonoBehaviour {
 			}
 			else
 			{
-				Debug.Log ("DetermineNodeValue: H");
+//				Debug.Log ("DetermineNodeValue: H");
 				int newCost = board_map[currentNode].g_movementCost + baseMovementCost;
 
 				board_map[testing].parent_id = currentNode; //setting parent
@@ -237,7 +240,7 @@ public class AstarPathfinding : MonoBehaviour {
 			open_list.Add (node);
 	}
 
-	List<int> TraceBackPath()
+	public List<int> TraceBackPath()
 	{
 		List<int> path = new List<int> ();
 		int node = target_id;

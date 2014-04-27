@@ -5,23 +5,7 @@ using System.Collections.Generic;
 public class sBoardManager : MonoBehaviour
 {
 	private static sBoardManager instance;
-
-	public SwapBoard boardView;
-
-	public PlayerVO player1 = new PlayerVO();
-	public PlayerVO player2 = new PlayerVO();
-	public PlayerVO currentPlayerTurn = new PlayerVO();
-
-	public List<Tile> boardList;
-	public List<Token> tokenList;
-	public int width;
-	public int height;
-
-	public Tile currentlySelectedTile;
-	public Token currentlySelectedToken;
-	
 	private sBoardManager() {}
-	
 	public static sBoardManager Instance
 	{
 		get 
@@ -36,6 +20,21 @@ public class sBoardManager : MonoBehaviour
 			return instance;
 		}
 	}
+
+	public SwapBoard boardView;
+
+	public PlayerVO player1 = new PlayerVO();
+	public PlayerVO player2 = new PlayerVO();
+	public PlayerVO currentPlayerTurn = new PlayerVO();
+
+	public List<Tile> boardList;
+	public List<Token> tokenList;
+	public int board_width;
+	public int board_height;
+
+	public Tile currentlySelectedTile;
+	public Token currentlySelectedToken;
+
 
 	public void ContinueInnerGameAction()
 	{
@@ -122,7 +121,7 @@ public class sBoardManager : MonoBehaviour
 				tmptoken = getTokenFromTokenListWithIdAndType(boardList[i].occupyingTokenId, boardList[i].occupyingTokenPlayerType);
 				if(!tmptoken.hasTokenBeenMoved)
 				{
-					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), width, height, boardList [i].xPos, boardList [i].yPos); 
+					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
 					if(contiguousTiles.Count > 1)
 					{
 						yesHeDoes = true;
@@ -136,7 +135,7 @@ public class sBoardManager : MonoBehaviour
 	void ContinueInnerGameTurnAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
-		Debug.Log ("ContinueInnerGameTurnAction: " + sgm.currentTurnLoop);
+//		Debug.Log ("ContinueInnerGameTurnAction: " + sgm.currentTurnLoop);
 		switch(sgm.currentTurnLoop)
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
@@ -260,7 +259,7 @@ public class sBoardManager : MonoBehaviour
 		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType &&
 		        !currentPlayerTurn.hasSelectedTokenFromBoard)
 		{
-			List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), width, height, boardList [tileId].xPos, boardList [tileId].yPos); 
+			List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 			if(contiguousTiles.Count > 1 && boardList[tileId].currentTileType != Tile.TileType.nothing)
 			{
 				Token tmptoken = getTokenFromTokenListWithIdAndType(boardList[tileId].occupyingTokenId, boardList[tileId].occupyingTokenPlayerType);
@@ -288,6 +287,11 @@ public class sBoardManager : MonoBehaviour
 			   boardList[tileId].currentTileType != Tile.TileType.nothing && 
 			   boardList[tileId].currentTileVisualState == Tile.TileVisualState.highlighted)
 			{
+				AstarPathfinding asp = new AstarPathfinding();
+				asp.GenerateBoard(boardListIntoBinaryListForPathFinding(currentlySelectedTile.tileId, tileId), board_width, currentlySelectedTile.tileId, tileId);
+				asp.ComputePathSequence();
+				List<int> pathSequenceList = asp.TraceBackPath();
+
 				boardList [tileId].currentTileType = Tile.TileType.occupied;
 				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
@@ -304,7 +308,13 @@ public class sBoardManager : MonoBehaviour
 				UnhighlightBoard ();
 
 				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
-				tmptoken.gameObject.transform.position = boardList[tileId].gameObject.transform.position;
+
+				List<Vector3> pathPositionSequenceList = new List<Vector3>();
+				for(int i=0; i<pathSequenceList.Count; i++)
+				{
+					pathPositionSequenceList.Add(boardList[pathSequenceList[i]].gameObject.transform.position);
+				}
+				tmptoken.moveThrough(pathPositionSequenceList);
 				tmptoken.hasTokenBeenMoved = true;
 
 				currentPlayerTurn.hasMovedTokenFromBoard = true;
@@ -357,7 +367,7 @@ public class sBoardManager : MonoBehaviour
 	{	
 		UnhighlightBoard ();
 
-		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (currentlySelectedTile.tileId), width, height, boardList [tileId].xPos, boardList [tileId].yPos); 
+		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (currentlySelectedTile.tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 		for(int i = 0; i<contiguousTiles.Count; i++)
 		{
 			boardList [contiguousTiles[i]].currentTileVisualState = Tile.TileVisualState.highlighted;
@@ -375,7 +385,7 @@ public class sBoardManager : MonoBehaviour
 				tmptoken = getTokenFromTokenListWithIdAndType(boardList[i].occupyingTokenId, boardList[i].occupyingTokenPlayerType);
 				if(!tmptoken.hasTokenBeenMoved)
 				{
-					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), width, height, boardList [i].xPos, boardList [i].yPos); 
+					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
 					if(contiguousTiles.Count > 1)
 					{
 						boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
@@ -434,6 +444,16 @@ public class sBoardManager : MonoBehaviour
 		for(int i = 0; i<boardList.Count; i++)
 		{
 			tmpArray.Add((boardList[i].currentTileType == Tile.TileType.empty || i == centerTileToCheck)?1:0);
+		}
+		return tmpArray;
+	}
+
+	List<int> boardListIntoBinaryListForPathFinding(int source_id, int target_id)
+	{
+		List<int> tmpArray = new List<int> ();
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			tmpArray.Add((boardList[i].currentTileType == Tile.TileType.empty || i == source_id || i == target_id)?0:1);
 		}
 		return tmpArray;
 	}

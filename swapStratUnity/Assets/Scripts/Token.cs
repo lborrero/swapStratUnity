@@ -1,9 +1,67 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class Token : MonoBehaviour {
 
 	public GameObject physicalToken;
+
+	private List<Vector3> moveSequence = new List<Vector3>();
+	private Vector3 destinationPosition = new Vector3();
+	private Vector3 previousPosition = new Vector3();
+	bool permissionToMove = false;
+	float stepsToMoveToDesintation = 0.2f;
+	void FixedUpdate()
+	{
+		if(permissionToMove)
+		{
+			float v3distance = Vector3.Distance(destinationPosition, this.gameObject.transform.position);
+			
+			if(!(v3distance < stepsToMoveToDesintation))
+			{
+				Vector3 v3 = new Vector3();
+				v3.x = (destinationPosition.x - previousPosition.x)*stepsToMoveToDesintation;
+				v3.y = (destinationPosition.y - previousPosition.y)*stepsToMoveToDesintation;
+				v3.z = (destinationPosition.z - previousPosition.z)*stepsToMoveToDesintation;
+				
+				this.gameObject.transform.Translate(v3);
+			}
+			else
+			{
+				this.gameObject.transform.position = destinationPosition;
+			}
+
+			if(moveSequence.Count > 0)
+			{
+				if(v3distance < stepsToMoveToDesintation)
+				{
+					moveSequence.RemoveAt(0);
+					if(moveSequence.Count > 0)
+					{
+						destinationPosition = moveSequence[0];
+					}
+					previousPosition = this.gameObject.transform.position;
+				}
+			}
+			else
+			{
+				permissionToMove = false;
+			}
+		}
+	}
+	
+	public void moveThrough(List<Vector3> pathPositionList)
+	{
+		moveSequence = pathPositionList;
+		destinationPosition = moveSequence[0];
+		permissionToMove = true;
+		previousPosition = this.gameObject.transform.position;
+		Debug.Log("moveThrough: (" + this.gameObject.transform.position.x + "," + this.gameObject.transform.position.y + "," + this.gameObject.transform.position.z + ")");
+
+	}
+
+
 	private int _tokenId;
 	public int tokenId{
 		get { return this._tokenId; }

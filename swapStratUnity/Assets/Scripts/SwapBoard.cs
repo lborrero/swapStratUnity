@@ -29,8 +29,8 @@ public class SwapBoard : MonoBehaviour {
 		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
 		sBoardManager.Instance.currentlySelectedToken = new Token();
-		sBoardManager.Instance.width = width;
-		sBoardManager.Instance.height = height;
+		sBoardManager.Instance.board_width = width;
+		sBoardManager.Instance.board_height = height;
 		sBoardManager.Instance.boardView = this;
 		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
 		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
@@ -63,6 +63,12 @@ public class SwapBoard : MonoBehaviour {
 			}
 		}
 	}
+
+//	public moveTokenAnimation()
+//	{
+//		AstarPathfinding.Instance.GenerateBoard (sBoardManager.Instance., 5, 0, 24);
+//		asp.ComputePathSequence ();
+//	}
 
 	public void AddTokenOnTile(int tileId)
 	{
