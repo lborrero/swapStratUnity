@@ -30,7 +30,7 @@ public class TokenBench : MonoBehaviour {
 		bool has = false;
 		for(int i=0; i<benchedTokens.Count; i++)
 		{
-			if(!benchedTokens[i].GetComponent<Token>().hasTokenBeenMoved)
+			if(!benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
 			{
 				has = true;
 				break;

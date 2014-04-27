@@ -50,15 +50,13 @@ public class Token : MonoBehaviour {
 			}
 		}
 	}
-	
+
 	public void moveThrough(List<Vector3> pathPositionList)
 	{
 		moveSequence = pathPositionList;
 		destinationPosition = moveSequence[0];
 		permissionToMove = true;
 		previousPosition = this.gameObject.transform.position;
-		Debug.Log("moveThrough: (" + this.gameObject.transform.position.x + "," + this.gameObject.transform.position.y + "," + this.gameObject.transform.position.z + ")");
-
 	}
 
 

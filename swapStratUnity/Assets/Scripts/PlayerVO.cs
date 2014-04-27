@@ -41,6 +41,11 @@ public class PlayerVO{
 		return (currentTurnMoveCount > 0);
 	}
 
+	public bool HasAvailableTokensOnBench()
+	{
+		return playerTokenBench.HasAvailableTokens();
+	}
+
 	public void MoveMade()
 	{
 		if(currentTurnMoveCount > 0)
@@ -54,6 +59,10 @@ public class PlayerVO{
 		if(currentTurnMoveLimit < 8)
 		{
 			currentTurnMoveLimit += 1;
+			currentTurnMoveCount = currentTurnMoveLimit;
+		}
+		else
+		{
 			currentTurnMoveCount = currentTurnMoveLimit;
 		}
 	}

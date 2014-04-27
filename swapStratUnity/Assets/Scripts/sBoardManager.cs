@@ -49,6 +49,7 @@ public class sBoardManager : MonoBehaviour
 				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
 				currentPlayerTurn = player2;
 				currentPlayerTurn.StartPlayerTurn();
+				ContinueInnerGameTurnAction();
 			}
 			else
 			{
@@ -63,6 +64,7 @@ public class sBoardManager : MonoBehaviour
 				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
 				currentPlayerTurn = player1;
 				currentPlayerTurn.StartPlayerTurn();
+				ContinueInnerGameTurnAction();
 			}
 			else
 			{
@@ -135,13 +137,18 @@ public class sBoardManager : MonoBehaviour
 	void ContinueInnerGameTurnAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
-//		Debug.Log ("ContinueInnerGameTurnAction: " + sgm.currentTurnLoop);
 		switch(sgm.currentTurnLoop)
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
 			if(currentPlayerTurn.hasSelectedTokenFromBench)
 			{
 				sgm.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
+			}
+
+			if(!currentPlayerTurn.HasAvailableTokensOnBench())
+			{
+				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+				HighlightCurrentPlayerMovableToken();
 			}
 			break;
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
@@ -308,7 +315,6 @@ public class sBoardManager : MonoBehaviour
 				UnhighlightBoard ();
 
 				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
-
 				List<Vector3> pathPositionSequenceList = new List<Vector3>();
 				for(int i=0; i<pathSequenceList.Count; i++)
 				{
