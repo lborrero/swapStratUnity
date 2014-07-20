@@ -4,6 +4,7 @@ using System.Collections;
 public class Tile : MonoBehaviour {
 
 	public GameObject physicalTile;
+	public GameObject physicalOverLay;
 
 	public int occupyingTokenId = -1;
 	public PlayerVO.PlayerType occupyingTokenPlayerType = PlayerVO.PlayerType.none;
@@ -46,7 +47,8 @@ public class Tile : MonoBehaviour {
 	{
 		unselected = 0,
 		selected,
-		highlighted
+		highlighted,
+		blocked
 	}
 	public TileVisualState currentTileVisualState = TileVisualState.unselected;
 
