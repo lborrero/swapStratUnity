@@ -47,8 +47,7 @@ public class Tile : MonoBehaviour {
 	{
 		unselected = 0,
 		selected,
-		highlighted,
-		blocked
+		highlighted
 	}
 	public TileVisualState currentTileVisualState = TileVisualState.unselected;
 
