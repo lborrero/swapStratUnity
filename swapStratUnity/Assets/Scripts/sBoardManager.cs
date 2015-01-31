@@ -134,6 +134,26 @@ public class sBoardManager : MonoBehaviour
 		return yesHeDoes;
 	}
 
+	bool isThisTokenMoveable(Token tkn)
+	{
+		bool yesItIs = false;
+		for(int i = 0; i<boardList.Count; i++)
+		{
+
+			if(boardList[i].currentTileType == Tile.TileType.occupied && 
+			   boardList[i].occupyingTokenId == tkn.tokenId && 
+			   boardList[i].occupyingTokenPlayerType == tkn.tokenPlayerType)
+			{
+				List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
+				if(contiguousTiles.Count > 1)
+				{
+					yesItIs = true;
+				}
+			}
+		}
+		return yesItIs;
+	}
+	
 	void ContinueInnerGameTurnAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
@@ -144,11 +164,18 @@ public class sBoardManager : MonoBehaviour
 			{
 				sgm.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
 			}
-
-			if(!currentPlayerTurn.HasAvailableTokensOnBench())
+			else
 			{
-				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
-				HighlightCurrentPlayerMovableToken();
+				if(!currentPlayerTurn.HasAvailableTokensOnBench())
+				{
+					sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+					HighlightCurrentPlayerMovableToken();
+				}
+				else
+				{
+
+					currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.suggestAToken);
+				}
 			}
 			break;
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
@@ -281,6 +308,8 @@ public class sBoardManager : MonoBehaviour
 					boardList[tileId].currentTileState = Tile.TileState.selected;
 					boardList[tileId].currentTileVisualState = Tile.TileVisualState.selected;
 
+					SelectOneTokenOnBoardById(tmptoken);
+
 					currentPlayerTurn.hasSelectedTokenFromBoard = true;
 
 					ContinueInnerGameTurnAction();
@@ -313,6 +342,7 @@ public class sBoardManager : MonoBehaviour
 				currentlySelectedTile = boardList [tileId];
 
 				UnhighlightBoard ();
+				UnSelectAllTokensOnBoard();
 
 				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
 				List<Vector3> pathPositionSequenceList = new List<Vector3>();
@@ -394,11 +424,66 @@ public class sBoardManager : MonoBehaviour
 					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
 					if(contiguousTiles.Count > 1)
 					{
-						boardList[i].currentTileVisualState = Tile.TileVisualState.highlighted;
-						boardList[i].UpdateState();
+						tmptoken.currentTokenState = Token.TokenState.highlighted;
+						tmptoken.UpdateState();
 					}
 				}
+				else
+				{
+					tmptoken.currentTokenState = Token.TokenState.disabled;
+					tmptoken.UpdateState();
+				}
 			}
+		}
+	}
+
+	void UnSelectAllTokensOnBoard()
+	{
+		for(int i = 0; i<tokenList.Count; i++)
+		{
+			tokenList[i].currentTokenState = Token.TokenState.unselected;
+			tokenList[i].UpdateState();
+		}
+	}
+
+
+	void SelectOneTokenOnBoardById(Token tkn)
+	{
+		for(int i = 0; i<tokenList.Count; i++)
+		{
+			if(tkn.tokenId == tokenList[i].tokenId && tkn.tokenPlayerType == tokenList[i].tokenPlayerType)
+			{
+				//players selected token
+				tokenList[i].currentTokenState = Token.TokenState.selected;
+			}
+			else
+			{
+				//other players tokens
+				if(tkn.tokenPlayerType == tokenList[i].tokenPlayerType)
+				{
+					//can token move?
+					if(!tokenList[i].hasTokenBeenMoved)
+					{
+						if(isThisTokenMoveable(tokenList[i]))
+						{
+							tokenList[i].currentTokenState = Token.TokenState.highlighted;
+						}
+						else
+						{
+							tokenList[i].currentTokenState = Token.TokenState.unselected;
+						}
+					}
+					else
+					{
+						tokenList[i].currentTokenState = Token.TokenState.disabled;
+					}
+				}
+				else
+				{
+					tokenList[i].currentTokenState = Token.TokenState.unselected;
+				}
+			}
+			tokenList[i].UpdateState();
 		}
 	}
 

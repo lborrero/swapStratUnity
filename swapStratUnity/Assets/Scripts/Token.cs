@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 
 public class Token : MonoBehaviour {
 
-	public GameObject physicalToken;
+	public Image dot;
+	public Image physicalToken;
+	public Image selectionMarker;
 
 	private List<Vector3> moveSequence = new List<Vector3>();
 	private Vector3 destinationPosition = new Vector3();
@@ -67,17 +70,22 @@ public class Token : MonoBehaviour {
 	public int xPos;
 	public int yPos;
 	
-	public Material blueMaterial;
-	public Material blueUsedMaterial;
-	public Material blueSelectedMaterial;
-	public Material redMaterial;
-	public Material redUsedMaterial;
-	public Material redSelectedMaterial;
+	public Color blueColor;
+	public Color disabledBlueColor;
+	public Color redColor;
+	public Color disabledRedColor;
+
+	public Color selectedColor;
+	public Color unselectedColor;
+	public Color disabledUnselectedColor;
 	
 	public enum TokenState
 	{
 		unselected = 0,
-		selected
+		selected,
+		highlighted,
+		disabled,
+		hideToken
 	}
 	public TokenState currentTokenState = TokenState.unselected;
 
@@ -122,48 +130,68 @@ public class Token : MonoBehaviour {
 		{
 		case TokenType.friendly:
 		case TokenType.benchFriendly:
-			setBlueColor();
+			dot.color = blueColor;
+			setTokenState();
 			break;
 		case TokenType.enemy:
 		case TokenType.benchEnemy:
-			setRedColor();
+			dot.color = redColor;
+			setTokenState();
 			break;
 		}
 	}
 
-	void setBlueColor()
+	void setTokenState()
 	{
-		if(isTokenOnBoard == true)
-			physicalToken.gameObject.renderer.material = blueUsedMaterial;
-		else
+		switch(currentTokenState)
 		{
-			switch(currentTokenState)
-			{
-			case TokenState.selected:
-				physicalToken.gameObject.renderer.material = blueSelectedMaterial;
-				break;
-			case TokenState.unselected:
-				physicalToken.gameObject.renderer.material = blueMaterial;
-				break;
-			}
-		}
-	}
+		case TokenState.selected:
+			physicalToken.gameObject.SetActive(true);
+			selectionMarker.gameObject.SetActive(false);
 
-	void setRedColor()
-	{
-		if(isTokenOnBoard == true)
-			physicalToken.gameObject.renderer.material = redUsedMaterial;
-		else
-		{
-			switch(currentTokenState)
+			selectionMarker.gameObject.SetActive(true);
+			selectionMarker.color = selectedColor;
+			physicalToken.color = selectedColor;
+			break;
+		case TokenState.unselected:
+			physicalToken.gameObject.SetActive(true);
+			selectionMarker.gameObject.SetActive(false);
+
+			selectionMarker.color = unselectedColor;
+			physicalToken.color = unselectedColor;
+			break;
+		case TokenState.highlighted:
+			physicalToken.gameObject.SetActive(true);
+			selectionMarker.gameObject.SetActive(false);
+
+			dot.gameObject.SetActive(true);
+			physicalToken.gameObject.SetActive(true);
+			physicalToken.color = unselectedColor;
+			selectionMarker.gameObject.SetActive(true);
+			selectionMarker.color = unselectedColor;
+			break;
+		case TokenState.disabled:
+			physicalToken.gameObject.SetActive(true);
+			selectionMarker.gameObject.SetActive(false);
+
+			dot.gameObject.SetActive(true);
+			if(currentTokenType == TokenType.benchEnemy)
 			{
-			case TokenState.selected:
-				physicalToken.gameObject.renderer.material = redSelectedMaterial;
-				break;
-			case TokenState.unselected:
-				physicalToken.gameObject.renderer.material = redMaterial;
-				break;
+				dot.color = disabledRedColor;
 			}
+			if(currentTokenType == TokenType.benchFriendly)
+			{
+				dot.color = disabledBlueColor;
+			}
+			physicalToken.gameObject.SetActive(true);
+			physicalToken.color = disabledUnselectedColor;
+			selectionMarker.gameObject.SetActive(false);
+			break;
+		case TokenState.hideToken:
+			dot.gameObject.SetActive(false);
+			physicalToken.gameObject.SetActive(false);
+			selectionMarker.gameObject.SetActive(false);
+			break;
 		}
 	}
 

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,16 +8,16 @@ public class SwapBoard : MonoBehaviour {
 	public GameObject swapTilePrefab;
 	public GameObject swapTokenPrefab;
 
-	public GUIText playerMoveCounterFriend;
-	public GUIText playerMoveCounterEnemy;
+	public Text playerMoveCounterFriend;
+	public Text playerMoveCounterEnemy;
 
-	public GUIText playerPointCounterFriend;
-	public GUIText playerPointCounterEnemy;
+	public Text playerPointCounterFriend;
+	public Text playerPointCounterEnemy;
 	
 	public TokenBench friendlyBench;
 	public TokenBench enemyBench;
 
-	public GUIText gameActionLabel;
+	public Text gameActionLabel;
 
 	public int width = 6;
 	public int height = 6;
@@ -62,6 +63,9 @@ public class SwapBoard : MonoBehaviour {
 				idCounter++;
 			}
 		}
+
+		//begin match visual
+		friendlyBench.UpdateTokenBenchDisplay (TokenBench.benchState.suggestAToken);
 	}
 
 //	public moveTokenAnimation()
@@ -80,7 +84,7 @@ public class SwapBoard : MonoBehaviour {
 		tmpTile.currentTileType = Tile.TileType.occupied;
 
 		//set selected bench token as used
-		sb.currentPlayerTurn.playerTokenBench.UnSelectAllBenchTokens();
+		sb.currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.disabled);
 		sb.currentPlayerTurn.playerTokenBench.SetTokenAsUsed(sb.currentlySelectedToken.tokenId);
 
 		//define placed token
