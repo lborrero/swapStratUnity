@@ -46,6 +46,19 @@ public class TokenBench : MonoBehaviour {
 		}
 		return has;
 	}
+
+	public int numberOfTokensOnBoard()
+	{
+		int numOfTokensOnBoard = 0;
+		for(int i=0; i<benchedTokens.Count; i++)
+		{
+			if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
+			{
+				numOfTokensOnBoard ++;
+			}
+		}
+		return numOfTokensOnBoard;
+	}
 	
 	public bool isTokenUsed(int tokenId)
 	{

@@ -273,6 +273,10 @@ public class sBoardManager : MonoBehaviour
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
 				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
 
+				//this makes the token that was added to the board not be moveable for this turn.
+				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
+				tmptoken.hasTokenBeenMoved = true;
+
 				currentPlayerTurn.hasPlacedPieceFromBench = true;
 				currentPlayerTurn.MoveMade();
 				boardView.UpdateCounters();
