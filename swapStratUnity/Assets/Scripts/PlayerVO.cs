@@ -58,7 +58,8 @@ public class PlayerVO{
 	{
 		if(currentTurnMoveLimit < 8)
 		{
-			currentTurnMoveLimit += 1;
+//			currentTurnMoveLimit += 1;
+			currentTurnMoveLimit = playerTokenBench.numberOfTokensOnBoard() + 1;
 			currentTurnMoveCount = currentTurnMoveLimit;
 		}
 		else
