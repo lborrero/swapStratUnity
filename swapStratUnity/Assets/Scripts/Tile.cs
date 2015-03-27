@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class Tile : MonoBehaviour {
 
-	public GameObject physicalTile;
+	public Image tile;
+	public Image highlight;
+	public Image selectionMarker;
 
 	public int occupyingTokenId = -1;
 	public PlayerVO.PlayerType occupyingTokenPlayerType = PlayerVO.PlayerType.none;
@@ -23,17 +26,14 @@ public class Tile : MonoBehaviour {
 
 	public PlayerVO.PlayerType currentTilePlayerType = PlayerVO.PlayerType.none;
 
-	public Material selectedMaterial;
-	public Material unselectedMaterial;
-	public Material highlightedMaterial;
-	public Material nothingdMaterial;
+	public Color nothingColor;
+	
+	public Color selectedColor;
+	public Color unselectedColor;
 
-	public Material blueMaterial;
-	public Material blueHighlightMaterial;
-	public Material blueSelectedMaterial;
-	public Material redMaterial;
-	public Material redHighlightMaterial;
-	public Material redSelectedMaterial;
+	public Color emptyColor;
+	public Color blueColor;
+	public Color redColor;
 
 	public enum TileState
 		{
@@ -79,53 +79,49 @@ public class Tile : MonoBehaviour {
 		switch(currentTileType)
 		{
 		case TileType.nothing:
-			physicalTile.gameObject.renderer.material = nothingdMaterial;
+			tile.gameObject.SetActive(false);
+			highlight.gameObject.SetActive(false);
+			selectionMarker.gameObject.SetActive(false);
 			break;
 		case TileType.empty:
 		case TileType.occupied:
+			tile.color = emptyColor;
+			tile.gameObject.SetActive(true);
+			selectionMarker.gameObject.SetActive(false);
+			highlight.gameObject.SetActive(false);
+
 			switch(currentTileVisualState)
 			{
 			case TileVisualState.selected:
-				switch(currentTilePlayerType)
-				{
-				case PlayerVO.PlayerType.none:
-					physicalTile.gameObject.renderer.material = selectedMaterial;
-					break;
-				case PlayerVO.PlayerType.friend:
-					physicalTile.gameObject.renderer.material = blueSelectedMaterial;
-					break;
-				case PlayerVO.PlayerType.enemy:
-					physicalTile.gameObject.renderer.material = redSelectedMaterial;
-					break;
-				}
+				selectionMarker.gameObject.SetActive(true); 
+				selectionMarker.color = selectedColor;
 				break;
 			case TileVisualState.unselected:
-				switch(currentTilePlayerType)
-				{
-				case PlayerVO.PlayerType.none:
-					physicalTile.gameObject.renderer.material = unselectedMaterial;
-					break;
-				case PlayerVO.PlayerType.friend:
-					physicalTile.gameObject.renderer.material = blueMaterial;
-					break;
-				case PlayerVO.PlayerType.enemy:
-					physicalTile.gameObject.renderer.material = redMaterial;
-					break;
-				}
 				break;
 			case TileVisualState.highlighted:
-				switch(currentTilePlayerType)
+				if(currentTileType == TileType.occupied)
 				{
-				case PlayerVO.PlayerType.none:
-					physicalTile.gameObject.renderer.material = highlightedMaterial;
-					break;
-				case PlayerVO.PlayerType.friend:
-					physicalTile.gameObject.renderer.material = blueHighlightMaterial;
-					break;
-				case PlayerVO.PlayerType.enemy:
-					physicalTile.gameObject.renderer.material = redHighlightMaterial;
-					break;
+					selectionMarker.gameObject.SetActive(true); 
+					selectionMarker.color = unselectedColor;
 				}
+				else
+				{
+					highlight.gameObject.SetActive(true);
+					highlight.color = selectedColor;
+				}
+				break;
+			}
+
+			switch(currentTilePlayerType)
+			{
+			case PlayerVO.PlayerType.none:
+				tile.color = emptyColor;
+				break;
+			case PlayerVO.PlayerType.friend:
+				tile.color = blueColor;
+				break;
+			case PlayerVO.PlayerType.enemy:
+				tile.color = redColor;
 				break;
 			}
 			break;

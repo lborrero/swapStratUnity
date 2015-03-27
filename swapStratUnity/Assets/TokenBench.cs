@@ -8,6 +8,13 @@ public class TokenBench : MonoBehaviour {
 
 	public PlayerVO.PlayerType currentPlayerType;
 
+	public enum benchState
+	{
+		disabled = 0,
+		suggestAToken
+	}
+	benchState currentBenchState;
+
 	public void InitialitializeBench(PlayerVO.PlayerType plt)
 	{
 		currentPlayerType = plt;
@@ -15,13 +22,14 @@ public class TokenBench : MonoBehaviour {
 		{
 			benchedTokens[i].GetComponent<Token>().currentTokenType = (currentPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.benchFriendly : Token.TokenType.benchEnemy;
 			benchedTokens[i].GetComponent<Token>().SetTokenId(i);
-			benchedTokens[i].GetComponent<Token>().UpdateState();
 		}
+		UpdateTokenBenchDisplay (benchState.disabled);
 	}
 
 	public void SetTokenAsUsed(int tokenId)
 	{
 		benchedTokens [tokenId].GetComponent<Token> ().isTokenOnBoard = true;
+		benchedTokens [tokenId].GetComponent<Token> ().currentTokenState = Token.TokenState.hideToken;
 		benchedTokens [tokenId].GetComponent<Token> ().UpdateState ();
 	}
 
@@ -37,6 +45,19 @@ public class TokenBench : MonoBehaviour {
 			}
 		}
 		return has;
+	}
+
+	public int numberOfTokensOnBoard()
+	{
+		int numOfTokensOnBoard = 0;
+		for(int i=0; i<benchedTokens.Count; i++)
+		{
+			if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
+			{
+				numOfTokensOnBoard ++;
+			}
+		}
+		return numOfTokensOnBoard;
 	}
 	
 	public bool isTokenUsed(int tokenId)
@@ -60,18 +81,65 @@ public class TokenBench : MonoBehaviour {
 			}
 			else
 			{
-				benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.unselected;
+//				if(benchedTokens[i].GetComponent<Token>().currentTokenState == Token.TokenState.disabled)
+//				{
+//					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.disabled;
+//				}
+//				else if(
+//
+//				else
+//				{
+//					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.unselected;
+//				}
 			}
 			benchedTokens[i].GetComponent<Token>().UpdateState();
 		}
 	}
 
-	public void UnSelectAllBenchTokens()
+	public void UpdateTokenBenchDisplay(benchState bs)
 	{
-		for(int i=0; i<benchedTokens.Count; i++)
+		currentBenchState = bs;
+		switch(currentBenchState)
 		{
-			benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.unselected;
-			benchedTokens[i].GetComponent<Token>().UpdateState();
+		case benchState.suggestAToken:
+			//select next token to play // highlight next playable token.
+			bool aTokenHasBeenSuggested = false;
+			for(int i=0; i<benchedTokens.Count; i++)
+			{
+				if(!benchedTokens[i].GetComponent<Token>().isTokenOnBoard && !aTokenHasBeenSuggested)
+				{
+					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.highlighted;
+					aTokenHasBeenSuggested = true;
+				}
+				else
+				{
+					if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
+					{
+						benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.hideToken;
+					}
+					else
+					{
+						benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.disabled;
+					}
+				}
+				benchedTokens[i].GetComponent<Token>().UpdateState();
+			}
+			break;
+		case benchState.disabled:
+			//diable all tokens
+			for(int i=0; i<benchedTokens.Count; i++)
+			{
+				if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
+				{
+					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.hideToken;
+				}
+				else
+				{
+					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.disabled;
+				}
+				benchedTokens[i].GetComponent<Token>().UpdateState();
+			}
+			break;
 		}
 	}
 }
