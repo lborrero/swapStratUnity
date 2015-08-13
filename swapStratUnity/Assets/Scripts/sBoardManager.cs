@@ -35,9 +35,12 @@ public class sBoardManager : MonoBehaviour
 	public Tile currentlySelectedTile;
 	public Token currentlySelectedToken;
 
-
 	public void ContinueInnerGameAction()
 	{
+		Debug.Log (ConvertBoardToStrings (boardList));
+		LoadBoardFormString("Turn=R;B=10;R=4;Board=00,00,00,00,00,00,00,00,00,21,12,10,10,10,10,00,00,10,21,22,10,10,10,00,00,10,22,10,10,10,10,00,00,10,10,10,10,11,10,00,00,10,10,10,11,21,10,00,00,10,10,10,10,10,11,00,00,00,00,00,00,00,00,00,;");
+		UpdateBoard();
+
 		sGameManager sgm = sGameManager.Instance;
 //		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		switch(sgm.currentInnerGameLoop)
@@ -553,13 +556,67 @@ public class sBoardManager : MonoBehaviour
 		return tmpArray;
 	}
 
-	string ListsToStrings(List<int> list)
+	public string ListsToStrings(List<int> list)
 	{
 		string toPrint = "";
 		for(int i=0; i<list.Count; i++)
 		{
 			toPrint = toPrint + list[i] + ",";
 		}
+		return toPrint;
+	}
+
+	public void LoadBoardFormString(string boardString)
+	{
+		string [] info = boardString.Split(';');
+		for(int i = 0; i<info.Length; i++)
+		{
+			if(info[i].IndexOf("=") != -1)
+			{
+				string sub = info[i].Substring(info[i].IndexOf("=")+1, (info[i].Length-1)-info[i].IndexOf("="));
+				Debug.Log (sub);
+
+				if(info[i].IndexOf("Board") != -1)
+				{
+					string [] tilesInfo = sub.Split(',');
+					for(int j = 0; j<boardList.Count; j++)
+					{
+						Debug.Log("Board: " + (Tile.TileType)char.GetNumericValue(tilesInfo[j], 0) + " " + (PlayerVO.PlayerType)char.GetNumericValue(tilesInfo[j], 1));
+						boardList[i].currentTileType = (Tile.TileType)char.GetNumericValue(tilesInfo[j], 0);
+						boardList[i].currentTilePlayerType = (PlayerVO.PlayerType)char.GetNumericValue(tilesInfo[j], 1);
+					}
+				}
+			}
+			Debug.Log (info[i] + " " + info[i].IndexOf("=") + " " + (info[i].Length));
+		}
+
+
+	}
+
+	public string ConvertBoardToStrings(List<Tile> list)
+	{
+		string toPrint = "";
+		toPrint += "Turn=";
+		if(currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend)
+		{
+			toPrint +="B;";
+		}
+		else
+		{
+			toPrint +="R;";
+		}
+		toPrint += "B=" + player1.currentTurnPointCount + ";";
+		toPrint += "R=" + player2.currentTurnPointCount + ";";
+
+		toPrint += "Board=";
+		for(int i=0; i<list.Count; i++)
+		{
+			toPrint += (int)list[i].currentTileType;
+			toPrint += (int)list[i].currentTilePlayerType;
+			toPrint += (int)list[i].occupyingTokenId;
+			toPrint += ",";
+		}
+		toPrint += ";";
 		return toPrint;
 	}
 }
