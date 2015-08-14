@@ -390,8 +390,9 @@ public class sBoardManager : MonoBehaviour
 		return tokenList[tId];
 	}
 
-	public void TokenClicked(int tokenId, Token.TokenType tokt)
+	public bool TokenClicked(int tokenId, Token.TokenType tokt)
 	{
+		bool returnValue = false;
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBench)
 		{
 			if(currentPlayerTurn.playerTokenBench.isTokenUsed(tokenId))
@@ -403,7 +404,9 @@ public class sBoardManager : MonoBehaviour
 			}
 			HighlighEmptyTiles();
 			ContinueInnerGameTurnAction();
+			returnValue = true;
 		}
+		return returnValue;
 	}
 
 	void HighlightingTilesToMoveTo(int tileId)

@@ -19,6 +19,9 @@ public class SwapBoard : MonoBehaviour {
 
 	public Text gameActionLabel;
 
+	public sGameManager sgm;
+	public sBoardManager sbm;
+
 	public int width = 6;
 	public int height = 6;
 	private float _xOffset;
@@ -29,8 +32,19 @@ public class SwapBoard : MonoBehaviour {
 		InitializeBoard ();
 	}
 
-	public void SetBoardAtSpecificState()
+	public void SetBoardAtSpecificState(string dataSettings)
 	{
+		/*Data string should contain the following
+		 * GridSize
+		 * Current player turn
+		 * InnerGameLoop
+		 * TurnLoop
+		 * Blue Points
+		 * Red points
+		 * Blue Bench Tokens
+		 * Red Bench Tokens
+		 * Board Layout in Chars
+		*/
 		sGameManager.Instance.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
 		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
@@ -43,6 +57,9 @@ public class SwapBoard : MonoBehaviour {
 
 	public void InitializeBoard()
 	{
+		sgm = sGameManager.Instance;
+		sbm = sBoardManager.Instance;
+
 		sGameManager.Instance.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
 		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
