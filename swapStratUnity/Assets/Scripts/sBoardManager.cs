@@ -37,8 +37,8 @@ public class sBoardManager : MonoBehaviour
 
 	public void ContinueInnerGameAction()
 	{
-		Debug.Log (ConvertBoardToStrings (boardList));
-		LoadBoardFormString("Turn=R;B=10;R=4;Board=00,00,00,00,00,00,00,00,00,21,12,10,10,10,10,00,00,10,21,22,10,10,10,00,00,10,22,10,10,10,10,00,00,10,10,10,10,11,10,00,00,10,10,10,11,21,10,00,00,10,10,10,10,10,11,00,00,00,00,00,00,00,00,00,;");
+//		Debug.Log (ConvertBoardToStrings (boardList));
+//		LoadBoardFormString("Turn=R;B=10;R=4;Board=00,00,00,00,00,00,00,00,00,21,12,10,10,10,10,00,00,10,21,22,10,10,10,00,00,10,22,10,10,10,10,00,00,10,10,10,10,11,10,00,00,10,10,10,11,21,10,00,00,10,10,10,10,10,11,00,00,00,00,00,00,00,00,00,;");
 		UpdateBoard();
 
 		sGameManager sgm = sGameManager.Instance;
@@ -377,7 +377,7 @@ public class sBoardManager : MonoBehaviour
 		UpdateBoard();
 	}
 
-	Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
+	public Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
 	{
 		int tId = -1;
 		for(int i =0; i<tokenList.Count; i++)
@@ -418,6 +418,12 @@ public class sBoardManager : MonoBehaviour
 		{
 			boardList [contiguousTiles[i]].currentTileVisualState = Tile.TileVisualState.highlighted;
 		}
+	}
+
+	public List<int> getTilesIdToMoveTo()
+	{	
+		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (currentlySelectedTile.tileId), board_width, board_height, boardList [currentlySelectedTile.tileId].xPos, boardList [currentlySelectedTile.tileId].yPos); 
+		return contiguousTiles;
 	}
 
 	void HighlightCurrentPlayerMovableToken()
@@ -539,7 +545,7 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	List<int> boardListIntoBinaryList(int centerTileToCheck)//currentlySelectedTile.tileId
+	public List<int> boardListIntoBinaryList(int centerTileToCheck)//currentlySelectedTile.tileId
 	{
 		List<int> tmpArray = new List<int> ();
 		for(int i = 0; i<boardList.Count; i++)
@@ -549,7 +555,7 @@ public class sBoardManager : MonoBehaviour
 		return tmpArray;
 	}
 
-	List<int> boardListIntoBinaryListForPathFinding(int source_id, int target_id)
+	public List<int> boardListIntoBinaryListForPathFinding(int source_id, int target_id)
 	{
 		List<int> tmpArray = new List<int> ();
 		for(int i = 0; i<boardList.Count; i++)
