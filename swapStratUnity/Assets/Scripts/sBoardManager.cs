@@ -426,6 +426,12 @@ public class sBoardManager : MonoBehaviour
 		return contiguousTiles;
 	}
 
+	public List<int> getPotentialTilesIdToMoveTo(int tileId)
+	{	
+		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryExcludingThePresenceOfOtherPlayerPiecesList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
+		return contiguousTiles;
+	}
+
 	void HighlightCurrentPlayerMovableToken()
 	{
 		Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
@@ -554,6 +560,17 @@ public class sBoardManager : MonoBehaviour
 		}
 		return tmpArray;
 	}
+
+	public List<int> boardListIntoBinaryExcludingThePresenceOfOtherPlayerPiecesList(int centerTileToCheck)//currentlySelectedTile.tileId
+	{
+		List<int> tmpArray = new List<int> ();
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			tmpArray.Add((boardList[i].currentTileType == Tile.TileType.empty || i == centerTileToCheck || boardList[i].occupyingTokenPlayerType == boardList[centerTileToCheck].occupyingTokenPlayerType)?1:0);
+		}
+		return tmpArray;
+	}
+
 
 	public List<int> boardListIntoBinaryListForPathFinding(int source_id, int target_id)
 	{
