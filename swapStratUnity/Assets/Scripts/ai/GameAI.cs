@@ -150,11 +150,11 @@ public class GameAI : MonoBehaviour {
 
 	List<int> getTileIdsThatAreYourColor(List<int> possibilityBubble)
 	{
-		for (int i = possibilityBubble.Count - 1; i >= 0; i--) 
+		for (int i = possibilityBubble.Count - 1; i >= 0; --i) 
 		{
 			if (sb.sbm.boardList [possibilityBubble [i]].currentTilePlayerType != aiPt) 
 			{
-				possibilityBubble.Remove [i];
+				possibilityBubble.RemoveAt(i);
 			}
 		}
 		return possibilityBubble;
