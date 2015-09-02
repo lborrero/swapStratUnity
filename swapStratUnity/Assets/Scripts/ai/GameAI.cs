@@ -92,47 +92,52 @@ public class GameAI : MonoBehaviour {
 		}
 		case sGameManager.TurnLoop.moveSelectedToken:
 		{
-				List<List<int>> shortTermMemory = new List<List<int>>();
-				List<Tile> possibleTokensOnTile = new List<Tile>(GetMoveableTokensList());
+
+			//--- Generate Possibility bubbles on the board ---
+			List<List<int>> shortTermMemory = new List<List<int>>();
+			List<Tile> possibleTokensOnTile = new List<Tile>(GetMoveableTokensList());
+
 			for (int i = 0; i < possibleTokensOnTile.Count; i++) 
 			{
-					shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveTo (possibleTokensOnTile[i].tileId));
+				shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveTo (possibleTokensOnTile[i].tileId));
 			}
-				Debug.Log ("AI: " + possibleTokensOnTile.Count + " " + shortTermMemory.Count);
 
-				string ps = "";
-				//print
-				for (int j = 0; j < shortTermMemory.Count; j++) 
+			Debug.Log ("AI: " + possibleTokensOnTile.Count + " " + shortTermMemory.Count);
+
+			string ps = "";
+			for (int j = 0; j < shortTermMemory.Count; j++) 
+			{
+				shortTermMemory[j].Sort ();	
+				for (int k = 0; k < shortTermMemory[j].Count; k++)
 				{
-					shortTermMemory[j].Sort ();	
-					for (int k = 0; k < shortTermMemory[j].Count; k++) 
-					{
-						ps += shortTermMemory [j] [k] + ",";
-					}
-					ps += "\n";
+					ps += shortTermMemory [j] [k] + ",";
 				}
-				Debug.Log (ps);
+				ps += "\n";
+			}
+			Debug.Log (ps);
 
-				List<Vector2> possibilityBubbles = new List<Vector2> ();
-				possibilityBubbles.Add(new Vector2(0, 1));
-				for (int l = 1; l < shortTermMemory.Count; l++) 
+			List<Vector2> possibilityBubbles = new List<Vector2> ();
+			possibilityBubbles.Add(new Vector2(0, 1));
+			for (int l = 1; l < shortTermMemory.Count; l++) 
+			{
+				if (shortTermMemory [l - 1].All (shortTermMemory [l].Contains)) 
 				{
-					if (shortTermMemory [l - 1].All (shortTermMemory [l].Contains)) 
-					{
-						possibilityBubbles [possibilityBubbles.Count - 1] += new Vector2(0,1);
-					} 
-					else 
-					{
-						possibilityBubbles.Add (new Vector2 (l, 1));
-					}
-				}
-
-				for (int m = 0; m < possibilityBubbles.Count; m++) 
+					possibilityBubbles [possibilityBubbles.Count - 1] += new Vector2(0,1);
+				} 
+				else 
 				{
-					
-					Debug.Log ("possibilityBubbles: " + shortTermMemory[(int)possibilityBubbles [m].x].Count + ":: " + possibilityBubbles [m].x + " " + possibilityBubbles [m].y + " = " + PossibilityCalculator.NumberOfPossibilities(33,1) + ": " + PossibilityCalculator.NumberOfPossibilities(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y));
+					possibilityBubbles.Add (new Vector2 (l, 1));
 				}
+			}
 
+			for (int m = 0; m < possibilityBubbles.Count; m++) 
+			{	
+				Debug.Log ("possibilityBubbles: " + shortTermMemory[(int)possibilityBubbles [m].x].Count /*tiles in this possibility bubble*/ + ":: " + possibilityBubbles [m].x + " " + possibilityBubbles [m].y /*number of tokens in this possibility bubble*/ + " = " + PossibilityCalculator.NumberOfPossibilities(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y));
+				PossibilityCalculator.NumberOfPermutationsWithOutRepetition(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y);
+			}
+			// -- end of generating possibility bubble.
+
+			//--- Select Random Tile to move to ---
 			List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
 			Debug.Log ("AI: " + imediatePossibleTiles.Count);
 

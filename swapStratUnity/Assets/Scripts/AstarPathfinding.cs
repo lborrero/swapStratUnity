@@ -261,6 +261,6 @@ public class AstarPathfinding : MonoBehaviour {
 		{
 			toPrint += " " + listToPrint[i].ToString() + ",";
 		}
-		Debug.Log (toPrint);
+//		Debug.Log (toPrint);
 	}
 }
