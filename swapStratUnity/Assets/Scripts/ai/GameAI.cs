@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Facet.Combinatorics;
+using System.Text;
+using System;
 
 public class GameAI : MonoBehaviour {
 
@@ -133,9 +136,71 @@ public class GameAI : MonoBehaviour {
 			for (int m = 0; m < possibilityBubbles.Count; m++) 
 			{	
 				Debug.Log ("possibilityBubbles: " + shortTermMemory[(int)possibilityBubbles [m].x].Count /*tiles in this possibility bubble*/ + ":: " + possibilityBubbles [m].x + " " + possibilityBubbles [m].y /*number of tokens in this possibility bubble*/ + " = " + PossibilityCalculator.NumberOfPossibilities(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y));
-				PossibilityCalculator.NumberOfPermutationsWithOutRepetition(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y);
+				// m possibilityBubbles increment value. 
+				// possibilityBubbles [m].x is the ID in the short term memory.
+				// the shortTermMemory retains all the potential tiles for each token
+//				PossibilityCalculator.NumberOfPermutationsWithOutRepetition(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y);
+
+				char [] checkerForRedTile = new char[shortTermMemory[(int)possibilityBubbles [m].x].Count];
+				for(int i = 0; i<checkerForRedTile.Length; i++)
+				{
+					if(sb.sbm.boardList[shortTermMemory[(int)possibilityBubbles [m].x][i]].currentTilePlayerType == aiPt)
+					{
+						checkerForRedTile[i] = 'r';
+					}
+					else
+					{
+						checkerForRedTile[i] = 'e';
+					}
+				}
+
+				//--Start Permutation Validation ----
+				int n = shortTermMemory[(int)possibilityBubbles [m].x].Count;
+				int r = (int)possibilityBubbles [m].y;
+				
+				char[] inputSet = new char[n];
+				for (int i = 0; i < r; i++)
+				{
+					inputSet[i] = 't';
+				}
+				for (int i = r; i < n; i++)
+				{
+					inputSet[i] = 'e';
+				}
+				
+				Permutations<char> P1 = new Permutations<char>(inputSet, 
+				                                               GenerateOption.WithoutRepetition);
+				string format1 = "Permutations of {{A A C}} without repetition; size = {0}";
+				Debug.Log(String.Format(format1, P1.Count));
+				
+				//-- loop and check transformed tile to red
+				int mostAmountOfRedTiles = 0;
+				int tempIncrement = 0;
+				char [] winningChars = new char[shortTermMemory[(int)possibilityBubbles [m].x].Count];
+				foreach(IList<char> p in P1)
+				{
+					tempIncrement = 0;
+					for(int i = 0; i<p.Count; i++)
+					{
+						if(p[i] == 't' || checkerForRedTile[i] == 'r')
+						{
+							tempIncrement++;
+						}
+					}
+					if(tempIncrement > mostAmountOfRedTiles)
+					{
+						mostAmountOfRedTiles = tempIncrement;
+					}
+				}
+
+				Debug.Log(mostAmountOfRedTiles);
+
+				/// End Permutation Validation ----
+
+
 			}
 			// -- end of generating possibility bubble.
+
 
 			//--- Select Random Tile to move to ---
 			List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
