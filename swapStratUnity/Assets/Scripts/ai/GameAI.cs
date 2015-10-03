@@ -39,7 +39,7 @@ public class GameAI : MonoBehaviour {
 		{
 			if (sGameManager.Instance.currentInnerGameLoop == sGameManager.InnerGameLoop.playerTwoTurn) 
 			{
-				Debug.Log("AI P2");
+				Debug.Log("-");
 				ThinkLoop ("asdf");
 			}
 		}
@@ -102,6 +102,7 @@ public class GameAI : MonoBehaviour {
 			{
 				case AiType.intermediate:
 				{
+					TileSelectionSequence.Clear();
 					GenerateTurnSequence();
 					Debug.Log("GenerateTurnSequence: " + TileSelectionSequence.Count + " " + currentAiProcess);
 					break;
@@ -119,7 +120,7 @@ public class GameAI : MonoBehaviour {
 			{
 				case AiType.intermediate:
 				{
-					if(currentAiProcess == AiProcesses.AiProcessCompleted)
+					if(currentAiProcess == AiProcesses.AiProcessCompleted && TileSelectionSequence.Count > 0)
 					{
 						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
 						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);// select token with this tile id is found in the x value of the vector 2
@@ -143,7 +144,7 @@ public class GameAI : MonoBehaviour {
 			{
 				case AiType.intermediate:
 				{
-				if(currentAiProcess == AiProcesses.AiProcessCompleted)
+				if(currentAiProcess == AiProcesses.AiProcessCompleted && TileSelectionSequence.Count > 0)
 				{
 					Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
 					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);// place token on this tile id is found in the y value of the vector 2
@@ -184,6 +185,24 @@ public class GameAI : MonoBehaviour {
 		return possibilityBubble;
 	}
 
+	List<Tile> GetNonMoveableTokensList()
+	{
+		List<Tile> possibleTokensOnTile = new List<Tile>();
+		Token tmptoken;
+		for(int i = 0; i<sb.sbm.boardList.Count; i++)
+		{
+			if (sb.sbm.boardList [i].currentTileType == Tile.TileType.occupied &&
+			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
+			{
+				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
+				if (tmptoken.hasTokenBeenMoved || tmptoken.currentTokenState == Token.TokenState.disabled)
+				{
+					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+				}
+			}
+		}
+		return possibleTokensOnTile;
+	}
 
 	List<Tile> GetMoveableTokensList()
 	{
@@ -195,7 +214,7 @@ public class GameAI : MonoBehaviour {
 				sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (!tmptoken.hasTokenBeenMoved) 
+				if (!tmptoken.hasTokenBeenMoved && tmptoken.currentTokenState != Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -228,6 +247,13 @@ public class GameAI : MonoBehaviour {
 		//shortTermMemory are an array of tile IDs.
 
 		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
+		Debug.Log ("Moveable Token: " + possibleMoveableTokensOnBoard.Count);
+		List<Tile> nonMoveableTokensOnBoard = new List<Tile>(GetNonMoveableTokensList());
+		Debug.Log ("None moveable Token: " + nonMoveableTokensOnBoard.Count);
+		if(possibleMoveableTokensOnBoard.Count <= 0)
+		{
+			return;
+		}
 		
 		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
 		{
@@ -262,6 +288,7 @@ public class GameAI : MonoBehaviour {
 				possibilityBubbles.Add (new Vector2 (l, 1));
 			}
 		}
+
 		// -- end of generating possibility bubble.
 
 //		for (int m = 0; (m < possibilityBubbles.Count); m++) 
@@ -269,8 +296,10 @@ public class GameAI : MonoBehaviour {
 //			Debug.Log ("possibilityBubbles.Count: " + possibilityBubbles.Count + " " + possibilityBubbles[m].x + " " + possibilityBubbles[m].y);
 //		}
 		//Playing the possibility bubbles
+		Debug.Log ("possibilityBubbles.Count: " + possibilityBubbles.Count);
 		for (int m = 0; (m < possibilityBubbles.Count); m++) 
 		{	
+			List<Vector2> bubbleTileSelectionSequence = new List<Vector2>();
 			Debug.Log ("possibilityBubbles: " + m);
 			// Debug.Log ("possibilityBubbles: " + shortTermMemory[(int)possibilityBubbles [m].x/*the index in shortTermMemory containing the possibilit tiles array*/ ].Count /*tiles in this possibility bubble*/ + ":: " + possibilityBubbles [m].x + " " + possibilityBubbles [m].y /*number of tokens in this possibility bubble*/ + " = " + PossibilityCalculator.NumberOfPossibilities(shortTermMemory[(int)possibilityBubbles [m].x].Count, (int)possibilityBubbles [m].y));
 			// m possibilityBubbles increment value. 
@@ -295,6 +324,7 @@ public class GameAI : MonoBehaviour {
 			//The number of ways of obtaining an ordered subset of r elements from a set of n elements.
 			int n = shortTermMemory[(int)possibilityBubbles [m].x].Count;
 			int r = (int)possibilityBubbles [m].y; //r are elements from a set of n elements.
+			Debug.Log("Number of pieces to move in this bubble. " + r);
 			
 			char[] inputSet = new char[n];
 			for (int i = 0; i < r; i++)
@@ -315,7 +345,7 @@ public class GameAI : MonoBehaviour {
 			int mostAmountOfRedTiles = 0;
 			int tempIncrement = 0;
 			List<int> winnerPermutationIndex = new List<int>();
-			for(int j=0; j<P1.Count; j++)
+			for(int j=0; (j<P1.Count && j<200); j++)
 			{
 				IList<char> p = P1.ElementAt(j);
 				tempIncrement = 0;
@@ -332,7 +362,7 @@ public class GameAI : MonoBehaviour {
 					winnerPermutationIndex.Add(j);
 				}
 			}
-			for(int j=0; j<P1.Count; j++)
+			for(int j=0; (j<P1.Count && j<200); j++)
 			{
 				if(!winnerPermutationIndex.Contains(j))
 				{
@@ -350,18 +380,17 @@ public class GameAI : MonoBehaviour {
 				// Now check what tile ID the winning permutation proposes.
 				IList<char> winnerCharsWhereYouWantToMoveTo = P1.ElementAt(winnerPermutationIndex[t]); // winnerChars looks something like this: teeeeteeeeeteeettee
 
-				string sssJ = "";
-				for(int w=0; w<winnerCharsWhereYouWantToMoveTo.Count; w++)
-				{
-					sssJ += winnerCharsWhereYouWantToMoveTo[w];
-				}
-				Debug.Log("sssJ: " + sssJ);
+//				string sssJ = "";
+//				for(int w=0; w<winnerCharsWhereYouWantToMoveTo.Count; w++)
+//				{
+//					sssJ += winnerCharsWhereYouWantToMoveTo[w];
+//				}
+//				Debug.Log("sssJ: " + sssJ);
 
 				// create all the possible orders of the movement.
 
 				// transform all the tokens into incremental values 1.2...5.... // This is done so they can be indexed and have various orders.
 				char [] desiredTileIndexesToMoveTo = new char[r]; // r here is the number of tokens to place
-				Debug.Log("Number of pieces to move in this bubble. " + r);
 				for(int i=0; i<r; i++)
 				{
 					string ss = "" + i;
@@ -371,7 +400,7 @@ public class GameAI : MonoBehaviour {
 
 				Permutations<char> permutationsForMovementOrder = new Permutations<char>(desiredTileIndexesToMoveTo);
 				string format2 = "Permutations of {{1 2 3}} without repetition; size = {0}";
-				Debug.Log(String.Format(format2, permutationsForMovementOrder.Count));
+//				Debug.Log(String.Format(format2, permutationsForMovementOrder.Count));
 				
 				// now check if it's possible to create such a combination, through movement
 //				foreach(IList<char> p in permutationsForMovementOrder) //this here is the order of movement permutations for the current available pieces.
@@ -405,12 +434,12 @@ public class GameAI : MonoBehaviour {
 					currentPossibilityBoard[shortTermMemory[(int)possibilityBubbles [m].x][i]] = 1;
 				}
 
-				string ssssA = "";
-				for(int i=0; i<currentPossibilityBoard.Count; i++)
-				{
-					ssssA += currentPossibilityBoard[i];
-				}
-				Debug.Log("ssssA: " + ssssA);
+//				string ssssA = "";
+//				for(int i=0; i<currentPossibilityBoard.Count; i++)
+//				{
+//					ssssA += currentPossibilityBoard[i];
+//				}
+//				Debug.Log("ssssA: " + ssssA);
 
 				//remove the currently moveable tiles with tokens on them;
 				for(int i=0; i<possibleMoveableTokensOnBoard.Count; i++)
@@ -423,12 +452,20 @@ public class GameAI : MonoBehaviour {
 				}
 //				Debug.Log(sb.sbm.ListsToStrings(currentPossibilityBoard));
 
-				string ssssB = "";
-				for(int i=0; i<currentPossibilityBoard.Count; i++)
+
+				// remove any tiles with nonmoveable tokens on them.
+				for(int i=0; i<nonMoveableTokensOnBoard.Count; i++)
 				{
-					ssssB += currentPossibilityBoard[i];
+					currentPossibilityBoard[nonMoveableTokensOnBoard[i].tileId] = 0;
 				}
-				Debug.Log("ssssB: " + ssssB);
+
+
+//				string ssssB = "";
+//				for(int i=0; i<currentPossibilityBoard.Count; i++)
+//				{
+//					ssssB += currentPossibilityBoard[i];
+//				}
+//				Debug.Log("ssssB: " + ssssB);
 
 				movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
 				
@@ -436,22 +473,35 @@ public class GameAI : MonoBehaviour {
 
 				int pass_tileIdForTokenToMove = 0;
 				int pass_tileIdForTokenToMoveTo = 0;
+
+				string ssssK = "";
+				for(int i = 0; i<winnerCharsWhereYouWantToMoveTo.Count; i++)// iterating through a tile permutation possibility
+				{
+					if(winnerCharsWhereYouWantToMoveTo[i] == 't')// this is the space to move to from the winning combination. Looks like 'eteet'
+					{
+						ssssK += shortTermMemory[(int)possibilityBubbles [m].x][i] + ", ";
+					}
+				}
+				Debug.Log(t + " ssssK Objective: " + ssssK);
+
 				for(int q = 0; q<permutationsForMovementOrder.Count; q++)
 				{
 					IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(q);
 					int permutationsIncrement = 0;
 					
 					int isAbleToMoveToAllPositions = 1;
+					List<int> cestPareille = new List<int>();
+
 					for(int i = 0; i<winnerCharsWhereYouWantToMoveTo.Count; i++)// iterating through a tile permutation possibility
 					{
-						if(winnerCharsWhereYouWantToMoveTo[i] == 't')// this is the space to move to from the winning combination
+						if(winnerCharsWhereYouWantToMoveTo[i] == 't')// this is the space to move to from the winning combination. Looks like 'eteet'
 						{
-							string ssssE = "";
-							for(int u=0; u<currentMoveablTokensInThisBubble.Count; u++)
-							{
-								ssssE += currentMoveablTokensInThisBubble[u] + ", ";
-							}
-							Debug.Log("ssssE" + i + ": " + ssssE);
+//							string ssssE = "";
+//							for(int u=0; u<currentMoveablTokensInThisBubble.Count; u++)
+//							{
+//								ssssE += currentMoveablTokensInThisBubble[u] + ", ";
+//							}
+//							Debug.Log("ssssE " + i + "currentMoveablTokensInThisBubble: " + ssssE);
 
 							//	Debug.Log("asdfasdf: " + possibleMoveableTokensOnBoard.Count + " " + permutationBeingVerified.Count + " " + (int)(permutationBeingVerified[permutationsIncrement] - 48));
 							int tileIdForTokenToMove = currentMoveablTokensInThisBubble[(int)(permutationBeingVerified[permutationsIncrement] - 48)];// 48 is how to convert char values to int values
@@ -462,12 +512,12 @@ public class GameAI : MonoBehaviour {
 							//include the currently selected tile for the contiguous search
 							currentPossibilityBoard[tileIdForTokenToMove] = 1;
 								
-							string ssssC = "";
-							for(int p=0; p<currentPossibilityBoard.Count; p++)
-							{
-								ssssC += currentPossibilityBoard[p];
-							}
-							Debug.Log("ssssC" + i + ": " + ssssC);
+//							string ssssC = "";
+//							for(int p=0; p<currentPossibilityBoard.Count; p++)
+//							{
+//								ssssC += currentPossibilityBoard[p];
+//							}
+//							Debug.Log("ssssC" + i + ": " + ssssC);
 							
 							// can I make the following move?
 							List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (currentPossibilityBoard, sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [tileIdForTokenToMove].xPos, sb.sbm.boardList [tileIdForTokenToMove].yPos);
@@ -482,14 +532,23 @@ public class GameAI : MonoBehaviour {
 							if(contiguousTiles.Contains(tileIdForTokenToMoveTo))
 							{
 								currentPossibilityBoard[tileIdForTokenToMoveTo] = 0; // I make the new token position unavailable
-								this.TileSelectionSequence.Add(new Vector2(tileIdForTokenToMove, tileIdForTokenToMoveTo));
 
-								string ssssF = "";
-								for(int p=0; p<currentPossibilityBoard.Count; p++)
+								if(tileIdForTokenToMove != tileIdForTokenToMoveTo)
 								{
-									ssssF += currentPossibilityBoard[p];
+									bubbleTileSelectionSequence.Add(new Vector2(tileIdForTokenToMove, tileIdForTokenToMoveTo));
 								}
-								Debug.Log("ssssF" + i + ": " + ssssF);
+								else
+								{
+									cestPareille.Add(tileIdForTokenToMoveTo);
+//									Debug.Log ("C'est Pareille!!!! " + tileIdForTokenToMoveTo);
+								}
+
+//								string ssssF = "";
+//								for(int p=0; p<currentPossibilityBoard.Count; p++)
+//								{
+//									ssssF += currentPossibilityBoard[p];
+//								}
+//								Debug.Log("ssssF" + i + ": " + ssssF);
 
 			                    // stack the new board state
 			                    movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
@@ -501,9 +560,37 @@ public class GameAI : MonoBehaviour {
 								pass_tileIdForTokenToMove = tileIdForTokenToMove;
 								pass_tileIdForTokenToMoveTo = tileIdForTokenToMoveTo;
 								isAbleToMoveToAllPositions &= 0;
+								bubbleTileSelectionSequence.Clear();
+								break;
 							}
 						}
 					}
+
+					if(cestPareille.Count > 0)
+					{
+//						Debug.Log("cestPareille.Count): " + cestPareille.Count);
+						for(int i = 0; i<cestPareille.Count; i++)// iterating through a tile permutation possibility
+						{
+							// can I make the following move?
+							string ssssQ = "";
+							for(int p=0; p<movementSequenceShortTermMemory.Last().Count; p++)
+							{
+								ssssQ += movementSequenceShortTermMemory.Last()[p];
+							}
+
+							List<int> tempTest = movementSequenceShortTermMemory.Last();
+							tempTest[cestPareille[i]] = 1;
+
+							List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (movementSequenceShortTermMemory.Last(), sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [cestPareille[i]].xPos, sb.sbm.boardList [cestPareille[i]].yPos);
+							if(contiguousTiles.Count >= 1)
+							{
+								isAbleToMoveToAllPositions &= 0;
+							}
+//							Debug.Log("ssssQ " + " " + contiguousTiles.Count + " " + cestPareille[i] + " " + ssssQ);
+						}
+
+					}
+
 					if(isAbleToMoveToAllPositions == 1)
 					{
 						Debug.Log("YES!! isAbleToFormToThisPermutation");
@@ -512,7 +599,8 @@ public class GameAI : MonoBehaviour {
 					}
 					else
 					{
-						Debug.Log("NOOO WHY?!?! isAbleToFormToThisPermutation" + ": " + pass_tileIdForTokenToMove + ", " + pass_tileIdForTokenToMoveTo + ", " + winnerCharsWhereYouWantToMoveTo.Count);
+//						Debug.Log("NOOO WHY?!?! isAbleToFormToThisPermutation" + ": " + pass_tileIdForTokenToMove + ", " + pass_tileIdForTokenToMoveTo + ", " + winnerCharsWhereYouWantToMoveTo.Count);
+//						Debug.Log("NO");
 						isAbleToFormToThisPermutation &= 0;
 					}
 				}
@@ -523,14 +611,16 @@ public class GameAI : MonoBehaviour {
 				}
 				else
 				{
-					string ssssG = "";
-					for(int p=0; p<winnerPermutationIndex.Count; p++)
-					{
-						ssssG += winnerPermutationIndex[p];
-					}
-					Debug.Log("FAILED! " + t + " " + winnerPermutationIndex.Count + ": " + ssssG);
+//					string ssssG = "";
+//					for(int p=0; p<winnerPermutationIndex.Count; p++)
+//					{
+//						ssssG += winnerPermutationIndex[p];
+//					}
+//					Debug.Log("FAILED!!!! " + t + " " + winnerPermutationIndex.Count + ": " + ssssG);
+//					Debug.Log(t + " ---------------FAILED!!!!---------------");
 				}
 			}
+			TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
 		}
 		currentAiProcess = AiProcesses.AiProcessCompleted;
 	}
