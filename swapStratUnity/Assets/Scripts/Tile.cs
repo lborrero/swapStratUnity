@@ -4,7 +4,9 @@ using System.Collections;
 
 public class Tile : MonoBehaviour {
 
+	public Image tileSupport;
 	public Image tile;
+	public Image tileShading;
 	public Image highlight;
 	public Image selectionMarker;
 
@@ -79,7 +81,9 @@ public class Tile : MonoBehaviour {
 		switch(currentTileType)
 		{
 		case TileType.nothing:
+			tileSupport.gameObject.SetActive(false);
 			tile.gameObject.SetActive(false);
+			tileShading.gameObject.SetActive(false);
 			highlight.gameObject.SetActive(false);
 			selectionMarker.gameObject.SetActive(false);
 			break;
