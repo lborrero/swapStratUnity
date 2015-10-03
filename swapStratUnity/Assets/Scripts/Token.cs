@@ -6,9 +6,15 @@ using System;
 
 public class Token : MonoBehaviour {
 
-	public Image dot;
-	public Image physicalToken;
+
+	public Image TokenShadow;
+	public Image TokenSupport;
+	public Image TokenSupportShadow;
 	public Image selectionMarker;
+	public Image physicalToken;
+	public Image DotSupport;
+	public Image dot;
+	public Image TokenLight;
 
 	private List<Vector3> moveSequence = new List<Vector3>();
 	private Vector3 destinationPosition = new Vector3();
@@ -151,7 +157,6 @@ public class Token : MonoBehaviour {
 
 			selectionMarker.gameObject.SetActive(true);
 			selectionMarker.color = selectedColor;
-			physicalToken.color = selectedColor;
 			break;
 		case TokenState.unselected:
 			physicalToken.gameObject.SetActive(true);
@@ -159,6 +164,7 @@ public class Token : MonoBehaviour {
 
 			selectionMarker.color = unselectedColor;
 			physicalToken.color = unselectedColor;
+			TokenSupport.color = unselectedColor;
 			break;
 		case TokenState.highlighted:
 			physicalToken.gameObject.SetActive(true);
@@ -167,6 +173,7 @@ public class Token : MonoBehaviour {
 			dot.gameObject.SetActive(true);
 			physicalToken.gameObject.SetActive(true);
 			physicalToken.color = unselectedColor;
+			TokenSupport.color = unselectedColor;
 			selectionMarker.gameObject.SetActive(true);
 			selectionMarker.color = unselectedColor;
 			break;
@@ -185,12 +192,18 @@ public class Token : MonoBehaviour {
 			}
 			physicalToken.gameObject.SetActive(true);
 			physicalToken.color = disabledUnselectedColor;
+			TokenSupport.color = disabledUnselectedColor;
 			selectionMarker.gameObject.SetActive(false);
 			break;
 		case TokenState.hideToken:
 			dot.gameObject.SetActive(false);
 			physicalToken.gameObject.SetActive(false);
 			selectionMarker.gameObject.SetActive(false);
+			TokenShadow.gameObject.SetActive(false);
+			TokenSupport.gameObject.SetActive(false);
+			TokenSupportShadow.gameObject.SetActive(false);
+			DotSupport.gameObject.SetActive(false);
+			TokenLight.gameObject.SetActive(false);
 			break;
 		}
 	}
