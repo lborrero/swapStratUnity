@@ -204,5 +204,4 @@ public class ContiguousBlockSearch : MonoBehaviour {
 		}
 		return giveMeIds;
 	}
-
 }

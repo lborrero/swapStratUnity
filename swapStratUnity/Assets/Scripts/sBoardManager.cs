@@ -87,6 +87,7 @@ public class sBoardManager : MonoBehaviour
 			boardView.UpdateCounters();
 			break;
 		}
+//		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		UpdateHud ();
 	}
 
@@ -233,6 +234,7 @@ public class sBoardManager : MonoBehaviour
 			ContinueInnerGameAction();
 			break;
 		}
+//		Debug.Log ("ContinueInnerGameTurnAction: " + sgm.currentTurnLoop);
 		UpdateHud ();
 	}
 
@@ -600,20 +602,20 @@ public class sBoardManager : MonoBehaviour
 			if(info[i].IndexOf("=") != -1)
 			{
 				string sub = info[i].Substring(info[i].IndexOf("=")+1, (info[i].Length-1)-info[i].IndexOf("="));
-				Debug.Log (sub);
+//				Debug.Log (sub);
 
 				if(info[i].IndexOf("Board") != -1)
 				{
 					string [] tilesInfo = sub.Split(',');
 					for(int j = 0; j<boardList.Count; j++)
 					{
-						Debug.Log("Board: " + (Tile.TileType)char.GetNumericValue(tilesInfo[j], 0) + " " + (PlayerVO.PlayerType)char.GetNumericValue(tilesInfo[j], 1));
+//						Debug.Log("Board: " + (Tile.TileType)char.GetNumericValue(tilesInfo[j], 0) + " " + (PlayerVO.PlayerType)char.GetNumericValue(tilesInfo[j], 1));
 						boardList[i].currentTileType = (Tile.TileType)char.GetNumericValue(tilesInfo[j], 0);
 						boardList[i].currentTilePlayerType = (PlayerVO.PlayerType)char.GetNumericValue(tilesInfo[j], 1);
 					}
 				}
 			}
-			Debug.Log (info[i] + " " + info[i].IndexOf("=") + " " + (info[i].Length));
+//			Debug.Log (info[i] + " " + info[i].IndexOf("=") + " " + (info[i].Length));
 		}
 
 

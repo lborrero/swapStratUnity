@@ -120,10 +120,19 @@ public class GameAI : MonoBehaviour {
 			{
 				case AiType.intermediate:
 				{
-					if(currentAiProcess == AiProcesses.AiProcessCompleted && TileSelectionSequence.Count > 0)
+					if(currentAiProcess == AiProcesses.AiProcessCompleted)
+					{
+					if(TileSelectionSequence.Count> 0)
 					{
 						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
 						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);// select token with this tile id is found in the x value of the vector 2
+					}
+					else
+					{
+						List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+						System.Random rnd = new System.Random();
+						sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
+					}
 					}
 					break;
 				}
@@ -144,11 +153,23 @@ public class GameAI : MonoBehaviour {
 			{
 				case AiType.intermediate:
 				{
-				if(currentAiProcess == AiProcesses.AiProcessCompleted && TileSelectionSequence.Count > 0)
+				if(currentAiProcess == AiProcesses.AiProcessCompleted)
 				{
+					if(TileSelectionSequence.Count > 0)
+					{
 					Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
 					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);// place token on this tile id is found in the y value of the vector 2
 					DestroyTurnSequenceStep0();
+					}
+					else
+					{
+						//--- Select Random Tile to move to ---
+						List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
+						
+						System.Random rnd = new System.Random();
+						int returnedValue = imediatePossibleTiles[rnd.Next(0, imediatePossibleTiles.Count)];
+						sb.sbm.TileClicked(returnedValue);
+					}
 				}
 					break;
 				}
@@ -345,7 +366,7 @@ public class GameAI : MonoBehaviour {
 			int mostAmountOfRedTiles = 0;
 			int tempIncrement = 0;
 			List<int> winnerPermutationIndex = new List<int>();
-			for(int j=0; (j<P1.Count && j<200); j++)
+			for(int j=0; (j<P1.Count && j<100); j++)
 			{
 				IList<char> p = P1.ElementAt(j);
 				tempIncrement = 0;
@@ -362,7 +383,7 @@ public class GameAI : MonoBehaviour {
 					winnerPermutationIndex.Add(j);
 				}
 			}
-			for(int j=0; (j<P1.Count && j<200); j++)
+			for(int j=0; (j<P1.Count && j<100); j++)
 			{
 				if(!winnerPermutationIndex.Contains(j))
 				{

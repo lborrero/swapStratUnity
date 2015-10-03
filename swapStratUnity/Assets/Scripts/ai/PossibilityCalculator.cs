@@ -68,6 +68,6 @@ public class PossibilityCalculator
 		int board = 0;
 		board = 1 << 1;
 		var binary = Convert.ToString (board, 2);
-			Debug.Log(binary);
+//			Debug.Log(binary);
 	}
 }
