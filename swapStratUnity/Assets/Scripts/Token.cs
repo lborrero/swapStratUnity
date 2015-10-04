@@ -175,7 +175,7 @@ public class Token : MonoBehaviour {
 			physicalToken.color = unselectedColor;
 			TokenSupport.color = unselectedColor;
 			selectionMarker.gameObject.SetActive(true);
-			selectionMarker.color = unselectedColor;
+			selectionMarker.color = disabledUnselectedColor;
 			break;
 		case TokenState.disabled:
 			physicalToken.gameObject.SetActive(true);
