@@ -398,10 +398,13 @@ public class GameAI : MonoBehaviour {
 		{
 			if(!playedToken)
 			{
+				int thisRnd = 0;
 				while(playList[j].Count >0)
 				{
-					if(sb.sbm.TileClicked(playList[j][rnd.Next(0, playList[j].Count-1)]))
+					thisRnd = rnd.Next(0, playList[j].Count-1);
+					if(sb.sbm.TileClicked(playList[j][thisRnd]))
 					{
+						playList[j].RemoveAt(thisRnd);
 						playedToken = true;
 						break;
 					}
