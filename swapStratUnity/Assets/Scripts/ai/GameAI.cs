@@ -11,13 +11,25 @@ public class GameAI : MonoBehaviour {
 	public enum AiType
 	{
 		random = 0,
-		intermediate
+		intermediate,
+		hearthstone
 	}
 
 	SwapBoard sb;
 	List<string> MediumMemory = new List<string>();
 	public PlayerVO.PlayerType aiPt = new PlayerVO.PlayerType ();
 	public AiType ait;
+
+	enum AiProcesses
+	{
+		GeneratePossibilityBubblesOnTheBoard_Step = 0,
+		PlayingThePossibilityBubbles_Loop,
+		VerifyHighestHeuresticValue_Loop,
+		CheckingMovementPermutationIsPossible_Loop,
+		AiProcessCompleted
+	}
+	
+	AiProcesses currentAiProcess;
 
 	List<Vector2> TileSelectionSequence = new List<Vector2>();
 
@@ -39,7 +51,7 @@ public class GameAI : MonoBehaviour {
 		{
 			if (sGameManager.Instance.currentInnerGameLoop == sGameManager.InnerGameLoop.playerTwoTurn) 
 			{
-				Debug.Log("-");
+//				Debug.Log("-");
 				ThinkLoop ("asdf");
 			}
 		}
@@ -95,13 +107,13 @@ public class GameAI : MonoBehaviour {
 				}
 			}
 
-			System.Random rnd = new System.Random();
-			sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
-
 			switch(ait)
 			{
 				case AiType.intermediate:
 				{
+					System.Random rnd = new System.Random();
+					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
+
 					TileSelectionSequence.Clear();
 					GenerateTurnSequence();
 					Debug.Log("GenerateTurnSequence: " + TileSelectionSequence.Count + " " + currentAiProcess);
@@ -109,6 +121,14 @@ public class GameAI : MonoBehaviour {
 				}
 				case AiType.random:
 				{
+					System.Random rnd = new System.Random();
+					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
+					break;
+				}
+				
+				case AiType.hearthstone:
+				{
+					HearthStone_PlayUntilFold(HearthStone_GetMeHeuristics(possibleTiles));
 					break;
 				}
 			}
@@ -142,6 +162,28 @@ public class GameAI : MonoBehaviour {
 					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
 					System.Random rnd = new System.Random();
 					sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
+					break;
+				}
+				case AiType.hearthstone:
+				{
+					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+					List<List<Tile>> possibilities = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
+					
+					int heuristic = -1;
+					int theTileIdWhereTheTokenToMoveIs = 0;
+					for(int i = 0; i<possibilities.Count; i++)
+					{
+						for(int j = 0; j<possibilities[i].Count; j++)
+						{
+							if(heuristic < Evaluate_HearthStone_GetMeHeuristics(HearthStone_GetMeHeuristics(possibilities[i])))
+							{
+								theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
+							}
+						}
+					}
+
+					Debug.Log ("heuristic: " + heuristic);
+					sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
 					break;
 				}
 			}
@@ -184,6 +226,20 @@ public class GameAI : MonoBehaviour {
 					sb.sbm.TileClicked(returnedValue);
 					break;
 				}
+			case AiType.hearthstone:
+			{
+				List<Tile> possibleTiles = new List<Tile>();
+				for(int i = 0; i<sb.sbm.boardList.Count; i++)
+				{
+					if(sb.sbm.boardList[i].currentTileType == Tile.TileType.empty)
+					{
+						possibleTiles.Add(sb.sbm.boardList[i]);
+					}
+				}
+
+				HearthStone_PlayUntilFold(HearthStone_GetMeHeuristics(possibleTiles));
+				break;
+			}
 			}
 			break;
 		}
@@ -250,16 +306,114 @@ public class GameAI : MonoBehaviour {
 		Debug.Log ("clicks"  +TileSelectionSequence.Count);
 	}
 
-	enum AiProcesses
+	void HearthStoneTurnSequence()
 	{
-		GeneratePossibilityBubblesOnTheBoard_Step = 0,
-		PlayingThePossibilityBubbles_Loop,
-		VerifyHighestHeuresticValue_Loop,
-		CheckingMovementPermutationIsPossible_Loop,
-		AiProcessCompleted
 	}
-	
-	AiProcesses currentAiProcess;
+
+	List<List<Tile>> HearthStone_generateThePossiblityMovement(List<Tile> possibleMoveableTokensOnBoard)
+	{
+		//--- Generate Possibility bubbles on the board ---
+		List<List<int>> shortTermMemory = new List<List<int>>(); // goes through every moveable token and board with their moveable option, and have them stocked in the short term memory. This short term allows us to check how many possibility bubble there are.
+		//shortTermMemory are an array of tile IDs.
+
+//		Debug.Log ("Moveable Token: " + possibleMoveableTokensOnBoard.Count);
+		List<Tile> nonMoveableTokensOnBoard = new List<Tile>(GetNonMoveableTokensList());
+//		Debug.Log ("None moveable Token: " + nonMoveableTokensOnBoard.Count);
+		
+		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
+		{
+			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
+		}
+
+		List<List<Tile>> returnValueA = new List<List<Tile>>();
+		for(int i = 0; i<shortTermMemory.Count; i++)
+		{
+			List<Tile> returnValueB = new List<Tile>();
+			for(int j = 0; j<shortTermMemory[i].Count; j++)
+			{
+				for(int k = 0; k<sb.sbm.boardList.Count; k++)
+				{
+					if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
+					{
+						returnValueB.Add(sb.sbm.boardList[i]);
+					}
+				}
+			}
+			returnValueA.Add(returnValueB);
+		}
+		return returnValueA;
+	}
+
+	int Evaluate_HearthStone_GetMeHeuristics(List<List<int>> input)
+	{
+		int returnValue = 0;
+		for(int i = 0; i<input.Count; i++)
+		{
+			for(int j = 0; j<input[i].Count; j++)
+			{
+				if(returnValue > input[i][j])
+				{
+					returnValue = input[i][j];
+				}
+			}
+		}
+		return returnValue;
+	}
+
+	List<List<int>> HearthStone_GetMeHeuristics(List<Tile> possibleTilesToPlayOn)
+	{
+		List<List<int>> returnValue = new List<List<int>> ();
+		List<int> pointCountingEnemy = new List<int>(); //these are tileID
+		List<int> pointCountingNone = new List<int>(); //these are tileID
+		List<int> pointCountingFriend = new List<int>(); //these are tileID
+		for(int i = 0; i<possibleTilesToPlayOn.Count; i++)
+		{
+			if(possibleTilesToPlayOn[i].currentTileType == Tile.TileType.empty)
+			{
+				switch(possibleTilesToPlayOn[i].currentTilePlayerType)
+				{
+				case PlayerVO.PlayerType.enemy:
+					pointCountingEnemy.Add(possibleTilesToPlayOn[i].tileId);
+					break;
+				case PlayerVO.PlayerType.none:
+					pointCountingNone.Add(possibleTilesToPlayOn[i].tileId);
+					break;
+				case PlayerVO.PlayerType.friend:
+					pointCountingFriend.Add(possibleTilesToPlayOn[i].tileId);
+					break;
+				}
+			}
+		}
+		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingFriend:pointCountingEnemy);
+		returnValue.Add (pointCountingNone);
+		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingEnemy:pointCountingFriend);
+		return returnValue;
+	}
+
+	bool HearthStone_PlayUntilFold(List<List<int>> playList)
+	{
+		bool playedToken = false;
+		System.Random rnd = new System.Random();
+		for(int j = 0; j<playList.Count; j++)
+		{
+			if(!playedToken)
+			{
+				while(playList[j].Count >0)
+				{
+					if(sb.sbm.TileClicked(playList[j][rnd.Next(0, playList[j].Count-1)]))
+					{
+						playedToken = true;
+						break;
+					}
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+		return playedToken;
+	}
 
 	void GenerateTurnSequence()
 	{
@@ -278,22 +432,22 @@ public class GameAI : MonoBehaviour {
 		
 		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
 		{
-			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveTo (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
+			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveToIncludingTilesWithOwnToken (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
 		}
 		
 		//		Debug.Log ("AI: " + possibleMoveableTokensOnBoard.Count + " " + shortTermMemory.Count);
 		
-		string ps = "";
-		for (int j = 0; j < shortTermMemory.Count; j++) 
-		{
-			shortTermMemory[j].Sort ();	
-			for (int k = 0; k < shortTermMemory[j].Count; k++)
-			{
-				ps += shortTermMemory [j] [k] + ",";
-			}
-			ps += "\n";
-		}
-//					Debug.Log (ps);
+//		string ps = "";
+//		for (int j = 0; j < shortTermMemory.Count; j++) 
+//		{
+//			shortTermMemory[j].Sort ();	
+//			for (int k = 0; k < shortTermMemory[j].Count; k++)
+//			{
+//				ps += shortTermMemory [j] [k] + ",";
+//			}
+//			ps += "\n";
+//		}
+//		Debug.Log (ps);
 		
 		List<Vector2> possibilityBubbles = new List<Vector2> (); // x is the index that references this bubble in shortTermMemory, y is the number of shortTermMemory that are the same to this index.
 		//possibilityBubbles doesn't contain tile IDs

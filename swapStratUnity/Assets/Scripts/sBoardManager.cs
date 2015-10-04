@@ -262,8 +262,9 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	public void TileClicked(int tileId)
+	public bool TileClicked(int tileId)
 	{
+		bool returnValue = false;
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 
 		   boardList [tileId].currentTileType == Tile.TileType.empty && 
 		   !currentPlayerTurn.hasPlacedPieceFromBench)
@@ -295,6 +296,8 @@ public class sBoardManager : MonoBehaviour
 				{
 					ContinueInnerGameTurnAction();
 				}
+
+				returnValue = true;
 			}
 		}
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard && 
@@ -322,6 +325,8 @@ public class sBoardManager : MonoBehaviour
 					currentPlayerTurn.hasSelectedTokenFromBoard = true;
 
 					ContinueInnerGameTurnAction();
+
+					returnValue = true;
 				}
 			}
 		}
@@ -374,9 +379,12 @@ public class sBoardManager : MonoBehaviour
 				{
 					ContinueInnerGameTurnAction();
 				}
+
+				returnValue = true;
 			}
 		}
 		UpdateBoard();
+		return returnValue;
 	}
 
 	public Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
@@ -428,7 +436,20 @@ public class sBoardManager : MonoBehaviour
 		return contiguousTiles;
 	}
 
-	public List<int> getPotentialTilesIdToMoveTo(int tileId)
+	public List<int> getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn(int tileId)
+	{	
+		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
+		for(int i = contiguousTiles.Count-1; i>=0; i--)
+		{
+			if(contiguousTiles[i] == tileId)
+			{
+				contiguousTiles.RemoveAt(i);
+			}
+		}
+		return contiguousTiles;
+	}
+
+	public List<int> getPotentialTilesIdToMoveToIncludingTilesWithOwnToken(int tileId)
 	{	
 		List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryExcludingThePresenceOfOtherPlayerPiecesList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 		return contiguousTiles;
