@@ -42,7 +42,10 @@ public class GameAI : MonoBehaviour {
 
 	void Update()
 	{
-		PercieveLoop ();
+		if(sGameManager.Instance.currentInnerGameLoop != sGameManager.InnerGameLoop.endInnerGameLoop)
+		{
+			PercieveLoop ();
+		}
 	}
 
 	void PercieveLoop()
@@ -128,7 +131,8 @@ public class GameAI : MonoBehaviour {
 				
 				case AiType.hearthstone:
 				{
-					HearthStone_PlayUntilFold(HearthStone_GetMeHeuristics(possibleTiles));
+				Debug.Log("--------placeSelectedTokenFromBench");
+					HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
 					break;
 				}
 			}
@@ -159,32 +163,48 @@ public class GameAI : MonoBehaviour {
 				case AiType.random:
 				{
 					//			Debug.Log ("AI: selectATokenFromBoard");
-					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+					List<Tile> possibleTokensOnTile = GetMoveableTokensListExcludingTheBenchTokenJustPlaced();
 					System.Random rnd = new System.Random();
 					sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
 					break;
 				}
 				case AiType.hearthstone:
 				{
-					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
-					List<List<Tile>> possibilities = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
-					
-					int heuristic = -1;
-					int theTileIdWhereTheTokenToMoveIs = 0;
-					for(int i = 0; i<possibilities.Count; i++)
+				Debug.Log("--------selectATokenFromBoard");
+				List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+
+				List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
+
+				int theTileIdWhereTheTokenToMoveIs = 0;
+				int heuristic = -1;
+				int tempHeuristic = -1;
+
+				for(int i = 0; i<shortTermMemory.Count; i++)
+				{
+					List<Tile> returnValueB = new List<Tile>();
+					for(int j = 0; j<shortTermMemory[i].Count; j++)
 					{
-						for(int j = 0; j<possibilities[i].Count; j++)
+						for(int k = 0; k<sb.sbm.boardList.Count; k++)
 						{
-							if(heuristic < Evaluate_HearthStone_GetMeHeuristics(HearthStone_GetMeHeuristics(possibilities[i])))
+							if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
 							{
-								theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
+								returnValueB.Add(sb.sbm.boardList[k]);
 							}
 						}
 					}
 
-					Debug.Log ("heuristic: " + heuristic);
-					sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
-					break;
+					tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
+					Debug.Log (i + "heuristic: " + heuristic + " " + tempHeuristic);
+					if(heuristic < tempHeuristic)
+					{
+						theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
+						heuristic = tempHeuristic;
+					}
+				}
+
+				TileSelectionSequence.Add(new Vector2(theTileIdWhereTheTokenToMoveIs, 0));
+				sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
+				break;
 				}
 			}
 			break;
@@ -228,16 +248,25 @@ public class GameAI : MonoBehaviour {
 				}
 			case AiType.hearthstone:
 			{
+				Debug.Log("--------moveSelectedToken");
+				List<Tile> possibleTokensOnTile = new List<Tile>();
+
+				List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn ((int)TileSelectionSequence[0].x);
+
 				List<Tile> possibleTiles = new List<Tile>();
-				for(int i = 0; i<sb.sbm.boardList.Count; i++)
+				for(int k = 0; k<sb.sbm.boardList.Count; k++)
 				{
-					if(sb.sbm.boardList[i].currentTileType == Tile.TileType.empty)
+					for(int j = 0; j<shortTermMemory.Count; j++)
 					{
-						possibleTiles.Add(sb.sbm.boardList[i]);
+						if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
+						{
+							possibleTiles.Add(sb.sbm.boardList[k]);
+						}
 					}
 				}
 
-				HearthStone_PlayUntilFold(HearthStone_GetMeHeuristics(possibleTiles));
+				HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
+				TileSelectionSequence.Clear();
 				break;
 			}
 			}
@@ -281,6 +310,25 @@ public class GameAI : MonoBehaviour {
 		return possibleTokensOnTile;
 	}
 
+	List<Tile> GetMoveableTokensListExcludingTheBenchTokenJustPlaced()
+	{
+		List<Tile> possibleTokensOnTile = new List<Tile>();
+		Token tmptoken;
+		for(int i = 0; i<sb.sbm.boardList.Count; i++)
+		{
+			if (sb.sbm.boardList [i].currentTileType == Tile.TileType.occupied &&
+			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
+			{
+				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
+				if (tmptoken.currentTokenState != Token.TokenState.disabled)
+				{
+					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+				}
+			}
+		}
+		return possibleTokensOnTile;
+	}
+
 	List<Tile> GetMoveableTokensList()
 	{
 		List<Tile> possibleTokensOnTile = new List<Tile>();
@@ -293,7 +341,11 @@ public class GameAI : MonoBehaviour {
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
 				if (!tmptoken.hasTokenBeenMoved && tmptoken.currentTokenState != Token.TokenState.disabled)
 				{
-					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (sb.sbm.boardListIntoBinaryList (i), sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [i].xPos, sb.sbm.boardList [i].yPos); 
+					if(contiguousTiles.Count > 1)
+					{
+						possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+					}
 				}
 			}
 		}
@@ -310,57 +362,57 @@ public class GameAI : MonoBehaviour {
 	{
 	}
 
-	List<List<Tile>> HearthStone_generateThePossiblityMovement(List<Tile> possibleMoveableTokensOnBoard)
+	List<List<int>> HearthStone_generateThePossiblityMovement(List<Tile> possibleMoveableTokensOnBoard)
 	{
 		//--- Generate Possibility bubbles on the board ---
 		List<List<int>> shortTermMemory = new List<List<int>>(); // goes through every moveable token and board with their moveable option, and have them stocked in the short term memory. This short term allows us to check how many possibility bubble there are.
 		//shortTermMemory are an array of tile IDs.
-
-//		Debug.Log ("Moveable Token: " + possibleMoveableTokensOnBoard.Count);
-		List<Tile> nonMoveableTokensOnBoard = new List<Tile>(GetNonMoveableTokensList());
-//		Debug.Log ("None moveable Token: " + nonMoveableTokensOnBoard.Count);
 		
 		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
 		{
 			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
 		}
 
-		List<List<Tile>> returnValueA = new List<List<Tile>>();
-		for(int i = 0; i<shortTermMemory.Count; i++)
-		{
-			List<Tile> returnValueB = new List<Tile>();
-			for(int j = 0; j<shortTermMemory[i].Count; j++)
-			{
-				for(int k = 0; k<sb.sbm.boardList.Count; k++)
-				{
-					if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
-					{
-						returnValueB.Add(sb.sbm.boardList[i]);
-					}
-				}
-			}
-			returnValueA.Add(returnValueB);
-		}
-		return returnValueA;
+		return shortTermMemory;
 	}
 
-	int Evaluate_HearthStone_GetMeHeuristics(List<List<int>> input)
+	int Evaluate_HearthStone_HeuristicForPossibilityTypes(List<List<int>> input)
 	{
 		int returnValue = 0;
-		for(int i = 0; i<input.Count; i++)
+		Debug.Log("1): " + input[0].Count);
+		if(input[0].Count > 0)
 		{
-			for(int j = 0; j<input[i].Count; j++)
+			Debug.Log("a: " + ((aiPt == PlayerVO.PlayerType.enemy)?0:2));
+			if(returnValue < ((aiPt == PlayerVO.PlayerType.enemy)?0:2))
 			{
-				if(returnValue > input[i][j])
-				{
-					returnValue = input[i][j];
-				}
+				returnValue = ((aiPt == PlayerVO.PlayerType.enemy)?0:2);
 			}
 		}
+
+		Debug.Log("2): " + input[1].Count);
+		if(input[1].Count > 0)
+		{
+//			Debug.Log("b: " + 1);
+			if(returnValue < 1)
+			{
+				returnValue = 1;
+			}
+		}
+
+		Debug.Log("3): " + input[2].Count);
+		if(input[2].Count > 0)
+		{
+			Debug.Log("c: " + ((aiPt == PlayerVO.PlayerType.enemy)?2:0));
+			if(returnValue < ((aiPt == PlayerVO.PlayerType.enemy)?2:0))
+			{
+				returnValue = ((aiPt == PlayerVO.PlayerType.enemy)?2:0);
+			}
+		}
+
 		return returnValue;
 	}
 
-	List<List<int>> HearthStone_GetMeHeuristics(List<Tile> possibleTilesToPlayOn)
+	List<List<int>> HearthStone_ParsePossibilitesIntoTypes(List<Tile> possibleTilesToPlayOn)
 	{
 		List<List<int>> returnValue = new List<List<int>> ();
 		List<int> pointCountingEnemy = new List<int>(); //these are tileID
@@ -368,22 +420,23 @@ public class GameAI : MonoBehaviour {
 		List<int> pointCountingFriend = new List<int>(); //these are tileID
 		for(int i = 0; i<possibleTilesToPlayOn.Count; i++)
 		{
-			if(possibleTilesToPlayOn[i].currentTileType == Tile.TileType.empty)
+			switch(possibleTilesToPlayOn[i].currentTilePlayerType)
 			{
-				switch(possibleTilesToPlayOn[i].currentTilePlayerType)
-				{
-				case PlayerVO.PlayerType.enemy:
-					pointCountingEnemy.Add(possibleTilesToPlayOn[i].tileId);
-					break;
-				case PlayerVO.PlayerType.none:
-					pointCountingNone.Add(possibleTilesToPlayOn[i].tileId);
-					break;
-				case PlayerVO.PlayerType.friend:
-					pointCountingFriend.Add(possibleTilesToPlayOn[i].tileId);
-					break;
-				}
+			case PlayerVO.PlayerType.enemy:
+				pointCountingEnemy.Add(possibleTilesToPlayOn[i].tileId);
+				break;
+			case PlayerVO.PlayerType.none:
+
+				pointCountingNone.Add(possibleTilesToPlayOn[i].tileId);
+				break;
+			case PlayerVO.PlayerType.friend:
+				pointCountingFriend.Add(possibleTilesToPlayOn[i].tileId);
+				break;
 			}
 		}
+		Debug.Log ("pointCountingEnemy: " + pointCountingEnemy.Count);
+		Debug.Log ("pointCountingNone: " + pointCountingNone.Count);
+		Debug.Log ("pointCountingFriend: " + pointCountingFriend.Count);
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingFriend:pointCountingEnemy);
 		returnValue.Add (pointCountingNone);
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingEnemy:pointCountingFriend);
