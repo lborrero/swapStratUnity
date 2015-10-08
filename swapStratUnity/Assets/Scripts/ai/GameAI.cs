@@ -127,12 +127,18 @@ public class GameAI : MonoBehaviour {
 					System.Random rnd = new System.Random();
 					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
 					break;
-				}
-				
+				} 
 				case AiType.hearthstone:
 				{
 				Debug.Log("--------placeSelectedTokenFromBench");
-					HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
+					List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
+					int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnMoveLimit:sb.sbm.player2.currentTurnMoveLimit;
+					Debug.Log("can finalize game: " + emptyTilesIDsSplitByType[1].Count + " " + numberOfMoves);
+					if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
+					{
+						CanAiFinalizeMatch();
+					}
+					HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
 					break;
 				}
 			}
@@ -329,6 +335,25 @@ public class GameAI : MonoBehaviour {
 		return possibleTokensOnTile;
 	}
 
+	List<Tile> GetMoveableTokensListEvenIfCurrentlyTheyCantMove()
+	{
+		List<Tile> possibleTokensOnTile = new List<Tile>();
+		Token tmptoken;
+		for(int i = 0; i<sb.sbm.boardList.Count; i++)
+		{
+			if (sb.sbm.boardList [i].currentTileType == Tile.TileType.occupied &&
+			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
+			{
+				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
+				if (tmptoken.currentTokenState != Token.TokenState.disabled)
+				{
+					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+				}
+			}
+		}
+		return possibleTokensOnTile;
+	}
+
 	List<Tile> GetMoveableTokensList()
 	{
 		List<Tile> possibleTokensOnTile = new List<Tile>();
@@ -434,9 +459,9 @@ public class GameAI : MonoBehaviour {
 				break;
 			}
 		}
-		Debug.Log ("pointCountingEnemy: " + pointCountingEnemy.Count);
-		Debug.Log ("pointCountingNone: " + pointCountingNone.Count);
-		Debug.Log ("pointCountingFriend: " + pointCountingFriend.Count);
+//		Debug.Log ("pointCountingEnemy: " + pointCountingEnemy.Count);
+//		Debug.Log ("pointCountingNone: " + pointCountingNone.Count);
+//		Debug.Log ("pointCountingFriend: " + pointCountingFriend.Count);
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingFriend:pointCountingEnemy);
 		returnValue.Add (pointCountingNone);
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingEnemy:pointCountingFriend);
@@ -469,6 +494,102 @@ public class GameAI : MonoBehaviour {
 			}
 		}
 		return playedToken;
+	}
+
+	public class PossibilityTiles
+	{
+		public int numberOfTokensThatHaveThisSamePossibilityTiles;
+		public List<Tile> tokensForThisPossibilitySpace;
+		public List<Tile> possibilities;
+	}
+
+	bool CanAiFinalizeMatch()
+	{
+		List<List<int>> shortTermMemory = new List<List<int>>(); // goes through every moveable token and board with their moveable option, and have them stocked in the short term memory. This short term allows us to check how many possibility bubble there are.
+		//shortTermMemory are an array of tile IDs.
+		
+		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensListEvenIfCurrentlyTheyCantMove());
+		List<Tile> nonMoveableTokensOnBoard = new List<Tile>(GetNonMoveableTokensList());
+		if(possibleMoveableTokensOnBoard.Count <= 0)
+		{
+			return false;
+		}
+		
+		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
+		{
+			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveToIncludingTilesWithOwnToken (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
+		}
+
+		for (int j = 0; j < shortTermMemory.Count; j++) 
+		{
+			shortTermMemory[j].Sort ();	
+		}
+
+		List<Vector2> possibilityBubbles = new List<Vector2> (); // x is the index that references this bubble in shortTermMemory, y is the number of shortTermMemory that are the same to this index.
+		//possibilityBubbles doesn't contain tile IDs
+		possibilityBubbles.Add(new Vector2(0, 1));
+		for (int l = 1; l < shortTermMemory.Count; l++) 
+		{
+			if (shortTermMemory [l - 1].All (shortTermMemory [l].Contains)) 
+			{
+				possibilityBubbles [possibilityBubbles.Count - 1] += new Vector2(0,1);
+			} 
+			else 
+			{
+				possibilityBubbles.Add (new Vector2 (l, 1));
+			}
+		}
+		
+		//--- Generate Possibility bubbles on the board with tiles ---
+		List<PossibilityTiles> possibilityBubbleWithTiles = new List<PossibilityTiles> ();
+
+		for(int j = 0; j<possibilityBubbles.Count; j++)
+		{
+			PossibilityTiles tempPoss = new PossibilityTiles ();
+			tempPoss.numberOfTokensThatHaveThisSamePossibilityTiles = (int)possibilityBubbles[j].y;
+			tempPoss.possibilities = new List<Tile>();
+			for(int k = 0; k<shortTermMemory[((int)possibilityBubbles[j].x)].Count; k++)
+			{
+				tempPoss.possibilities.Add(sb.sbm.boardList[shortTermMemory[((int)possibilityBubbles[j].x)][k]]);
+			}
+			tempPoss.tokensForThisPossibilitySpace = new List<Tile>();
+			for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) //possibleMoveableTokensOnBoard.count == shortTermMemory.count
+			{
+				if(possibilityBubbles[j].x <= i)
+				{
+					tempPoss.tokensForThisPossibilitySpace.Add(possibleMoveableTokensOnBoard[i]);
+				}
+			}
+			possibilityBubbleWithTiles.Add(tempPoss);
+			Debug.Log ("can e play?");
+		}
+
+		bool doesPlayerHaveTokensToMoveOnBench = (0 < ((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.benchedTokens:sb.sbm.player2.benchedTokens));
+		int goodAmountOfTokenPerBubbleToFinalize = 1;
+		for(int i = 0; i<possibilityBubbleWithTiles.Count(); i++)
+		{
+			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
+			int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
+			if(doesPlayerHaveTokensToMoveOnBench)
+			{
+				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
+			}
+			Debug.Log ("can e 2?");
+			if(emptyTilesIDsSplitByType[1].Count <= numberOfTokensThePlayerHasForThisPossibilitySpace)
+			{
+				goodAmountOfTokenPerBubbleToFinalize &= 1;
+			}
+			else
+			{
+				goodAmountOfTokenPerBubbleToFinalize &= 0;
+			}
+		}
+
+		return (goodAmountOfTokenPerBubbleToFinalize == 1);
+	}
+
+	void FinaliseMatch()
+	{
 	}
 
 	void GenerateTurnSequence()
