@@ -130,13 +130,15 @@ public class GameAI : MonoBehaviour {
 				} 
 				case AiType.hearthstone:
 				{
-				Debug.Log("--------placeSelectedTokenFromBench");
+					Debug.Log("--------placeSelectedTokenFromBench");
 					List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
 					int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnMoveLimit:sb.sbm.player2.currentTurnMoveLimit;
-					Debug.Log("can finalize game: " + emptyTilesIDsSplitByType[1].Count + " " + numberOfMoves);
 					if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
 					{
-						CanAiFinalizeMatch();
+						if(CanAiFinalizeMatch())
+						{
+							FinaliseMatch();
+						}
 					}
 					HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
 					break;
@@ -503,7 +505,7 @@ public class GameAI : MonoBehaviour {
 		public List<Tile> possibilities;
 	}
 
-	bool CanAiFinalizeMatch()
+	List<PossibilityTiles> GeneratePossibilitiyBubbles()
 	{
 		List<List<int>> shortTermMemory = new List<List<int>>(); // goes through every moveable token and board with their moveable option, and have them stocked in the short term memory. This short term allows us to check how many possibility bubble there are.
 		//shortTermMemory are an array of tile IDs.
@@ -512,29 +514,33 @@ public class GameAI : MonoBehaviour {
 		List<Tile> nonMoveableTokensOnBoard = new List<Tile>(GetNonMoveableTokensList());
 		if(possibleMoveableTokensOnBoard.Count <= 0)
 		{
-			return false;
+			return null;
 		}
 		
 		for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) 
 		{
 			shortTermMemory.Add(sb.sbm.getPotentialTilesIdToMoveToIncludingTilesWithOwnToken (possibleMoveableTokensOnBoard[i].tileId)); //  goes through every moveable token and board with their moveable option
 		}
-
+		
 		for (int j = 0; j < shortTermMemory.Count; j++) 
 		{
 			shortTermMemory[j].Sort ();	
 		}
-
+		
 		List<Vector2> possibilityBubbles = new List<Vector2> (); // x is the index that references this bubble in shortTermMemory, y is the number of shortTermMemory that are the same to this index.
 		//possibilityBubbles doesn't contain tile IDs
-		possibilityBubbles.Add(new Vector2(0, 1));
-		for (int l = 1; l < shortTermMemory.Count; l++) 
+		for (int l = 0; l < shortTermMemory.Count; l++) 
 		{
-			if (shortTermMemory [l - 1].All (shortTermMemory [l].Contains)) 
+			bool containThisPOssibility = false;
+			for (int k = 0; k < possibilityBubbles.Count; k++) 
 			{
-				possibilityBubbles [possibilityBubbles.Count - 1] += new Vector2(0,1);
-			} 
-			else 
+				if (shortTermMemory [((int)possibilityBubbles[k].x)].All (shortTermMemory [l].Contains)) 
+				{
+					containThisPOssibility = true;
+					possibilityBubbles [k] += new Vector2(0,1);
+				}
+			}
+			if(!containThisPOssibility)
 			{
 				possibilityBubbles.Add (new Vector2 (l, 1));
 			}
@@ -542,7 +548,7 @@ public class GameAI : MonoBehaviour {
 		
 		//--- Generate Possibility bubbles on the board with tiles ---
 		List<PossibilityTiles> possibilityBubbleWithTiles = new List<PossibilityTiles> ();
-
+		
 		for(int j = 0; j<possibilityBubbles.Count; j++)
 		{
 			PossibilityTiles tempPoss = new PossibilityTiles ();
@@ -561,8 +567,13 @@ public class GameAI : MonoBehaviour {
 				}
 			}
 			possibilityBubbleWithTiles.Add(tempPoss);
-			Debug.Log ("can e play?");
 		}
+		return possibilityBubbleWithTiles;
+	}
+
+	bool CanAiFinalizeMatch()
+	{
+		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 
 		bool doesPlayerHaveTokensToMoveOnBench = (0 < ((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.benchedTokens:sb.sbm.player2.benchedTokens));
 		int goodAmountOfTokenPerBubbleToFinalize = 1;
@@ -574,7 +585,6 @@ public class GameAI : MonoBehaviour {
 			{
 				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
 			}
-			Debug.Log ("can e 2?");
 			if(emptyTilesIDsSplitByType[1].Count <= numberOfTokensThePlayerHasForThisPossibilitySpace)
 			{
 				goodAmountOfTokenPerBubbleToFinalize &= 1;
@@ -590,6 +600,148 @@ public class GameAI : MonoBehaviour {
 
 	void FinaliseMatch()
 	{
+		List<Vector2> bubbleTileSelectionSequence = new List<Vector2>();
+		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
+		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
+
+		for(int i=0; i<possibilityBubbleWithTiles.Count; i++)
+		{
+			int r = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
+			char [] desiredTileIndexesToMoveTo = new char[r];
+			for(int j=0; j<r; j++)
+			{
+				string ss = "" + j;
+				desiredTileIndexesToMoveTo[j] = ss[0];
+			}
+			Permutations<char> permutationsForMovementOrder = new Permutations<char>(desiredTileIndexesToMoveTo);
+
+			// take the order
+			// have the pieces move to that order
+			// have tile 1 go to the where the 1 is found in the permutations order.
+			List<List<int>> movementSequenceShortTermMemory = new List<List<int>>();// movementSequenceShortTermMemory are snapshots of the sequence of what the board has to look like for this turn
+			
+			//I Need a representation of the board for this possibility bubble;
+			List<int> currentPossibilityBoard = new List<int>();
+			List<int> currentMoveablTokensInThisBubble = new List<int>();
+			for(int j=0; j<sb.sbm.boardList.Count; j++)
+			{
+				if(possibilityBubbleWithTiles[i].possibilities.Contains(sb.sbm.boardList[j]))
+				{
+					currentPossibilityBoard.Add(1);
+				}
+				else
+				{
+					currentPossibilityBoard.Add(0);
+				}
+			}
+			for(int j=0; j<possibleMoveableTokensOnBoard.Count; j++)
+			{
+				if(currentPossibilityBoard[possibleMoveableTokensOnBoard[j].tileId] == 1)
+				{
+					currentMoveablTokensInThisBubble.Add(possibleMoveableTokensOnBoard[j].tileId);
+				}
+				currentPossibilityBoard[possibleMoveableTokensOnBoard[j].tileId] = 0;
+			}
+
+			movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
+
+			int isAbleToFormToThisPermutation = 1;
+			
+			int pass_tileIdForTokenToMove = 0;
+			int pass_tileIdForTokenToMoveTo = 0;
+
+			for(int j = 0; j<permutationsForMovementOrder.Count; j++)
+			{
+				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
+				int permutationsIncrement = 0;
+
+				int isAbleToMoveToAllPositions = 1;
+				List<int> cestPareille = new List<int>();
+
+				List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
+				for(int k=0; k<emptyTilesIDsSplitByType[1].Count; k++)
+				{
+					//	Debug.Log("asdfasdf: " + possibleMoveableTokensOnBoard.Count + " " + permutationBeingVerified.Count + " " + (int)(permutationBeingVerified[permutationsIncrement] - 48));
+					int tileIdForTokenToMove = currentMoveablTokensInThisBubble[(int)(permutationBeingVerified[permutationsIncrement] - 48)];// 48 is how to convert char values to int values
+					// permutationBeingVerified length is exactly the same length as the currently available tokens that can be moved on the board.
+					permutationsIncrement++;
+					int tileIdForTokenToMoveTo = emptyTilesIDsSplitByType[1][k];
+					
+					//include the currently selected tile for the contiguous search
+					currentPossibilityBoard[tileIdForTokenToMove] = 1;
+					
+					// can I make the following move?
+					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (currentPossibilityBoard, sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [tileIdForTokenToMove].xPos, sb.sbm.boardList [tileIdForTokenToMove].yPos);
+					contiguousTiles.Sort ();	
+
+					if(contiguousTiles.Contains(tileIdForTokenToMoveTo))
+					{
+						currentPossibilityBoard[tileIdForTokenToMoveTo] = 0; // I make the new token position unavailable
+						
+						if(tileIdForTokenToMove != tileIdForTokenToMoveTo)
+						{
+							bubbleTileSelectionSequence.Add(new Vector2(tileIdForTokenToMove, tileIdForTokenToMoveTo));
+						}
+						else
+						{
+							cestPareille.Add(tileIdForTokenToMoveTo);
+						}
+						// stack the new board state
+						movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
+						
+						isAbleToMoveToAllPositions &= 1;
+					}
+					else
+					{
+						pass_tileIdForTokenToMove = tileIdForTokenToMove;
+						pass_tileIdForTokenToMoveTo = tileIdForTokenToMoveTo;
+						isAbleToMoveToAllPositions &= 0;
+						bubbleTileSelectionSequence.Clear();
+						break;
+					}
+				}
+
+				if(cestPareille.Count > 0)
+				{
+					for(int k = 0; k<cestPareille.Count; k++)// iterating through a tile permutation possibility
+					{
+						// can I make the following move?
+						string ssssQ = "";
+						for(int p=0; p<movementSequenceShortTermMemory.Last().Count; p++)
+						{
+							ssssQ += movementSequenceShortTermMemory.Last()[p];
+						}
+						
+						List<int> tempTest = movementSequenceShortTermMemory.Last();
+						tempTest[cestPareille[k]] = 1;
+						
+						List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (movementSequenceShortTermMemory.Last(), sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [cestPareille[k]].xPos, sb.sbm.boardList [cestPareille[k]].yPos);
+						if(contiguousTiles.Count >= 1)
+						{
+							isAbleToMoveToAllPositions &= 0;
+						}
+					}
+					
+				}
+				
+				if(isAbleToMoveToAllPositions == 1)
+				{
+					Debug.Log("YES!! isAbleToFormToThisPermutation");
+					isAbleToFormToThisPermutation &= 1;
+					break;
+				}
+				else
+				{
+					isAbleToFormToThisPermutation &= 0;
+				}
+				if(isAbleToFormToThisPermutation == 1)
+				{
+					break;
+				}
+			}
+			TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
+		}
+		currentAiProcess = AiProcesses.AiProcessCompleted;
 	}
 
 	void GenerateTurnSequence()
