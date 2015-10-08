@@ -575,7 +575,7 @@ public class GameAI : MonoBehaviour {
 	{
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 
-		bool doesPlayerHaveTokensToMoveOnBench = (0 < ((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.benchedTokens:sb.sbm.player2.benchedTokens));
+		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
 		int goodAmountOfTokenPerBubbleToFinalize = 1;
 		for(int i = 0; i<possibilityBubbleWithTiles.Count(); i++)
 		{
@@ -604,13 +604,25 @@ public class GameAI : MonoBehaviour {
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
 
+		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
+
 		for(int i=0; i<possibilityBubbleWithTiles.Count; i++)
 		{
-			int r = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
+			bool addBenchTokenInSequence = false;
+			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
+			int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
+			if(emptyTilesIDsSplitByType[1].Count > numberOfTokensThePlayerHasForThisPossibilitySpace &&
+			   doesPlayerHaveTokensToMoveOnBench)
+			{
+				addBenchTokenInSequence = true;
+				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
+			}
+
+			int r = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles + ((addBenchTokenInSequence)?1:0);
 			char [] desiredTileIndexesToMoveTo = new char[r];
 			for(int j=0; j<r; j++)
 			{
-				string ss = "" + j;
+				string ss = "" + (j + ((addBenchTokenInSequence)?-1:0));
 				desiredTileIndexesToMoveTo[j] = ss[0];
 			}
 			Permutations<char> permutationsForMovementOrder = new Permutations<char>(desiredTileIndexesToMoveTo);
@@ -650,6 +662,8 @@ public class GameAI : MonoBehaviour {
 			int pass_tileIdForTokenToMove = 0;
 			int pass_tileIdForTokenToMoveTo = 0;
 
+			bool containsTheBenchMovement = false;
+
 			for(int j = 0; j<permutationsForMovementOrder.Count; j++)
 			{
 				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
@@ -658,9 +672,19 @@ public class GameAI : MonoBehaviour {
 				int isAbleToMoveToAllPositions = 1;
 				List<int> cestPareille = new List<int>();
 
-				List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
 				for(int k=0; k<emptyTilesIDsSplitByType[1].Count; k++)
 				{
+					if(permutationBeingVerified[permutationsIncrement] == '-') // '-' for '-1'
+					{
+						containsTheBenchMovement = true;
+						int tileIdForBenchTokenToMoveTo = emptyTilesIDsSplitByType[1][k];
+						bubbleTileSelectionSequence.Insert(0, new Vector2(-1, tileIdForBenchTokenToMoveTo));
+						currentPossibilityBoard[tileIdForBenchTokenToMoveTo] = 0;
+						permutationsIncrement++;
+						continue;
+					}
+					// end of setting up bench token movement.
+
 					//	Debug.Log("asdfasdf: " + possibleMoveableTokensOnBoard.Count + " " + permutationBeingVerified.Count + " " + (int)(permutationBeingVerified[permutationsIncrement] - 48));
 					int tileIdForTokenToMove = currentMoveablTokensInThisBubble[(int)(permutationBeingVerified[permutationsIncrement] - 48)];// 48 is how to convert char values to int values
 					// permutationBeingVerified length is exactly the same length as the currently available tokens that can be moved on the board.
@@ -739,7 +763,14 @@ public class GameAI : MonoBehaviour {
 					break;
 				}
 			}
-			TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
+			if(containsTheBenchMovement)
+			{
+				TileSelectionSequence.InsertRange(0, bubbleTileSelectionSequence);
+			}
+			else
+			{
+				TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
+			}
 		}
 		currentAiProcess = AiProcesses.AiProcessCompleted;
 	}
