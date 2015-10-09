@@ -32,6 +32,7 @@ public class GameAI : MonoBehaviour {
 	AiProcesses currentAiProcess;
 
 	List<Vector2> TileSelectionSequence = new List<Vector2>();
+	bool playFinalizationSequence = false;
 
 	// Use this for initialization
 	void Start () {
@@ -133,14 +134,25 @@ public class GameAI : MonoBehaviour {
 					Debug.Log("--------placeSelectedTokenFromBench");
 					List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
 					int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnMoveLimit:sb.sbm.player2.currentTurnMoveLimit;
-					if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
+				if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
 					{
 						if(CanAiFinalizeMatch())
 						{
-							FinaliseMatch();
+							if(FinaliseMatch())
+							{
+								playFinalizationSequence = true;
+							}
 						}
 					}
+				if(playFinalizationSequence)
+				{
+					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
+					DestroyTurnSequenceStep0();
+				}
+				else
+				{
 					HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
+				}
 					break;
 				}
 			}
@@ -179,39 +191,46 @@ public class GameAI : MonoBehaviour {
 				case AiType.hearthstone:
 				{
 				Debug.Log("--------selectATokenFromBoard");
-				List<Tile> possibleTokensOnTile = GetMoveableTokensList();
-
-				List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
-
-				int theTileIdWhereTheTokenToMoveIs = 0;
-				int heuristic = -1;
-				int tempHeuristic = -1;
-
-				for(int i = 0; i<shortTermMemory.Count; i++)
+				if(playFinalizationSequence)
 				{
-					List<Tile> returnValueB = new List<Tile>();
-					for(int j = 0; j<shortTermMemory[i].Count; j++)
+					sb.sbm.TileClicked((int)TileSelectionSequence[0].x);
+				}
+				else
+				{
+					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+
+					List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
+
+					int theTileIdWhereTheTokenToMoveIs = 0;
+					int heuristic = -1;
+					int tempHeuristic = -1;
+
+					for(int i = 0; i<shortTermMemory.Count; i++)
 					{
-						for(int k = 0; k<sb.sbm.boardList.Count; k++)
+						List<Tile> returnValueB = new List<Tile>();
+						for(int j = 0; j<shortTermMemory[i].Count; j++)
 						{
-							if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
+							for(int k = 0; k<sb.sbm.boardList.Count; k++)
 							{
-								returnValueB.Add(sb.sbm.boardList[k]);
+								if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
+								{
+									returnValueB.Add(sb.sbm.boardList[k]);
+								}
 							}
+						}
+
+						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
+						Debug.Log (i + "heuristic: " + heuristic + " " + tempHeuristic);
+						if(heuristic < tempHeuristic)
+						{
+							theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
+							heuristic = tempHeuristic;
 						}
 					}
 
-					tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
-					Debug.Log (i + "heuristic: " + heuristic + " " + tempHeuristic);
-					if(heuristic < tempHeuristic)
-					{
-						theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
-						heuristic = tempHeuristic;
-					}
+					TileSelectionSequence.Add(new Vector2(theTileIdWhereTheTokenToMoveIs, 0));
+					sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
 				}
-
-				TileSelectionSequence.Add(new Vector2(theTileIdWhereTheTokenToMoveIs, 0));
-				sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
 				break;
 				}
 			}
@@ -257,24 +276,32 @@ public class GameAI : MonoBehaviour {
 			case AiType.hearthstone:
 			{
 				Debug.Log("--------moveSelectedToken");
-				List<Tile> possibleTokensOnTile = new List<Tile>();
-
-				List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn ((int)TileSelectionSequence[0].x);
-
-				List<Tile> possibleTiles = new List<Tile>();
-				for(int k = 0; k<sb.sbm.boardList.Count; k++)
+				if(playFinalizationSequence)
 				{
-					for(int j = 0; j<shortTermMemory.Count; j++)
+					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
+					DestroyTurnSequenceStep0();
+				}
+				else
+				{
+					List<Tile> possibleTokensOnTile = new List<Tile>();
+
+					List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn ((int)TileSelectionSequence[0].x);
+
+					List<Tile> possibleTiles = new List<Tile>();
+					for(int k = 0; k<sb.sbm.boardList.Count; k++)
 					{
-						if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
+						for(int j = 0; j<shortTermMemory.Count; j++)
 						{
-							possibleTiles.Add(sb.sbm.boardList[k]);
+							if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
+							{
+								possibleTiles.Add(sb.sbm.boardList[k]);
+							}
 						}
 					}
-				}
 
-				HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
-				TileSelectionSequence.Clear();
+					HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
+					TileSelectionSequence.Clear();
+				}
 				break;
 			}
 			}
@@ -559,9 +586,9 @@ public class GameAI : MonoBehaviour {
 				tempPoss.possibilities.Add(sb.sbm.boardList[shortTermMemory[((int)possibilityBubbles[j].x)][k]]);
 			}
 			tempPoss.tokensForThisPossibilitySpace = new List<Tile>();
-			for (int i = 0; i < possibleMoveableTokensOnBoard.Count; i++) //possibleMoveableTokensOnBoard.count == shortTermMemory.count
+			for (int i = 0; i<possibleMoveableTokensOnBoard.Count; i++) //possibleMoveableTokensOnBoard.count == shortTermMemory.count
 			{
-				if(possibilityBubbles[j].x <= i)
+				if(shortTermMemory[((int)possibilityBubbles[j].x)].Contains(possibleMoveableTokensOnBoard[i].tileId))
 				{
 					tempPoss.tokensForThisPossibilitySpace.Add(possibleMoveableTokensOnBoard[i]);
 				}
@@ -598,13 +625,15 @@ public class GameAI : MonoBehaviour {
 		return (goodAmountOfTokenPerBubbleToFinalize == 1);
 	}
 
-	void FinaliseMatch()
+	bool FinaliseMatch()
 	{
+		int itsPossibleToFinalize = 1;
 		List<Vector2> bubbleTileSelectionSequence = new List<Vector2>();
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
 
 		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
+
 
 		for(int i=0; i<possibilityBubbleWithTiles.Count; i++)
 		{
@@ -627,37 +656,7 @@ public class GameAI : MonoBehaviour {
 			}
 			Permutations<char> permutationsForMovementOrder = new Permutations<char>(desiredTileIndexesToMoveTo);
 
-			// take the order
-			// have the pieces move to that order
-			// have tile 1 go to the where the 1 is found in the permutations order.
-			List<List<int>> movementSequenceShortTermMemory = new List<List<int>>();// movementSequenceShortTermMemory are snapshots of the sequence of what the board has to look like for this turn
-			
-			//I Need a representation of the board for this possibility bubble;
-			List<int> currentPossibilityBoard = new List<int>();
-			List<int> currentMoveablTokensInThisBubble = new List<int>();
-			for(int j=0; j<sb.sbm.boardList.Count; j++)
-			{
-				if(possibilityBubbleWithTiles[i].possibilities.Contains(sb.sbm.boardList[j]))
-				{
-					currentPossibilityBoard.Add(1);
-				}
-				else
-				{
-					currentPossibilityBoard.Add(0);
-				}
-			}
-			for(int j=0; j<possibleMoveableTokensOnBoard.Count; j++)
-			{
-				if(currentPossibilityBoard[possibleMoveableTokensOnBoard[j].tileId] == 1)
-				{
-					currentMoveablTokensInThisBubble.Add(possibleMoveableTokensOnBoard[j].tileId);
-				}
-				currentPossibilityBoard[possibleMoveableTokensOnBoard[j].tileId] = 0;
-			}
-
-			movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
-
-			int isAbleToFormToThisPermutation = 1;
+			bool isAbleToFormToThisPermutation = false;
 			
 			int pass_tileIdForTokenToMove = 0;
 			int pass_tileIdForTokenToMoveTo = 0;
@@ -666,10 +665,42 @@ public class GameAI : MonoBehaviour {
 
 			for(int j = 0; j<permutationsForMovementOrder.Count; j++)
 			{
+				// take the order
+				// have the pieces move to that order
+				// have tile 1 go to the where the 1 is found in the permutations order.
+				List<List<int>> movementSequenceShortTermMemory = new List<List<int>>();// movementSequenceShortTermMemory are snapshots of the sequence of what the board has to look like for this turn
+				
+				//I Need a representation of the board for this possibility bubble;
+				List<int> currentPossibilityBoard = new List<int>();
+				List<int> currentMoveablTokensInThisBubble = new List<int>();
+				for(int k=0; k<sb.sbm.boardList.Count; k++)
+				{
+					if(possibilityBubbleWithTiles[i].possibilities.Contains(sb.sbm.boardList[k]))
+					{
+						currentPossibilityBoard.Add(1);
+					}
+					else
+					{
+						currentPossibilityBoard.Add(0);
+					}
+				}
+				for(int k=0; k<possibleMoveableTokensOnBoard.Count; k++)
+				{
+					if(currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] == 1)
+					{
+						currentMoveablTokensInThisBubble.Add(possibleMoveableTokensOnBoard[k].tileId);
+					}
+					currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] = 0;
+				}
+				
+				movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
+
+
+
 				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
 				int permutationsIncrement = 0;
 
-				int isAbleToMoveToAllPositions = 1;
+				int isAbleToMoveToAllPositionsForThisPermutation = 1;
 				List<int> cestPareille = new List<int>();
 
 				for(int k=0; k<emptyTilesIDsSplitByType[1].Count; k++)
@@ -713,18 +744,21 @@ public class GameAI : MonoBehaviour {
 						// stack the new board state
 						movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
 						
-						isAbleToMoveToAllPositions &= 1;
+						isAbleToMoveToAllPositionsForThisPermutation &= 1;
 					}
 					else
 					{
 						pass_tileIdForTokenToMove = tileIdForTokenToMove;
 						pass_tileIdForTokenToMoveTo = tileIdForTokenToMoveTo;
-						isAbleToMoveToAllPositions &= 0;
+						isAbleToMoveToAllPositionsForThisPermutation &= 0;
 						bubbleTileSelectionSequence.Clear();
 						break;
 					}
+				}// end of looping through emptyTile with this permutation
+				if(isAbleToMoveToAllPositionsForThisPermutation == 0)
+				{
+					continue; // continue to next permutation.
 				}
-
 				if(cestPareille.Count > 0)
 				{
 					for(int k = 0; k<cestPareille.Count; k++)// iterating through a tile permutation possibility
@@ -742,37 +776,35 @@ public class GameAI : MonoBehaviour {
 						List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (movementSequenceShortTermMemory.Last(), sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [cestPareille[k]].xPos, sb.sbm.boardList [cestPareille[k]].yPos);
 						if(contiguousTiles.Count >= 1)
 						{
-							isAbleToMoveToAllPositions &= 0;
+							isAbleToMoveToAllPositionsForThisPermutation &= 0;
 						}
 					}
-					
-				}
+				}//end of c'est pareille
 				
-				if(isAbleToMoveToAllPositions == 1)
+				if(isAbleToMoveToAllPositionsForThisPermutation == 1)
 				{
 					Debug.Log("YES!! isAbleToFormToThisPermutation");
-					isAbleToFormToThisPermutation &= 1;
+					isAbleToFormToThisPermutation = true;
 					break;
+				}
+			}// end of permutation
+
+			if(isAbleToFormToThisPermutation)
+			{
+				if(containsTheBenchMovement)
+				{
+					TileSelectionSequence.InsertRange(0, bubbleTileSelectionSequence);
+					bubbleTileSelectionSequence.Clear();
 				}
 				else
 				{
-					isAbleToFormToThisPermutation &= 0;
-				}
-				if(isAbleToFormToThisPermutation == 1)
-				{
-					break;
+					TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
+					bubbleTileSelectionSequence.Clear();
 				}
 			}
-			if(containsTheBenchMovement)
-			{
-				TileSelectionSequence.InsertRange(0, bubbleTileSelectionSequence);
-			}
-			else
-			{
-				TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
-			}
-		}
+		}// end of possibility bubble
 		currentAiProcess = AiProcesses.AiProcessCompleted;
+		return (true);
 	}
 
 	void GenerateTurnSequence()
