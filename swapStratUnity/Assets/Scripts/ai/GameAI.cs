@@ -134,26 +134,32 @@ public class GameAI : MonoBehaviour {
 					Debug.Log("--------placeSelectedTokenFromBench");
 					List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
 					int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnMoveLimit:sb.sbm.player2.currentTurnMoveLimit;
-				if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
+					int aiScore = numberOfMoves + ((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnPointCount:sb.sbm.player2.currentTurnPointCount);
+					int otherPlayerScore = (!(aiPt == PlayerVO.PlayerType.friend))?sb.sbm.player1.currentTurnPointCount:sb.sbm.player2.currentTurnPointCount;
+
+					if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
 					{
-						if(CanAiFinalizeMatch())
+						if(aiScore > otherPlayerScore)
 						{
-							if(FinaliseMatch())
+							if(CanAiFinalizeMatch())
 							{
-								playFinalizationSequence = true;
+								if(FinaliseMatch())
+								{
+									playFinalizationSequence = true;
+								}
 							}
 						}
 					}
-				if(playFinalizationSequence)
-				{
-					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
-					DestroyTurnSequenceStep0();
-				}
-				else
-				{
-					HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
-				}
-					break;
+					if(playFinalizationSequence)
+					{
+						sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
+						DestroyTurnSequenceStep0();
+					}
+					else
+					{
+						HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
+					}
+				break;
 				}
 			}
 			break;
@@ -193,7 +199,16 @@ public class GameAI : MonoBehaviour {
 				Debug.Log("--------selectATokenFromBoard");
 				if(playFinalizationSequence)
 				{
-					sb.sbm.TileClicked((int)TileSelectionSequence[0].x);
+					if(TileSelectionSequence.Count> 0)
+					{
+						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);
+					}
+					else
+					{
+						List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+						System.Random rnd = new System.Random();
+						sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
+					}
 				}
 				else
 				{
@@ -278,8 +293,19 @@ public class GameAI : MonoBehaviour {
 				Debug.Log("--------moveSelectedToken");
 				if(playFinalizationSequence)
 				{
+					if(TileSelectionSequence.Count > 0)
+					{
 					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
 					DestroyTurnSequenceStep0();
+					}
+					else
+					{
+						List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
+						
+						System.Random rnd = new System.Random();
+						int returnedValue = imediatePossibleTiles[rnd.Next(0, imediatePossibleTiles.Count)];
+						sb.sbm.TileClicked(returnedValue);
+					}
 				}
 				else
 				{
@@ -595,7 +621,48 @@ public class GameAI : MonoBehaviour {
 			}
 			possibilityBubbleWithTiles.Add(tempPoss);
 		}
+
+		PossibilityTiles tempPossForEmptyBubble = new PossibilityTiles ();
+		tempPossForEmptyBubble.numberOfTokensThatHaveThisSamePossibilityTiles = 0;
+		tempPossForEmptyBubble.possibilities = new List<Tile>();
+		List<Tile> possibleTiles = GetCurrentlyEmptyTiles ();
+
+		for(int i=0; i<possibleTiles.Count; i++)
+		{
+			bool containsIt = false;
+			for(int j=0; j<possibilityBubbleWithTiles.Count; j++)
+			{
+				if(possibilityBubbleWithTiles[j].possibilities.Contains(possibleTiles[i]))
+				{
+					containsIt = true;
+					break;
+				}
+			}
+			if(!containsIt)
+			{
+				tempPossForEmptyBubble.possibilities.Add(possibleTiles[i]);
+			}
+		}
+		if(tempPossForEmptyBubble.possibilities.Count > 0)
+		{
+			tempPossForEmptyBubble.tokensForThisPossibilitySpace = new List<Tile>();
+			possibilityBubbleWithTiles.Add(tempPossForEmptyBubble);
+		}
+
 		return possibilityBubbleWithTiles;
+	}
+
+	List<Tile> GetCurrentlyEmptyTiles()
+	{
+		List<Tile> possibleTiles = new List<Tile>();
+		for(int i = 0; i<sb.sbm.boardList.Count; i++)
+		{
+			if(sb.sbm.boardList[i].currentTileType == Tile.TileType.empty)
+			{
+				possibleTiles.Add(sb.sbm.boardList[i]);
+			}
+		}
+		return possibleTiles;
 	}
 
 	bool CanAiFinalizeMatch()
@@ -604,13 +671,18 @@ public class GameAI : MonoBehaviour {
 
 		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
 		int goodAmountOfTokenPerBubbleToFinalize = 1;
+		int howManyNeedAnExtraBenchToken = 0;
 		for(int i = 0; i<possibilityBubbleWithTiles.Count(); i++)
 		{
 			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
 			int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
 			if(doesPlayerHaveTokensToMoveOnBench)
 			{
-				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
+				if(emptyTilesIDsSplitByType[1].Count > numberOfTokensThePlayerHasForThisPossibilitySpace)
+				{
+					howManyNeedAnExtraBenchToken += 1;
+					numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
+				}
 			}
 			if(emptyTilesIDsSplitByType[1].Count <= numberOfTokensThePlayerHasForThisPossibilitySpace)
 			{
@@ -634,14 +706,22 @@ public class GameAI : MonoBehaviour {
 
 		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
 
+		bool benchTokenAdded = false;
 
 		for(int i=0; i<possibilityBubbleWithTiles.Count; i++)
 		{
 			bool addBenchTokenInSequence = false;
 			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
 			int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
-			if(emptyTilesIDsSplitByType[1].Count > numberOfTokensThePlayerHasForThisPossibilitySpace &&
+			if(emptyTilesIDsSplitByType[1].Count >= numberOfTokensThePlayerHasForThisPossibilitySpace &&
 			   doesPlayerHaveTokensToMoveOnBench)
+			{
+				addBenchTokenInSequence = true;
+				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
+			}
+			if(!benchTokenAdded &&
+			   i == possibilityBubbleWithTiles.Count-1 &&
+				doesPlayerHaveTokensToMoveOnBench)
 			{
 				addBenchTokenInSequence = true;
 				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
@@ -694,7 +774,6 @@ public class GameAI : MonoBehaviour {
 				}
 				
 				movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
-
 
 
 				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
@@ -795,6 +874,7 @@ public class GameAI : MonoBehaviour {
 				{
 					TileSelectionSequence.InsertRange(0, bubbleTileSelectionSequence);
 					bubbleTileSelectionSequence.Clear();
+					benchTokenAdded = true;
 				}
 				else
 				{
