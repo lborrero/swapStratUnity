@@ -14,7 +14,7 @@ public class sGameManager : MonoBehaviour {
 			{
 				GameObject go = new GameObject("sGameManager");
 				instance = go.AddComponent<sGameManager>();
-				instance.currentGeneralGameState = GeneralGameState.gameMode;
+				instance.currentGeneralGameState = GeneralGameState.startScreen;
 				instance.currentInnerGameLoop = InnerGameLoop.playerOneTurn;
 				instance.currentTurnLoop = TurnLoop.placeSelectedTokenFromBench;
 			}
@@ -24,7 +24,9 @@ public class sGameManager : MonoBehaviour {
 
 	public enum GeneralGameState
 	{
-		gameMode = 0
+		gameMode = 0,
+		startScreen,
+		endScreen
 	}
 	public GeneralGameState currentGeneralGameState;
 

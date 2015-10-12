@@ -20,6 +20,11 @@ public class GameAI : MonoBehaviour {
 	public PlayerVO.PlayerType aiPt = new PlayerVO.PlayerType ();
 	public AiType ait;
 
+	public void SetAiPlayerType(int _aiPt)
+	{
+		aiPt = (PlayerVO.PlayerType)_aiPt;
+	}
+
 	enum AiProcesses
 	{
 		GeneratePossibilityBubblesOnTheBoard_Step = 0,

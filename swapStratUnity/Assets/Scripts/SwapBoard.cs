@@ -8,6 +8,8 @@ public class SwapBoard : MonoBehaviour {
 	public GameObject swapTilePrefab;
 	public GameObject swapTokenPrefab;
 
+	public MenuManager mm;
+
 	public Text playerMoveCounterFriend;
 	public Text playerMoveCounterEnemy;
 

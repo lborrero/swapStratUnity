@@ -76,14 +76,7 @@ public class sBoardManager : MonoBehaviour
 			}
 			break;
 		case sGameManager.InnerGameLoop.endInnerGameLoop:
-			if(player1.currentTurnPointCount > player2.currentTurnPointCount)
-			{
-				boardView.SetGameActionLabel("player 1 wins");
-			}
-			else
-			{
-				boardView.SetGameActionLabel("player 2 wins");
-			}
+			boardView.mm.UpdateGameState((int)sGameManager.GeneralGameState.endScreen);
 			boardView.UpdateCounters();
 			break;
 		}

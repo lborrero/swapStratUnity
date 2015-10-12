@@ -71,7 +71,7 @@ public class Tile : MonoBehaviour {
 		_yPos = y;
 	}
 
-	void OnMouseDown()
+	void OnMouseUp()
 	{
 		sBoardManager.Instance.TileClicked (_tileId);
 	}
