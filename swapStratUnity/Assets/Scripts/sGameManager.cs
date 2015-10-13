@@ -14,6 +14,7 @@ public class sGameManager : MonoBehaviour {
 			{
 				GameObject go = new GameObject("sGameManager");
 				instance = go.AddComponent<sGameManager>();
+				instance.currentGameType = GameType.cumulative;
 				instance.currentGeneralGameState = GeneralGameState.startScreen;
 				instance.currentInnerGameLoop = InnerGameLoop.playerOneTurn;
 				instance.currentTurnLoop = TurnLoop.placeSelectedTokenFromBench;
@@ -21,6 +22,13 @@ public class sGameManager : MonoBehaviour {
 			return instance;
 		}
 	}
+
+	public enum GameType
+	{
+		cumulative = 0,
+		fineState
+	}
+	public GameType currentGameType;
 
 	public enum GeneralGameState
 	{

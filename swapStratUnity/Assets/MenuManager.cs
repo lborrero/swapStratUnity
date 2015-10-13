@@ -49,4 +49,9 @@ public class MenuManager : MonoBehaviour {
 			break;
 		}
 	}
+
+	public void SetGameType(int _gt)
+	{
+		sgm.currentGameType = (sGameManager.GameType)_gt;
+	}
 }
