@@ -221,71 +221,81 @@ public class Token : MonoBehaviour {
 
 	void OnMouseDrag()
 	{
-		inInteraction = true; 
+		if (tokenPlayerType == sBoardManager.Instance.currentPlayerTurn.currentPlayerType &&
+		    currentTokenState != TokenState.disabled &&
+		    currentTokenState != TokenState.hideToken) 
+		{
+			inInteraction = true; 
 
-		var v3 = Input.mousePosition;
-		v3.z = 20f;
-		v3 = Camera.main.ScreenToWorldPoint(v3);
-		gameObject.transform.position = v3;
+			var v3 = Input.mousePosition;
+			v3.z = 20f;
+			v3 = Camera.main.ScreenToWorldPoint(v3);
+			gameObject.transform.position = v3;
+		}
 	}
 
 	void OnMouseUp()
 	{
-		collider.enabled = false;
-
-		Debug.Log("permissionToMove ");
-		
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		RaycastHit hit;
-		if (Physics.Raycast(ray, out hit, 30)) {
-			Debug.DrawLine(ray.origin, hit.point);
-			Debug.Log(hit.collider.gameObject.name);
-			Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
-			if(hitTile != null && !hitTile.DepositeTokenHere())
-			{
+		if (tokenPlayerType == sBoardManager.Instance.currentPlayerTurn.currentPlayerType &&
+		    currentTokenState != TokenState.disabled &&
+		    currentTokenState != TokenState.hideToken) 
+		{
+			collider.enabled = false;
+			
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast(ray, out hit, 30)) {
+				Debug.DrawLine(ray.origin, hit.point);
+				Debug.Log(hit.collider.gameObject.name);
+				Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
+				if(hitTile != null && !hitTile.DepositeTokenHere())
+				{
+				}
 			}
-		}
-		collider.enabled = true;
+			collider.enabled = true;
 
-		if(!permissionToMove)
-		{
-			gameObject.transform.position = startPosition;
+			if(!permissionToMove)
+			{
+				gameObject.transform.position = startPosition;
+			}
+			else
+			{
+				List<Vector3> pathPositionList = new List<Vector3>();
+				pathPositionList.Add(moveSequence[moveSequence.Count-1]);
+				moveSequence.Clear();
+				moveThrough(pathPositionList);
+			}
+			inInteraction = false;
 		}
-		else
-		{
-			List<Vector3> pathPositionList = new List<Vector3>();
-			pathPositionList.Add(moveSequence[moveSequence.Count-1]);
-			moveSequence.Clear();
-			moveThrough(pathPositionList);
-		}
-
-
-		inInteraction = false;
 	}
 
 	void OnMouseDown()
 	{
-		inInteraction = true; 
-
-		collider.enabled = false;
-
-		startPosition = gameObject.transform.position;
-		
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		RaycastHit hit;
-		if (Physics.Raycast(ray, out hit, 30)) {
-			Debug.DrawLine(ray.origin, hit.point);
-			Debug.Log(hit.collider.gameObject.name);
-			Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
-			if(hitTile != null && !hitTile.DepositeTokenHere())
-			{
-			}
-		}
-		collider.enabled = true;
-
-		if((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard)
+		if (tokenPlayerType == sBoardManager.Instance.currentPlayerTurn.currentPlayerType &&
+		    currentTokenState != TokenState.disabled &&
+		    currentTokenState != TokenState.hideToken) 
 		{
-			sBoardManager.Instance.TokenClicked(_tokenId, currentTokenType);
+			inInteraction = true; 
+
+			collider.enabled = false;
+
+			startPosition = gameObject.transform.position;
+		
+			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit, 30)) 
+			{
+				Tile hitTile = hit.collider.gameObject.GetComponent<Tile> ();
+				if (hitTile != null && !hitTile.DepositeTokenHere ()) 
+				{
+				}
+			}
+			collider.enabled = true;
+
+			if ((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard) 
+			{
+				sBoardManager.Instance.TokenClicked (_tokenId, currentTokenType);
+			}
 		}
 	}
 }

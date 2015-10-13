@@ -293,10 +293,10 @@ public class sBoardManager : MonoBehaviour
 				returnValue = true;
 			}
 		}
-		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard && 
+		else if((sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken || sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard) && 
 		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
-		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType &&
-		        !currentPlayerTurn.hasSelectedTokenFromBoard)
+		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType /*&&
+		        !currentPlayerTurn.hasSelectedTokenFromBoard*/)
 		{
 			List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 			if(contiguousTiles.Count > 1 && boardList[tileId].currentTileType != Tile.TileType.nothing)
