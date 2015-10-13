@@ -54,6 +54,13 @@ public class GameAI : MonoBehaviour {
 		}
 	}
 
+	bool takeDecision = true;
+	IEnumerator GenerateEvent()
+	{
+		yield return new WaitForSeconds(0.5f);
+		takeDecision = true;
+	}
+
 	void PercieveLoop()
 	{
 		if(aiPt == PlayerVO.PlayerType.enemy)
@@ -61,15 +68,25 @@ public class GameAI : MonoBehaviour {
 			if (sGameManager.Instance.currentInnerGameLoop == sGameManager.InnerGameLoop.playerTwoTurn) 
 			{
 //				Debug.Log("-");
-				ThinkLoop ("asdf");
+				if(takeDecision)
+				{
+					ThinkLoop ("asdf");
+					takeDecision = false;
+					StartCoroutine(GenerateEvent());
+				}
 			}
 		}
 		if(aiPt == PlayerVO.PlayerType.friend)
 		{
 			if (sGameManager.Instance.currentInnerGameLoop == sGameManager.InnerGameLoop.playerOneTurn) 
 			{
-				Debug.Log("AI P1");
-				ThinkLoop ("asdf");
+//				Debug.Log("AI P1");
+				if(takeDecision)
+				{
+					ThinkLoop ("asdf");
+					takeDecision = false;
+					StartCoroutine(GenerateEvent());
+				}
 			}
 		}
 	}
