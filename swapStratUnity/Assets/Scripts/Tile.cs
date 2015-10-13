@@ -71,9 +71,19 @@ public class Tile : MonoBehaviour {
 		_yPos = y;
 	}
 
+	void OnMouseDown()
+	{
+
+	}
+
 	void OnMouseUp()
 	{
 		sBoardManager.Instance.TileClicked (_tileId);
+	}
+
+	public bool DepositeTokenHere()
+	{
+		return sBoardManager.Instance.TileClicked (_tileId);
 	}
 
 	public void UpdateState()

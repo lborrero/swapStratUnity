@@ -20,10 +20,20 @@ public class Token : MonoBehaviour {
 	private Vector3 destinationPosition = new Vector3();
 	private Vector3 previousPosition = new Vector3();
 	bool permissionToMove = false;
+	bool inInteraction = false;
 	float stepsToMoveToDesintation = 0.2f;
+	Vector3 startPosition;
+	Collider collider;
+
+	void Start()
+	{
+		startPosition = gameObject.transform.position;
+		collider = GetComponent<Collider> ();
+	}
+
 	void FixedUpdate()
 	{
-		if(permissionToMove)
+		if(permissionToMove && !inInteraction)
 		{
 			float v3distance = Vector3.Distance(destinationPosition, this.gameObject.transform.position);
 			
@@ -62,6 +72,7 @@ public class Token : MonoBehaviour {
 
 	public void moveThrough(List<Vector3> pathPositionList)
 	{
+		Debug.Log ("moveThrough");
 		moveSequence = pathPositionList;
 		destinationPosition = moveSequence[0];
 		permissionToMove = true;
@@ -208,8 +219,70 @@ public class Token : MonoBehaviour {
 		}
 	}
 
+	void OnMouseDrag()
+	{
+		inInteraction = true; 
+
+		var v3 = Input.mousePosition;
+		v3.z = 20f;
+		v3 = Camera.main.ScreenToWorldPoint(v3);
+		gameObject.transform.position = v3;
+	}
+
+	void OnMouseUp()
+	{
+		collider.enabled = false;
+
+		Debug.Log("permissionToMove ");
+		
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit, 30)) {
+			Debug.DrawLine(ray.origin, hit.point);
+			Debug.Log(hit.collider.gameObject.name);
+			Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
+			if(hitTile != null && !hitTile.DepositeTokenHere())
+			{
+			}
+		}
+		collider.enabled = true;
+
+		if(!permissionToMove)
+		{
+			gameObject.transform.position = startPosition;
+		}
+		else
+		{
+			List<Vector3> pathPositionList = new List<Vector3>();
+			pathPositionList.Add(moveSequence[moveSequence.Count-1]);
+			moveSequence.Clear();
+			moveThrough(pathPositionList);
+		}
+
+
+		inInteraction = false;
+	}
+
 	void OnMouseDown()
 	{
+		inInteraction = true; 
+
+		collider.enabled = false;
+
+		startPosition = gameObject.transform.position;
+		
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit, 30)) {
+			Debug.DrawLine(ray.origin, hit.point);
+			Debug.Log(hit.collider.gameObject.name);
+			Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
+			if(hitTile != null && !hitTile.DepositeTokenHere())
+			{
+			}
+		}
+		collider.enabled = true;
+
 		if((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard)
 		{
 			sBoardManager.Instance.TokenClicked(_tokenId, currentTokenType);
