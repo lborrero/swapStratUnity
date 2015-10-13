@@ -222,11 +222,11 @@ public class sBoardManager : MonoBehaviour
 			currentPlayerTurn.hasMovedTokenFromBoard = false;
 			sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
 
-			currentPlayerTurn.currentTurnPointCount += CountTilesForPlayer(currentPlayerTurn.currentPlayerType);
-
 			ContinueInnerGameAction();
 			break;
 		}
+		player1.currentTurnPointCount = CountTilesForPlayer(player1.currentPlayerType);
+		player2.currentTurnPointCount = CountTilesForPlayer(player2.currentPlayerType);
 //		Debug.Log ("ContinueInnerGameTurnAction: " + sgm.currentTurnLoop);
 		UpdateHud ();
 	}
