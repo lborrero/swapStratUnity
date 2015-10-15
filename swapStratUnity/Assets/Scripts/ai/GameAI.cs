@@ -93,9 +93,32 @@ public class GameAI : MonoBehaviour {
 
 	bool timeChecker = false;
 
+	void GenerateHearthStoneSequence()
+	{
+		if (!playFinalizationSequence) 
+		{
+			List<Tile> possibleTiles = GetCurrentlyEmptyTiles ();
+			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes (possibleTiles);
+			int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend) ? sb.sbm.player1.currentTurnMoveLimit : sb.sbm.player2.currentTurnMoveLimit;
+			int aiScore = numberOfMoves + ((aiPt == PlayerVO.PlayerType.friend) ? sb.sbm.player1.currentTurnPointCount : sb.sbm.player2.currentTurnPointCount);
+			int otherPlayerScore = (!(aiPt == PlayerVO.PlayerType.friend)) ? sb.sbm.player1.currentTurnPointCount : sb.sbm.player2.currentTurnPointCount;
+		
+			if (emptyTilesIDsSplitByType [1].Count <= numberOfMoves) {
+				if (aiScore > otherPlayerScore) {
+					if (CanAiFinalizeMatch ()) {
+						if (FinaliseMatch ()) {
+							playFinalizationSequence = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	bool ThinkLoop(string theGameObjectState)
 	{
 		bool returnValue = false;
+		GenerateHearthStoneSequence ();
 		switch (sb.sgm.currentTurnLoop) 
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
@@ -124,19 +147,12 @@ public class GameAI : MonoBehaviour {
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
 		{
 //				Debug.Log ("AI: placeSelectedTokenFromBench");
-			List<Tile> possibleTiles = new List<Tile>();
-			for(int i = 0; i<sb.sbm.boardList.Count; i++)
-			{
-				if(sb.sbm.boardList[i].currentTileType == Tile.TileType.empty)
-				{
-					possibleTiles.Add(sb.sbm.boardList[i]);
-				}
-			}
 
 			switch(ait)
 			{
 				case AiType.intermediate:
 				{
+					List<Tile> possibleTiles = GetCurrentlyEmptyTiles();
 					System.Random rnd = new System.Random();
 					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
 
@@ -147,6 +163,7 @@ public class GameAI : MonoBehaviour {
 				}
 				case AiType.random:
 				{
+					List<Tile> possibleTiles = GetCurrentlyEmptyTiles();
 					System.Random rnd = new System.Random();
 					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
 					break;
@@ -154,24 +171,7 @@ public class GameAI : MonoBehaviour {
 				case AiType.hearthstone:
 				{
 					Debug.Log("--------placeSelectedTokenFromBench");
-					List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
-					int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnMoveLimit:sb.sbm.player2.currentTurnMoveLimit;
-					int aiScore = numberOfMoves + ((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.currentTurnPointCount:sb.sbm.player2.currentTurnPointCount);
-					int otherPlayerScore = (!(aiPt == PlayerVO.PlayerType.friend))?sb.sbm.player1.currentTurnPointCount:sb.sbm.player2.currentTurnPointCount;
-
-					if(emptyTilesIDsSplitByType[1].Count <= numberOfMoves)
-					{
-						if(aiScore > otherPlayerScore)
-						{
-							if(CanAiFinalizeMatch())
-							{
-								if(FinaliseMatch())
-								{
-									playFinalizationSequence = true;
-								}
-							}
-						}
-					}
+					
 					if(playFinalizationSequence)
 					{
 						sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
@@ -179,6 +179,8 @@ public class GameAI : MonoBehaviour {
 					}
 					else
 					{
+						List<Tile> possibleTiles = GetCurrentlyEmptyTiles();
+						List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
 						HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
 					}
 				break;
@@ -457,11 +459,11 @@ public class GameAI : MonoBehaviour {
 	void DestroyTurnSequenceStep0()
 	{
 		TileSelectionSequence.RemoveAt (0);
+		if(TileSelectionSequence.Count <= 0)
+		{
+			playFinalizationSequence = false;
+		}
 		Debug.Log ("clicks"  +TileSelectionSequence.Count);
-	}
-
-	void HearthStoneTurnSequence()
-	{
 	}
 
 	List<List<int>> HearthStone_generateThePossiblityMovement(List<Tile> possibleMoveableTokensOnBoard)
@@ -644,6 +646,7 @@ public class GameAI : MonoBehaviour {
 			possibilityBubbleWithTiles.Add(tempPoss);
 		}
 
+		// verify to see if there are any empty token bubble
 		PossibilityTiles tempPossForEmptyBubble = new PossibilityTiles ();
 		tempPossForEmptyBubble.numberOfTokensThatHaveThisSamePossibilityTiles = 0;
 		tempPossForEmptyBubble.possibilities = new List<Tile>();
@@ -665,6 +668,7 @@ public class GameAI : MonoBehaviour {
 				tempPossForEmptyBubble.possibilities.Add(possibleTiles[i]);
 			}
 		}
+		// add emtpy token bubble if there are any.
 		if(tempPossForEmptyBubble.possibilities.Count > 0)
 		{
 			tempPossForEmptyBubble.tokensForThisPossibilitySpace = new List<Tile>();
@@ -715,13 +719,38 @@ public class GameAI : MonoBehaviour {
 				goodAmountOfTokenPerBubbleToFinalize &= 0;
 			}
 		}
-
 		return (goodAmountOfTokenPerBubbleToFinalize == 1);
 	}
 
+	List<int> RepresentBoardInBinary(List<Tile> possibilities, List<Tile> excludeFromPossibility)
+	{
+		List<int> currentPossibilityBoard = new List<int>();
+		List<int> currentMoveablTokensInThisBubble = new List<int>();
+		for(int k=0; k<sb.sbm.boardList.Count; k++)
+		{
+			if(possibilities.Contains(sb.sbm.boardList[k]))
+			{
+				currentPossibilityBoard.Add(1);
+			}
+			else
+			{
+				currentPossibilityBoard.Add(0);
+			}
+		}
+//		for(int k=0; k<excludeFromPossibility.Count; k++)
+//		{
+//			if(currentPossibilityBoard[excludeFromPossibility[k].tileId] == 1)
+//			{
+//				currentMoveablTokensInThisBubble.Add(excludeFromPossibility[k].tileId);
+//			}
+//			currentPossibilityBoard[excludeFromPossibility[k].tileId] = 0;
+//		}
+		return currentPossibilityBoard;
+	}
+	
 	bool FinaliseMatch()
 	{
-		int itsPossibleToFinalize = 1;
+		int numberOfpermutationThatWerePossible = 0;
 		List<Vector2> bubbleTileSelectionSequence = new List<Vector2>();
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
@@ -736,14 +765,14 @@ public class GameAI : MonoBehaviour {
 			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
 			int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityBubbleWithTiles[i].numberOfTokensThatHaveThisSamePossibilityTiles;
 			if(emptyTilesIDsSplitByType[1].Count >= numberOfTokensThePlayerHasForThisPossibilitySpace &&
-			   doesPlayerHaveTokensToMoveOnBench)
+			   doesPlayerHaveTokensToMoveOnBench && !addBenchTokenInSequence)
 			{
 				addBenchTokenInSequence = true;
 				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
 			}
 			if(!benchTokenAdded &&
 			   i == possibilityBubbleWithTiles.Count-1 &&
-				doesPlayerHaveTokensToMoveOnBench)
+			   doesPlayerHaveTokensToMoveOnBench && !addBenchTokenInSequence)
 			{
 				addBenchTokenInSequence = true;
 				numberOfTokensThePlayerHasForThisPossibilitySpace += 1;
@@ -759,46 +788,33 @@ public class GameAI : MonoBehaviour {
 			Permutations<char> permutationsForMovementOrder = new Permutations<char>(desiredTileIndexesToMoveTo);
 
 			bool isAbleToFormToThisPermutation = false;
-			
-			int pass_tileIdForTokenToMove = 0;
-			int pass_tileIdForTokenToMoveTo = 0;
-
 			bool containsTheBenchMovement = false;
 
-			for(int j = 0; j<permutationsForMovementOrder.Count; j++)
+			List<int> currentPossibilityBoard = RepresentBoardInBinary(possibilityBubbleWithTiles[i].possibilities, possibleMoveableTokensOnBoard);
+			List<int> currentMoveablTokensInThisBubble = new List<int>();
+			
+			for(int k=0; k<possibleMoveableTokensOnBoard.Count; k++)
 			{
+				if(currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] == 1)
+				{
+					currentMoveablTokensInThisBubble.Add(possibleMoveableTokensOnBoard[k].tileId);
+				}
+				currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] = 0;
+			}
+
+			for(int j = 0; (j<permutationsForMovementOrder.Count && j<1000); j++)
+			{
+				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
+			
 				// take the order
 				// have the pieces move to that order
 				// have tile 1 go to the where the 1 is found in the permutations order.
 				List<List<int>> movementSequenceShortTermMemory = new List<List<int>>();// movementSequenceShortTermMemory are snapshots of the sequence of what the board has to look like for this turn
 				
 				//I Need a representation of the board for this possibility bubble;
-				List<int> currentPossibilityBoard = new List<int>();
-				List<int> currentMoveablTokensInThisBubble = new List<int>();
-				for(int k=0; k<sb.sbm.boardList.Count; k++)
-				{
-					if(possibilityBubbleWithTiles[i].possibilities.Contains(sb.sbm.boardList[k]))
-					{
-						currentPossibilityBoard.Add(1);
-					}
-					else
-					{
-						currentPossibilityBoard.Add(0);
-					}
-				}
-				for(int k=0; k<possibleMoveableTokensOnBoard.Count; k++)
-				{
-					if(currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] == 1)
-					{
-						currentMoveablTokensInThisBubble.Add(possibleMoveableTokensOnBoard[k].tileId);
-					}
-					currentPossibilityBoard[possibleMoveableTokensOnBoard[k].tileId] = 0;
-				}
-				
-				movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
+				List<int> evolvingPossibilityBoard = new List<int>(currentPossibilityBoard);
+				movementSequenceShortTermMemory.Add(new List<int>(evolvingPossibilityBoard));
 
-
-				IList<char> permutationBeingVerified = permutationsForMovementOrder.ElementAt(j);
 				int permutationsIncrement = 0;
 
 				int isAbleToMoveToAllPositionsForThisPermutation = 1;
@@ -811,7 +827,7 @@ public class GameAI : MonoBehaviour {
 						containsTheBenchMovement = true;
 						int tileIdForBenchTokenToMoveTo = emptyTilesIDsSplitByType[1][k];
 						bubbleTileSelectionSequence.Insert(0, new Vector2(-1, tileIdForBenchTokenToMoveTo));
-						currentPossibilityBoard[tileIdForBenchTokenToMoveTo] = 0;
+						evolvingPossibilityBoard[tileIdForBenchTokenToMoveTo] = 0;
 						permutationsIncrement++;
 						continue;
 					}
@@ -824,15 +840,15 @@ public class GameAI : MonoBehaviour {
 					int tileIdForTokenToMoveTo = emptyTilesIDsSplitByType[1][k];
 					
 					//include the currently selected tile for the contiguous search
-					currentPossibilityBoard[tileIdForTokenToMove] = 1;
+					evolvingPossibilityBoard[tileIdForTokenToMove] = 1;
 					
 					// can I make the following move?
-					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (currentPossibilityBoard, sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [tileIdForTokenToMove].xPos, sb.sbm.boardList [tileIdForTokenToMove].yPos);
+					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (evolvingPossibilityBoard, sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [tileIdForTokenToMove].xPos, sb.sbm.boardList [tileIdForTokenToMove].yPos);
 					contiguousTiles.Sort ();	
 
 					if(contiguousTiles.Contains(tileIdForTokenToMoveTo))
 					{
-						currentPossibilityBoard[tileIdForTokenToMoveTo] = 0; // I make the new token position unavailable
+						evolvingPossibilityBoard[tileIdForTokenToMoveTo] = 0; // I make the new token position unavailable
 						
 						if(tileIdForTokenToMove != tileIdForTokenToMoveTo)
 						{
@@ -843,14 +859,12 @@ public class GameAI : MonoBehaviour {
 							cestPareille.Add(tileIdForTokenToMoveTo);
 						}
 						// stack the new board state
-						movementSequenceShortTermMemory.Add(new List<int>(currentPossibilityBoard));
+						movementSequenceShortTermMemory.Add(new List<int>(evolvingPossibilityBoard));
 						
 						isAbleToMoveToAllPositionsForThisPermutation &= 1;
 					}
 					else
 					{
-						pass_tileIdForTokenToMove = tileIdForTokenToMove;
-						pass_tileIdForTokenToMoveTo = tileIdForTokenToMoveTo;
 						isAbleToMoveToAllPositionsForThisPermutation &= 0;
 						bubbleTileSelectionSequence.Clear();
 						break;
@@ -903,10 +917,12 @@ public class GameAI : MonoBehaviour {
 					TileSelectionSequence.AddRange(bubbleTileSelectionSequence);
 					bubbleTileSelectionSequence.Clear();
 				}
+				numberOfpermutationThatWerePossible += 1;
 			}
 		}// end of possibility bubble
 		currentAiProcess = AiProcesses.AiProcessCompleted;
-		return (true);
+		int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend) ? sb.sbm.player1.currentTurnMoveLimit : sb.sbm.player2.currentTurnMoveLimit;
+		return (TileSelectionSequence.Count == numberOfMoves);// ToDo: you still need a way to check that all permutation where possible.
 	}
 
 	void GenerateTurnSequence()
