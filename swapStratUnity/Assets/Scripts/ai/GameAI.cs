@@ -762,9 +762,10 @@ public class GameAI : MonoBehaviour {
 	
 	bool FinaliseMatch()
 	{
-		int numberOfpermutationThatWerePossible = 0;
+		int numberOfEmptyTilesFilled = 0;
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
-		List<Tile> possibleMoveableTokensOnBoard = new List<Tile>(GetMoveableTokensList());
+		List<Tile> tokenPositionOnBoard = new List<Tile>(GetMoveableTokensListEvenIfCurrentlyTheyCantMove());
+//		tokenPositionOnBoard.AddRange (GetNonMoveableTokensList ());
 
 		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
 
@@ -772,10 +773,9 @@ public class GameAI : MonoBehaviour {
 
 		for(int i=0; i<possibilityBubbleWithTiles.Count; i++)
 		{
-
 			List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibilityBubbleWithTiles[i].possibilities);
 			List<int> tokenOrder = GenerateTokensOrderForBubble(emptyTilesIDsSplitByType, possibilityBubbleWithTiles[i], doesPlayerHaveTokensToMoveOnBench, benchTokenAdded, i == possibilityBubbleWithTiles.Count-1);
-			List<int> currentPossibilityBoard = RepresentBoardInBinary(possibilityBubbleWithTiles[i].possibilities, possibleMoveableTokensOnBoard);
+			List<int> currentPossibilityBoard = RepresentBoardInBinary(possibilityBubbleWithTiles[i].possibilities, tokenPositionOnBoard);
 
 			List<int> solution = new List<int>();
 			List<int> emptyTilesIds = new List<int>(emptyTilesIDsSplitByType[1]);
@@ -787,7 +787,7 @@ public class GameAI : MonoBehaviour {
 					int last = emptyTilesIds.Last();
 					emptyTilesIds.Insert(0, last);
 					emptyTilesIds.RemoveAt(emptyTilesIds.Count-1);
-					solution = GenerateMovementSequenceToFinalizeForBubble(tokenOrder, currentPossibilityBoard, possibilityBubbleWithTiles[i], emptyTilesIDsSplitByType[1]);
+					solution = GenerateMovementSequenceToFinalizeForBubble(tokenOrder, currentPossibilityBoard, possibilityBubbleWithTiles[i], emptyTilesIds);
 					if(solution.Count > 0)
 					{
 						break;
@@ -805,11 +805,11 @@ public class GameAI : MonoBehaviour {
 			{
 				TileSelectionSequence.AddRange(TransformSolutionToSequence(solution, possibilityBubbleWithTiles[i], emptyTilesIDsSplitByType[1]));
 			}
-			numberOfpermutationThatWerePossible += 1;
+
+			numberOfEmptyTilesFilled += emptyTilesIDsSplitByType[1].Count;
 		}// end of possibility bubble
 		currentAiProcess = AiProcesses.AiProcessCompleted;
-		int numberOfMoves = (aiPt == PlayerVO.PlayerType.friend) ? sb.sbm.player1.currentTurnMoveLimit : sb.sbm.player2.currentTurnMoveLimit;
-		return (TileSelectionSequence.Count == numberOfMoves);// ToDo: you still need a way to check that all permutation where possible.
+		return (TileSelectionSequence.Count >= numberOfEmptyTilesFilled);// ToDo: you still need a way to check that all permutation where possible.
 	}
 
 	List<int> GenerateMovementSequenceToFinalizeForBubble(List<int> listOrder, List<int> currentPossibilityBoard, PossibilityTiles possibilityBubbleWithTiles, List<int> emptyNeutralTilesForBubble)
@@ -829,7 +829,7 @@ public class GameAI : MonoBehaviour {
 			int? tokenIndex = ReturnNextPossibleMoveableToken((solutionPermutation[indexWeAreChecking] == int.MinValue)? listOrder.First():solutionPermutation[indexWeAreChecking], 
 			                                                 possibilityBubbleWithTiles.tokensForThisPossibilitySpace, 
 			                                                 emptyNeutralTilesForBubble[indexWeAreChecking],
-			                                                 movementSequenceShortTermMemory[indexWeAreChecking],
+			                                                 new List<int>(movementSequenceShortTermMemory[indexWeAreChecking]),
 			                                                 solutionPermutation);
 
 			List<int> evolvingPossibilityBoard = movementSequenceShortTermMemory.Last();
@@ -960,7 +960,9 @@ public class GameAI : MonoBehaviour {
 	{
 		bool addBenchTokenInSequence = false;
 		int numberOfTokensThePlayerHasForThisPossibilitySpace = possibilityTiles.numberOfTokensThatHaveThisSamePossibilityTiles;
-		if(emptyTilesIDsSplitByType[1].Count >= numberOfTokensThePlayerHasForThisPossibilitySpace &&
+
+		if(!benchTokenAdded &&
+		   emptyTilesIDsSplitByType[1].Count >= numberOfTokensThePlayerHasForThisPossibilitySpace &&
 		   doesPlayerHaveTokensToMoveOnBench)
 		{
 			addBenchTokenInSequence = true;
