@@ -190,8 +190,14 @@ public class GameAI : MonoBehaviour {
 					
 					if(playFinalizationSequence)
 					{
-						sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
-						DestroyTurnSequenceStep0();
+						if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))
+						{
+							DestroyTurnSequenceStep0();
+						}
+						else
+						{
+							DestroyTurnSequenceAll();
+						}
 					}
 					else
 					{
@@ -212,7 +218,7 @@ public class GameAI : MonoBehaviour {
 				{
 					if(currentAiProcess == AiProcesses.AiProcessCompleted)
 					{
-					if(TileSelectionSequence.Count> 0)
+					if(TileSelectionSequence.Count> 0 && (int)TileSelectionSequence[0].x != -1)
 					{
 						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
 						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);// select token with this tile id is found in the x value of the vector 2
@@ -275,7 +281,6 @@ public class GameAI : MonoBehaviour {
 						}
 
 						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
-						Debug.Log (i + "heuristic: " + heuristic + " " + tempHeuristic);
 						if(heuristic < tempHeuristic)
 						{
 							theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
@@ -301,9 +306,15 @@ public class GameAI : MonoBehaviour {
 				{
 					if(TileSelectionSequence.Count > 0)
 					{
-					Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
-					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);// place token on this tile id is found in the y value of the vector 2
-					DestroyTurnSequenceStep0();
+						Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
+						if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))// place token on this tile id is found in the y value of the vector 2
+						{
+						DestroyTurnSequenceStep0();
+						}
+						else
+						{
+							DestroyTurnSequenceAll();
+						}
 					}
 					else
 					{
@@ -335,8 +346,15 @@ public class GameAI : MonoBehaviour {
 				{
 					if(TileSelectionSequence.Count > 0)
 					{
-					sb.sbm.TileClicked((int)TileSelectionSequence[0].y);
-					DestroyTurnSequenceStep0();
+						if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))
+						{
+							DestroyTurnSequenceStep0();
+						}
+						else
+						{
+							DestroyTurnSequenceAll();
+							MoveSelectedPieceHearthstoneStyle(sb.sbm.currentlySelectedTile.tileId);
+						}
 					}
 					else
 					{
@@ -349,24 +367,7 @@ public class GameAI : MonoBehaviour {
 				}
 				else
 				{
-					List<Tile> possibleTokensOnTile = new List<Tile>();
-
-					List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn ((int)TileSelectionSequence[0].x);
-
-					List<Tile> possibleTiles = new List<Tile>();
-					for(int k = 0; k<sb.sbm.boardList.Count; k++)
-					{
-						for(int j = 0; j<shortTermMemory.Count; j++)
-						{
-							if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
-							{
-								possibleTiles.Add(sb.sbm.boardList[k]);
-							}
-						}
-					}
-
-					HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
-					TileSelectionSequence.Clear();
+					MoveSelectedPieceHearthstoneStyle((int)TileSelectionSequence[0].x);
 				}
 				break;
 			}
@@ -390,6 +391,28 @@ public class GameAI : MonoBehaviour {
 			}
 		}
 		return possibilityBubble;
+	}
+
+	void MoveSelectedPieceHearthstoneStyle(int currentlySelectedTokenTileId)
+	{
+		List<Tile> possibleTokensOnTile = new List<Tile>();
+		
+		List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn (currentlySelectedTokenTileId);
+		
+		List<Tile> possibleTiles = new List<Tile>();
+		for(int k = 0; k<sb.sbm.boardList.Count; k++)
+		{
+			for(int j = 0; j<shortTermMemory.Count; j++)
+			{
+				if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
+				{
+					possibleTiles.Add(sb.sbm.boardList[k]);
+				}
+			}
+		}
+		
+		HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
+		TileSelectionSequence.Clear();
 	}
 
 	List<Tile> GetNonMoveableTokensList()
@@ -422,6 +445,25 @@ public class GameAI : MonoBehaviour {
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
 				if (tmptoken.currentTokenState != Token.TokenState.disabled)
+				{
+					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
+				}
+			}
+		}
+		return possibleTokensOnTile;
+	}
+
+	List<Tile> GetDisabledTokensList()
+	{
+		List<Tile> possibleTokensOnTile = new List<Tile>();
+		Token tmptoken;
+		for(int i = 0; i<sb.sbm.boardList.Count; i++)
+		{
+			if (sb.sbm.boardList [i].currentTileType == Tile.TileType.occupied &&
+			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
+			{
+				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
+				if (tmptoken.currentTokenState == Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -474,12 +516,19 @@ public class GameAI : MonoBehaviour {
 
 	void DestroyTurnSequenceStep0()
 	{
+		Debug.Log ("clicks"  +TileSelectionSequence.Count + ": " + TileSelectionSequence.First().x + "," + TileSelectionSequence.First().y);
 		TileSelectionSequence.RemoveAt (0);
 		if(TileSelectionSequence.Count <= 0)
 		{
 			playFinalizationSequence = false;
 		}
-		Debug.Log ("clicks"  +TileSelectionSequence.Count);
+	}
+
+	void DestroyTurnSequenceAll()
+	{
+		Debug.Log ("DESTROY!");
+		TileSelectionSequence.Clear ();
+		playFinalizationSequence = false;
 	}
 
 	List<List<int>> HearthStone_generateThePossiblityMovement(List<Tile> possibleMoveableTokensOnBoard)
@@ -499,17 +548,16 @@ public class GameAI : MonoBehaviour {
 	int Evaluate_HearthStone_HeuristicForPossibilityTypes(List<List<int>> input)
 	{
 		int returnValue = 0;
-		Debug.Log("1): " + input[0].Count);
+//		Debug.Log("1): " + input[0].Count);
 		if(input[0].Count > 0)
 		{
-			Debug.Log("a: " + ((aiPt == PlayerVO.PlayerType.enemy)?0:2));
 			if(returnValue < ((aiPt == PlayerVO.PlayerType.enemy)?0:2))
 			{
 				returnValue = ((aiPt == PlayerVO.PlayerType.enemy)?0:2);
 			}
 		}
 
-		Debug.Log("2): " + input[1].Count);
+//		Debug.Log("2): " + input[1].Count);
 		if(input[1].Count > 0)
 		{
 //			Debug.Log("b: " + 1);
@@ -519,10 +567,10 @@ public class GameAI : MonoBehaviour {
 			}
 		}
 
-		Debug.Log("3): " + input[2].Count);
+//		Debug.Log("3): " + input[2].Count);
 		if(input[2].Count > 0)
 		{
-			Debug.Log("c: " + ((aiPt == PlayerVO.PlayerType.enemy)?2:0));
+//			Debug.Log("c: " + ((aiPt == PlayerVO.PlayerType.enemy)?2:0));
 			if(returnValue < ((aiPt == PlayerVO.PlayerType.enemy)?2:0))
 			{
 				returnValue = ((aiPt == PlayerVO.PlayerType.enemy)?2:0);
@@ -765,7 +813,7 @@ public class GameAI : MonoBehaviour {
 		int numberOfEmptyTilesFilled = 0;
 		List<PossibilityTiles> possibilityBubbleWithTiles = GeneratePossibilitiyBubbles ();
 		List<Tile> tokenPositionOnBoard = new List<Tile>(GetMoveableTokensListEvenIfCurrentlyTheyCantMove());
-//		tokenPositionOnBoard.AddRange (GetNonMoveableTokensList ());
+//		tokenPositionOnBoard.AddRange (GetDisabledTokensList ());
 
 		bool doesPlayerHaveTokensToMoveOnBench = (((aiPt == PlayerVO.PlayerType.friend)?sb.sbm.player1.HasAvailableTokensOnBench():sb.sbm.player2.HasAvailableTokensOnBench()));
 
@@ -829,13 +877,13 @@ public class GameAI : MonoBehaviour {
 			int? tokenIndex = ReturnNextPossibleMoveableToken((solutionPermutation[indexWeAreChecking] == int.MinValue)? listOrder.First():solutionPermutation[indexWeAreChecking], 
 			                                                 possibilityBubbleWithTiles.tokensForThisPossibilitySpace, 
 			                                                 emptyNeutralTilesForBubble[indexWeAreChecking],
-			                                                 new List<int>(movementSequenceShortTermMemory[indexWeAreChecking]),
+			                                                 new List<int>(movementSequenceShortTermMemory.Last()),
 			                                                 solutionPermutation);
-
-			List<int> evolvingPossibilityBoard = movementSequenceShortTermMemory.Last();
 
 			if(tokenIndex != null)
 			{ 
+				List<int> evolvingPossibilityBoard = movementSequenceShortTermMemory.Last();
+
 				solutionPermutation[indexWeAreChecking] = (int)tokenIndex;
 				if(tokenIndex != -1)
 				{

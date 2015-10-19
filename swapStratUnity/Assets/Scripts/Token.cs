@@ -72,7 +72,6 @@ public class Token : MonoBehaviour {
 
 	public void moveThrough(List<Vector3> pathPositionList)
 	{
-		Debug.Log ("moveThrough");
 		moveSequence = pathPositionList;
 		destinationPosition = moveSequence[0];
 		permissionToMove = true;
