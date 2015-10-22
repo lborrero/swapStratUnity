@@ -25,10 +25,13 @@ public class Token : MonoBehaviour {
 	Vector3 startPosition;
 	Collider collider;
 
+	LineRenderer pathLine = new LineRenderer();
+
 	void Start()
 	{
 		startPosition = gameObject.transform.position;
 		collider = GetComponent<Collider> ();
+		pathLine = GetComponent<LineRenderer> ();
 	}
 
 	void FixedUpdate()
@@ -226,11 +229,77 @@ public class Token : MonoBehaviour {
 		{
 			inInteraction = true; 
 
+			collider.enabled = false;
+
 			var v3 = Input.mousePosition;
 			v3.z = 20f;
 			v3 = Camera.main.ScreenToWorldPoint(v3);
 			gameObject.transform.position = v3;
+
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			Tile hitTile = new Tile();
+			bool drawTheLines = false;
+			if (Physics.Raycast(ray, out hit, 30)) {
+				Debug.DrawLine(ray.origin, hit.point);
+				Debug.Log(hit.collider.gameObject.name);
+				hitTile = hit.collider.gameObject.GetComponent<Tile>();
+				if(hitTile != null && sBoardManager.Instance.CheckIfCanMoveToTileId(hitTile.tileId))
+				{
+					drawTheLines = true;
+				}
+			}
+
+			if(drawTheLines && isTokenABenchTokenAndNotOnBoard())
+			{
+				List<Vector3> path = sBoardManager.Instance.GeneratePathSequence(sBoardManager.Instance.currentlySelectedTile.tileId, hitTile.tileId);
+//				pathLine.SetWidth(startWidth, endWidth);
+				pathLine.SetVertexCount(path.Count*2);
+
+				Vector3 previousPosition = new Vector3();
+				Vector3 currentPosition = new Vector3();
+
+				int pathCounter = 0;
+				for(int i = 0; i < path.Count*2; i += 2)
+				{
+					currentPosition = path[pathCounter];
+					if(previousPosition.x < path[pathCounter].x)
+					{
+						currentPosition += Vector3.left*0.01f;
+					}
+					if(previousPosition.x > path[pathCounter].x)
+					{
+						currentPosition += Vector3.right*0.01f;
+					}
+
+					if(previousPosition.z < path[pathCounter].z)
+					{
+						currentPosition += Vector3.back*0.01f;
+					}
+					if(previousPosition.z > path[pathCounter].z)
+					{
+						currentPosition += Vector3.forward*0.01f;
+					}
+
+					pathLine.SetPosition(i, new Vector3(currentPosition.x, (currentPosition.y + 1f), currentPosition.z));
+					pathLine.SetPosition(i+1, new Vector3(path[pathCounter].x, (path[pathCounter].y + 1f), path[pathCounter].z));
+					previousPosition = path[pathCounter];
+					pathCounter++;
+				}
+			}
+			else
+			{
+				if(isTokenABenchTokenAndNotOnBoard())
+				{
+					pathLine.SetVertexCount(0);
+				}
+			}
 		}
+	}
+
+	bool isTokenABenchTokenAndNotOnBoard()
+	{
+		return (!((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard));
 	}
 
 	void OnMouseUp()
@@ -240,6 +309,11 @@ public class Token : MonoBehaviour {
 		    currentTokenState != TokenState.hideToken) 
 		{
 			collider.enabled = false;
+
+			if(isTokenABenchTokenAndNotOnBoard())
+			{
+				pathLine.SetVertexCount(0);
+			}
 			
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit;
