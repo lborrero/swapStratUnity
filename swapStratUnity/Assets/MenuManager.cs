@@ -25,7 +25,6 @@ public class MenuManager : MonoBehaviour {
 		switch(sgm.currentGeneralGameState)
 		{
 		case sGameManager.GeneralGameState.startScreen:
-			ShowAd();
 			StartScreen.SetActive(true);
 			EndScreen.SetActive(false);
 			break;
