@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Advertisements;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -24,6 +25,7 @@ public class MenuManager : MonoBehaviour {
 		switch(sgm.currentGeneralGameState)
 		{
 		case sGameManager.GeneralGameState.startScreen:
+			ShowAd();
 			StartScreen.SetActive(true);
 			EndScreen.SetActive(false);
 			break;
@@ -49,4 +51,13 @@ public class MenuManager : MonoBehaviour {
 			break;
 		}
 	}
+
+	public void ShowAd()
+	{
+		if (Advertisement.IsReady())
+		{
+			Advertisement.Show();
+		}
+	}
 }
+
