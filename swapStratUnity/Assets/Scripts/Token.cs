@@ -16,6 +16,8 @@ public class Token : MonoBehaviour {
 	public Image dot;
 	public Image TokenLight;
 
+	public GameObject dotedLine;
+
 	private List<Vector3> moveSequence = new List<Vector3>();
 	private Vector3 destinationPosition = new Vector3();
 	private Vector3 previousPosition = new Vector3();
@@ -25,13 +27,12 @@ public class Token : MonoBehaviour {
 	Vector3 startPosition;
 	Collider collider;
 
-	LineRenderer pathLine = new LineRenderer();
+	List<GameObject> pathLine = new List<GameObject>();
 
 	void Start()
 	{
 		startPosition = gameObject.transform.position;
 		collider = GetComponent<Collider> ();
-		pathLine = GetComponent<LineRenderer> ();
 	}
 
 	void FixedUpdate()
@@ -254,47 +255,31 @@ public class Token : MonoBehaviour {
 			{
 				List<Vector3> path = sBoardManager.Instance.GeneratePathSequence(sBoardManager.Instance.currentlySelectedTile.tileId, hitTile.tileId);
 //				pathLine.SetWidth(startWidth, endWidth);
-				pathLine.SetVertexCount(path.Count*2);
+				DestroyPathLine();
 
-				Vector3 previousPosition = new Vector3();
-				Vector3 currentPosition = new Vector3();
-
-				int pathCounter = 0;
-				for(int i = 0; i < path.Count*2; i += 2)
+				for(int i = 0; i < path.Count-1; i ++)
 				{
-					currentPosition = path[pathCounter];
-					if(previousPosition.x < path[pathCounter].x)
-					{
-						currentPosition += Vector3.left*0.01f;
-					}
-					if(previousPosition.x > path[pathCounter].x)
-					{
-						currentPosition += Vector3.right*0.01f;
-					}
-
-					if(previousPosition.z < path[pathCounter].z)
-					{
-						currentPosition += Vector3.back*0.01f;
-					}
-					if(previousPosition.z > path[pathCounter].z)
-					{
-						currentPosition += Vector3.forward*0.01f;
-					}
-
-					pathLine.SetPosition(i, new Vector3(currentPosition.x, (currentPosition.y + 1f), currentPosition.z));
-					pathLine.SetPosition(i+1, new Vector3(path[pathCounter].x, (path[pathCounter].y + 1f), path[pathCounter].z));
-					previousPosition = path[pathCounter];
-					pathCounter++;
+					GameObject tmp = (GameObject)Instantiate(dotedLine, new Vector3(path[i].x, (path[i].y + 1f), path[i].z), transform.rotation);
+					pathLine.Add(tmp);
 				}
 			}
 			else
 			{
 				if(isTokenABenchTokenAndNotOnBoard())
 				{
-					pathLine.SetVertexCount(0);
+					DestroyPathLine();
 				}
 			}
 		}
+	}
+
+	void DestroyPathLine()
+	{
+		for(int i = 0; i < pathLine.Count; i ++)
+		{
+			Destroy(pathLine[i].gameObject);
+		}
+		pathLine.Clear();
 	}
 
 	bool isTokenABenchTokenAndNotOnBoard()
@@ -312,7 +297,7 @@ public class Token : MonoBehaviour {
 
 			if(isTokenABenchTokenAndNotOnBoard())
 			{
-				pathLine.SetVertexCount(0);
+				DestroyPathLine();
 			}
 			
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
