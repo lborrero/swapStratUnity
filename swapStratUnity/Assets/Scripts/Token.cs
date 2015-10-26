@@ -16,6 +16,8 @@ public class Token : MonoBehaviour {
 	public Image dot;
 	public Image TokenLight;
 
+	public GameObject dotedLine;
+
 	private List<Vector3> moveSequence = new List<Vector3>();
 	private Vector3 destinationPosition = new Vector3();
 	private Vector3 previousPosition = new Vector3();
@@ -24,6 +26,8 @@ public class Token : MonoBehaviour {
 	float stepsToMoveToDesintation = 0.2f;
 	Vector3 startPosition;
 	Collider collider;
+
+	List<GameObject> pathLine = new List<GameObject>();
 
 	void Start()
 	{
@@ -226,11 +230,61 @@ public class Token : MonoBehaviour {
 		{
 			inInteraction = true; 
 
+			collider.enabled = false;
+
 			var v3 = Input.mousePosition;
 			v3.z = 20f;
 			v3 = Camera.main.ScreenToWorldPoint(v3);
 			gameObject.transform.position = v3;
+
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			Tile hitTile = new Tile();
+			bool drawTheLines = false;
+			if (Physics.Raycast(ray, out hit, 30)) {
+				Debug.DrawLine(ray.origin, hit.point);
+				Debug.Log(hit.collider.gameObject.name);
+				hitTile = hit.collider.gameObject.GetComponent<Tile>();
+				if(hitTile != null && sBoardManager.Instance.CheckIfCanMoveToTileId(hitTile.tileId))
+				{
+					drawTheLines = true;
+				}
+			}
+
+			if(drawTheLines && isTokenABenchTokenAndNotOnBoard())
+			{
+				List<Vector3> path = sBoardManager.Instance.GeneratePathSequence(sBoardManager.Instance.currentlySelectedTile.tileId, hitTile.tileId);
+//				pathLine.SetWidth(startWidth, endWidth);
+				DestroyPathLine();
+
+				for(int i = 0; i < path.Count-1; i ++)
+				{
+					GameObject tmp = (GameObject)Instantiate(dotedLine, new Vector3(path[i].x, (path[i].y + 1f), path[i].z), transform.rotation);
+					pathLine.Add(tmp);
+				}
+			}
+			else
+			{
+				if(isTokenABenchTokenAndNotOnBoard())
+				{
+					DestroyPathLine();
+				}
+			}
 		}
+	}
+
+	void DestroyPathLine()
+	{
+		for(int i = 0; i < pathLine.Count; i ++)
+		{
+			Destroy(pathLine[i].gameObject);
+		}
+		pathLine.Clear();
+	}
+
+	bool isTokenABenchTokenAndNotOnBoard()
+	{
+		return (!((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard));
 	}
 
 	void OnMouseUp()
@@ -240,6 +294,11 @@ public class Token : MonoBehaviour {
 		    currentTokenState != TokenState.hideToken) 
 		{
 			collider.enabled = false;
+
+			if(isTokenABenchTokenAndNotOnBoard())
+			{
+				DestroyPathLine();
+			}
 			
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit;

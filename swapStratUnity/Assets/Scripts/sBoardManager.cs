@@ -327,10 +327,7 @@ public class sBoardManager : MonoBehaviour
 		}
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
 		{
-			if(currentlySelectedTile.tileId != tileId && 
-			   boardList[tileId].currentTileType != Tile.TileType.occupied && 
-			   boardList[tileId].currentTileType != Tile.TileType.nothing && 
-			   boardList[tileId].currentTileVisualState == Tile.TileVisualState.highlighted)
+			if(CheckIfCanMoveToTileId(tileId))
 			{
 				AstarPathfinding asp = new AstarPathfinding();
 				asp.GenerateBoard(boardListIntoBinaryListForPathFinding(currentlySelectedTile.tileId, tileId), board_width, currentlySelectedTile.tileId, tileId);
@@ -380,6 +377,32 @@ public class sBoardManager : MonoBehaviour
 		}
 		UpdateBoard();
 		return returnValue;
+	}
+
+	public bool CheckIfCanMoveToTileId(int tileId)
+	{
+		if (currentlySelectedTile.tileId != tileId && 
+			boardList [tileId].currentTileType != Tile.TileType.occupied && 
+			boardList [tileId].currentTileType != Tile.TileType.nothing && 
+			boardList [tileId].currentTileVisualState == Tile.TileVisualState.highlighted) {
+			return true;
+		}
+		return false;
+	}
+
+	public List<Vector3> GeneratePathSequence(int fromTileId, int toTileId)
+	{
+		AstarPathfinding asp = new AstarPathfinding();
+		asp.GenerateBoard(boardListIntoBinaryListForPathFinding(fromTileId, toTileId), board_width, fromTileId, toTileId);
+		asp.ComputePathSequence();
+		List<int> pathSequenceList = asp.TraceBackPath();
+
+		List<Vector3> pathPositionSequenceList = new List<Vector3>();
+		for(int i=0; i<pathSequenceList.Count; i++)
+		{
+			pathPositionSequenceList.Add(boardList[pathSequenceList[i]].gameObject.transform.position);
+		}
+		return pathPositionSequenceList;
 	}
 
 	public Token getTokenFromTokenListWithIdAndType(int tokenId, PlayerVO.PlayerType token_pt)
