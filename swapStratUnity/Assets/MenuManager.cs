@@ -9,6 +9,7 @@ public class MenuManager : MonoBehaviour {
 	sBoardManager sbm;
 	public GameObject StartScreen;
 	public GameObject EndScreen;
+	public GameObject InfoScreen;
 	public sGameManager.GeneralGameState defaultGameState;
 	public Text winnerLabel;
 
@@ -27,13 +28,21 @@ public class MenuManager : MonoBehaviour {
 		case sGameManager.GeneralGameState.startScreen:
 			StartScreen.SetActive(true);
 			EndScreen.SetActive(false);
+			InfoScreen.SetActive(false);
+			break;
+		case sGameManager.GeneralGameState.infoScreen:
+			StartScreen.SetActive(false);
+			EndScreen.SetActive(false);
+			InfoScreen.SetActive(true);
 			break;
 		case sGameManager.GeneralGameState.gameMode:
 			StartScreen.SetActive(false);
 			EndScreen.SetActive(false);
+			InfoScreen.SetActive(false);
 			break;
 		case sGameManager.GeneralGameState.endScreen:
 			StartScreen.SetActive(false);
+			InfoScreen.SetActive(false);
 			if(sbm.player1.currentTurnPointCount > sbm.player2.currentTurnPointCount)
 			{
 				winnerLabel.text = "Blue Wins!";

@@ -26,7 +26,8 @@ public class sGameManager : MonoBehaviour {
 	{
 		gameMode = 0,
 		startScreen,
-		endScreen
+		endScreen,
+		infoScreen
 	}
 	public GeneralGameState currentGeneralGameState;
 
