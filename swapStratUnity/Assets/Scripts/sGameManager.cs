@@ -38,6 +38,12 @@ public class sGameManager : MonoBehaviour {
 		endInnerGameLoop
 	}
 	public InnerGameLoop currentInnerGameLoop;
+	public int TurnCount;
+
+	public void IncrementTurnCount()
+	{
+		TurnCount++;
+	}
 
 	public enum TurnLoop
 	{

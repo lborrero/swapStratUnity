@@ -50,6 +50,7 @@ public class sBoardManager : MonoBehaviour
 			{
 				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
 				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
+				sgm.IncrementTurnCount();
 				currentPlayerTurn = player2;
 				currentPlayerTurn.StartPlayerTurn();
 				ContinueInnerGameTurnAction();
@@ -65,6 +66,7 @@ public class sBoardManager : MonoBehaviour
 			{
 				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
 				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
+				sgm.IncrementTurnCount();
 				currentPlayerTurn = player1;
 				currentPlayerTurn.StartPlayerTurn();
 				ContinueInnerGameTurnAction();

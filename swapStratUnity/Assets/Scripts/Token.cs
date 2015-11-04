@@ -17,7 +17,7 @@ public class Token : MonoBehaviour {
 	public Image TokenLight;
 
 	public GameObject dotedLine;
-	
+
 	Animator anim;
 	int ShakeAnimationTrigger = Animator.StringToHash("ShakeAnimationTrigger");
 	int NothingTrigger = Animator.StringToHash("NothingTrigger");
@@ -205,7 +205,8 @@ public class Token : MonoBehaviour {
 			selectionMarker.gameObject.SetActive(true);
 			if(anim != null)
 			{
-				if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard)
+				if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard &&
+				   sGameManager.Instance.TurnCount < 4)
 				{
 					anim.ResetTrigger(ShakeAnimationTrigger);
 					anim.SetTrigger (ShakeAnimationTrigger);
@@ -269,8 +270,8 @@ public class Token : MonoBehaviour {
 			Tile hitTile = new Tile();
 			bool drawTheLines = false;
 			if (Physics.Raycast(ray, out hit, 30)) {
-				Debug.DrawLine(ray.origin, hit.point);
-				Debug.Log(hit.collider.gameObject.name);
+//				Debug.DrawLine(ray.origin, hit.point);
+//				Debug.Log(hit.collider.gameObject.name);
 				hitTile = hit.collider.gameObject.GetComponent<Tile>();
 				if(hitTile != null && sBoardManager.Instance.CheckIfCanMoveToTileId(hitTile.tileId))
 				{
