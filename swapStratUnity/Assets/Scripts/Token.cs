@@ -17,6 +17,11 @@ public class Token : MonoBehaviour {
 	public Image TokenLight;
 
 	public GameObject dotedLine;
+	
+	Animator anim;
+	int ShakeAnimationTrigger = Animator.StringToHash("ShakeAnimationTrigger");
+	int NothingTrigger = Animator.StringToHash("NothingTrigger");
+	Animation animation;
 
 	private List<Vector3> moveSequence = new List<Vector3>();
 	private Vector3 destinationPosition = new Vector3();
@@ -31,6 +36,8 @@ public class Token : MonoBehaviour {
 
 	void Start()
 	{
+		anim = GetComponent<Animator>();
+		animation = GetComponent<Animation> ();
 		startPosition = gameObject.transform.position;
 		collider = GetComponent<Collider> ();
 	}
@@ -98,7 +105,9 @@ public class Token : MonoBehaviour {
 	public Color selectedColor;
 	public Color unselectedColor;
 	public Color disabledUnselectedColor;
-	
+
+	public Color selectionMarkerColor;
+
 	public enum TokenState
 	{
 		unselected = 0,
@@ -171,12 +180,17 @@ public class Token : MonoBehaviour {
 
 			selectionMarker.gameObject.SetActive(true);
 			selectionMarker.color = selectedColor;
+			if(anim != null)
+			{
+				anim.ResetTrigger(NothingTrigger);
+				anim.SetTrigger (NothingTrigger);
+			}
 			break;
 		case TokenState.unselected:
 			physicalToken.gameObject.SetActive(true);
 			selectionMarker.gameObject.SetActive(false);
 
-			selectionMarker.color = unselectedColor;
+			selectionMarker.color = selectionMarkerColor;
 			physicalToken.color = unselectedColor;
 			TokenSupport.color = unselectedColor;
 			break;
@@ -189,7 +203,20 @@ public class Token : MonoBehaviour {
 			physicalToken.color = unselectedColor;
 			TokenSupport.color = unselectedColor;
 			selectionMarker.gameObject.SetActive(true);
-			selectionMarker.color = disabledUnselectedColor;
+			if(anim != null)
+			{
+				if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard)
+				{
+					anim.ResetTrigger(ShakeAnimationTrigger);
+					anim.SetTrigger (ShakeAnimationTrigger);
+				}
+				else
+				{
+					anim.ResetTrigger(NothingTrigger);
+					anim.SetTrigger (NothingTrigger);
+				}
+			}
+			selectionMarker.color = selectionMarkerColor;
 			break;
 		case TokenState.disabled:
 			physicalToken.gameObject.SetActive(true);

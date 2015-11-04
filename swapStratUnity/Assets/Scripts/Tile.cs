@@ -102,16 +102,16 @@ public class Tile : MonoBehaviour {
 			switch(currentTileVisualState)
 			{
 			case TileVisualState.selected:
-				selectionMarker.gameObject.SetActive(true); 
-				selectionMarker.color = selectedColor;
+//				selectionMarker.gameObject.SetActive(true); 
+//				selectionMarker.color = selectedColor;
 				break;
 			case TileVisualState.unselected:
 				break;
 			case TileVisualState.highlighted:
 				if(currentTileType == TileType.occupied)
 				{
-					selectionMarker.gameObject.SetActive(true); 
-					selectionMarker.color = unselectedColor;
+//					selectionMarker.gameObject.SetActive(true); 
+//					selectionMarker.color = unselectedColor;
 				}
 				else
 				{
