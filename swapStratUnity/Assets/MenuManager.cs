@@ -67,5 +67,10 @@ public class MenuManager : MonoBehaviour {
 			Advertisement.Show();
 		}
 	}
+
+	public void ShowPortfolio()
+	{
+		Application.ExternalEval("window.open('http://leonardobluz.com/', '_blank');");
+	}
 }
 
