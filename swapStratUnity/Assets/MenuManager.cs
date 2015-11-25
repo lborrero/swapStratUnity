@@ -70,7 +70,7 @@ public class MenuManager : MonoBehaviour {
 
 	public void ShowPortfolio()
 	{
-		Application.ExternalEval("window.open('http://leonardobluz.com/', '_blank');");
+		Application.OpenURL("http://leonardobluz.com/");
 	}
 }
 
