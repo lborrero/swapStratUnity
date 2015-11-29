@@ -29,6 +29,7 @@ public class sGameManager : MonoBehaviour {
 		endScreen,
 		infoScreen
 	}
+	public GeneralGameState previousGeneralGameState;
 	public GeneralGameState currentGeneralGameState;
 
 	public enum InnerGameLoop

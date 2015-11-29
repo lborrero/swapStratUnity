@@ -20,9 +20,25 @@ public class MenuManager : MonoBehaviour {
 		UpdateGameState ((int)defaultGameState);
 	}
 
+	public void backToPreviousGameState()
+	{
+		UpdateGameState (sgm.previousGeneralGameState);
+	}
+
 	public void UpdateGameState(int gameState)
 	{
-		sgm.currentGeneralGameState = (sGameManager.GeneralGameState)gameState;
+		ChangeGameState ((sGameManager.GeneralGameState)gameState);
+	}
+
+	public void UpdateGameState(sGameManager.GeneralGameState gameState)
+	{
+		ChangeGameState (gameState);
+	}
+
+	public void ChangeGameState(sGameManager.GeneralGameState gameState)
+	{
+		sgm.previousGeneralGameState = sgm.currentGeneralGameState;
+		sgm.currentGeneralGameState = gameState;
 		switch(sgm.currentGeneralGameState)
 		{
 		case sGameManager.GeneralGameState.startScreen:

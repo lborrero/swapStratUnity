@@ -42,7 +42,7 @@ public class sBoardManager : MonoBehaviour
 		UpdateBoard();
 
 		sGameManager sgm = sGameManager.Instance;
-//		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
+		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		switch(sgm.currentInnerGameLoop)
 		{
 		case sGameManager.InnerGameLoop.playerOneTurn:
@@ -187,12 +187,14 @@ public class sBoardManager : MonoBehaviour
 				}
 				else
 				{
+					Debug.Log("A");
 					sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
 			}
 			else
 			{
+				Debug.Log("B");
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 				ContinueInnerGameTurnAction();
 			}
@@ -213,6 +215,7 @@ public class sBoardManager : MonoBehaviour
 			}
 			else if(currentPlayerTurn.hasMovedTokenFromBoard && (!currentPlayerTurn.HasAvailableMoves() || !doesPlayerHaveMoveableTokens(currentPlayerTurn)))
 			{
+				Debug.Log("C");
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 				ContinueInnerGameTurnAction();
 			}
@@ -286,6 +289,7 @@ public class sBoardManager : MonoBehaviour
 
 				if(CheckToSeeIfGameIsFinished())
 				{
+					Debug.Log("D");
 					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
@@ -366,6 +370,7 @@ public class sBoardManager : MonoBehaviour
 
 				if(CheckToSeeIfGameIsFinished())
 				{
+					Debug.Log("E");
 					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
