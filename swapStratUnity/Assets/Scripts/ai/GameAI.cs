@@ -5,6 +5,7 @@ using System.Linq;
 using Facet.Combinatorics;
 using System.Text;
 using System;
+using System.Timers;
 
 public class GameAI : MonoBehaviour {
 
@@ -35,6 +36,19 @@ public class GameAI : MonoBehaviour {
 	}
 	
 	AiProcesses currentAiProcess;
+
+	sGameManager.TurnLoop previousTurnAction = sGameManager.TurnLoop.endLoopTurn;
+	bool checkIfTryingToTakeTheSameAction(sGameManager.TurnLoop currentTurnAction)
+	{
+		bool returnValue = false;
+		if(previousTurnAction == currentTurnAction)
+		{
+			DestroyTurnSequenceAll();
+			returnValue = true;
+		}
+		Debug.Log("Checking " + returnValue);
+		return returnValue;
+	}
 
 	List<Vector2> TileSelectionSequence = new List<Vector2>();
 	bool playFinalizationSequence = false;
@@ -70,6 +84,7 @@ public class GameAI : MonoBehaviour {
 //				Debug.Log("-");
 				if(takeDecision)
 				{
+//					Debug.Log("timeBomb2");
 					ThinkLoop ("asdf");
 					takeDecision = false;
 					StartCoroutine(GenerateEvent());
@@ -83,6 +98,7 @@ public class GameAI : MonoBehaviour {
 //				Debug.Log("AI P1");
 				if(takeDecision)
 				{
+//					Debug.Log("timeBomb1");
 					ThinkLoop ("asdf");
 					takeDecision = false;
 					StartCoroutine(GenerateEvent());
@@ -90,8 +106,6 @@ public class GameAI : MonoBehaviour {
 			}
 		}
 	}
-
-	bool timeChecker = false;
 
 	void GenerateHearthStoneSequence()
 	{
@@ -135,11 +149,12 @@ public class GameAI : MonoBehaviour {
 				break;
 			}
 		}
-
+		checkIfTryingToTakeTheSameAction(sb.sgm.currentTurnLoop);
 		switch (sb.sgm.currentTurnLoop) 
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
 		{
+			previousTurnAction = sGameManager.TurnLoop.selectATokenFromBench;
 //				Debug.Log ("AI: selectATokenFromBench");
 				PlayerVO tempPVO;
 				if (aiPt == PlayerVO.PlayerType.enemy) {
@@ -164,7 +179,7 @@ public class GameAI : MonoBehaviour {
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
 		{
 //				Debug.Log ("AI: placeSelectedTokenFromBench");
-
+			previousTurnAction = sGameManager.TurnLoop.placeSelectedTokenFromBench;
 			switch(ait)
 			{
 				case AiType.intermediate:
@@ -187,6 +202,7 @@ public class GameAI : MonoBehaviour {
 				case AiType.hearthstone:
 				{
 					Debug.Log("--------placeSelectedTokenFromBench");
+
 					
 					if(playFinalizationSequence)
 					{
@@ -212,6 +228,7 @@ public class GameAI : MonoBehaviour {
 		}
 		case sGameManager.TurnLoop.selectATokenFromBoard:
 		{
+			previousTurnAction = sGameManager.TurnLoop.selectATokenFromBoard;
 			switch(ait)
 			{
 				case AiType.intermediate:
@@ -298,6 +315,7 @@ public class GameAI : MonoBehaviour {
 		}
 		case sGameManager.TurnLoop.moveSelectedToken:
 		{
+			previousTurnAction = sGameManager.TurnLoop.moveSelectedToken;
 			switch(ait)
 			{
 				case AiType.intermediate:
