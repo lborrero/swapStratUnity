@@ -48,12 +48,21 @@ public class sBoardManager : MonoBehaviour
 		case sGameManager.InnerGameLoop.playerOneTurn:
 			if(!CheckToSeeIfGameIsFinished())
 			{
-				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
-				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
-				sgm.IncrementTurnCount();
-				currentPlayerTurn = player2;
-				currentPlayerTurn.StartPlayerTurn();
-				ContinueInnerGameTurnAction();
+				if(currentPlayerTurn.currentTurnMoveCount == currentPlayerTurn.currentTurnMoveLimit &&
+				   currentPlayerTurn.currentTurnMoveLimit != 0)
+				{
+					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.endInnerGameLoop;
+					ContinueInnerGameAction();
+				}
+				else
+				{
+					ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
+					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
+					sgm.IncrementTurnCount();
+					currentPlayerTurn = player2;
+					currentPlayerTurn.StartPlayerTurn();
+					ContinueInnerGameTurnAction();
+				}
 			}
 			else
 			{
@@ -64,12 +73,21 @@ public class sBoardManager : MonoBehaviour
 		case sGameManager.InnerGameLoop.playerTwoTurn:
 			if(!CheckToSeeIfGameIsFinished())
 			{
-				ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
-				sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
-				sgm.IncrementTurnCount();
-				currentPlayerTurn = player1;
-				currentPlayerTurn.StartPlayerTurn();
-				ContinueInnerGameTurnAction();
+				if(currentPlayerTurn.currentTurnMoveCount == currentPlayerTurn.currentTurnMoveLimit &&
+				   currentPlayerTurn.currentTurnMoveLimit != 0)
+				{
+					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.endInnerGameLoop;
+					ContinueInnerGameAction();
+				}
+				else
+				{
+					ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
+					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
+					sgm.IncrementTurnCount();
+					currentPlayerTurn = player1;
+					currentPlayerTurn.StartPlayerTurn();
+					ContinueInnerGameTurnAction();
+				}
 			}
 			else
 			{
@@ -96,7 +114,18 @@ public class sBoardManager : MonoBehaviour
 				boardComplete = false;
 			}
 		}
-//		Debug.Log ("CheckToSeeIfGameIsFinished: " + boardComplete); 
+
+		bool zero = currentPlayerTurn.hasMovedTokenFromBoard; 
+ 	    bool another = !currentPlayerTurn.HasAvailableMoves();
+		bool first = (currentPlayerTurn.currentTurnMoveCount == currentPlayerTurn.currentTurnMoveLimit);
+		bool second = !doesPlayerHaveMoveableTokens (currentPlayerTurn);
+		bool third = !currentPlayerTurn.HasAvailableTokensOnBench ();
+
+		if(zero && another && first && second && third)
+		{
+			boardComplete = true;
+		}
+
 		return boardComplete;
 	}
 
@@ -156,6 +185,7 @@ public class sBoardManager : MonoBehaviour
 	void ContinueInnerGameTurnAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
+		Debug.Log (sgm.currentTurnLoop);
 		switch(sgm.currentTurnLoop)
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
@@ -169,10 +199,14 @@ public class sBoardManager : MonoBehaviour
 				{
 					sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
 					HighlightCurrentPlayerMovableToken();
+					if(!doesPlayerHaveMoveableTokens(currentPlayerTurn))
+					{
+						sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
+						ContinueInnerGameTurnAction();
+					}
 				}
 				else
 				{
-
 					currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.suggestAToken);
 				}
 			}
@@ -213,7 +247,7 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.hasMovedTokenFromBoard = false;
 				HighlightCurrentPlayerMovableToken();
 			}
-			else if(currentPlayerTurn.hasMovedTokenFromBoard && (!currentPlayerTurn.HasAvailableMoves() || !doesPlayerHaveMoveableTokens(currentPlayerTurn)))
+			else if(CheckIfPlayerCanMove())
 			{
 				Debug.Log("C");
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
@@ -384,6 +418,16 @@ public class sBoardManager : MonoBehaviour
 		}
 		UpdateBoard();
 		return returnValue;
+	}
+
+	public bool CheckIfPlayerCanMove()
+	{
+		if(currentPlayerTurn.hasMovedTokenFromBoard && 
+		   (!currentPlayerTurn.HasAvailableMoves() || !doesPlayerHaveMoveableTokens(currentPlayerTurn)))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	public bool CheckIfCanMoveToTileId(int tileId)
