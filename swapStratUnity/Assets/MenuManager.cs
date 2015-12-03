@@ -56,20 +56,35 @@ public class MenuManager : MonoBehaviour {
 			EndScreen.SetActive(false);
 			InfoScreen.SetActive(false);
 			break;
-		case sGameManager.GeneralGameState.endScreen:
+		case sGameManager.GeneralGameState.endScreenWithPoints:
 			StartScreen.SetActive(false);
 			InfoScreen.SetActive(false);
-			if(sbm.player1.currentTurnPointCount > sbm.player2.currentTurnPointCount)
+			if(sbm.currentPlayerTurn.currentTurnMoveCount == sbm.currentPlayerTurn.currentTurnMoveLimit &&
+			   sbm.currentPlayerTurn.currentTurnMoveLimit != 0)
 			{
-				winnerLabel.text = "Blue Wins!";
-			}
-			else if(sbm.player1.currentTurnPointCount < sbm.player2.currentTurnPointCount)
-			{
-				winnerLabel.text = "Red Wins!";
+				if(sbm.currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend)
+				{
+					winnerLabel.text = "Red Wins!";
+				}
+				else
+				{
+					winnerLabel.text = "Blue Wins!";
+				}
 			}
 			else
 			{
-				winnerLabel.text = "Tie Game";
+				if(sbm.player1.currentTurnPointCount > sbm.player2.currentTurnPointCount)
+				{
+					winnerLabel.text = "Blue Wins!";
+				}
+				else if(sbm.player1.currentTurnPointCount < sbm.player2.currentTurnPointCount)
+				{
+					winnerLabel.text = "Red Wins!";
+				}
+				else
+				{
+					winnerLabel.text = "Tie Game";
+				}
 			}
 			EndScreen.SetActive(true);
 			break;

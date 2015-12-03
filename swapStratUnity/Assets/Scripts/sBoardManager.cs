@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -96,7 +96,7 @@ public class sBoardManager : MonoBehaviour
 			}
 			break;
 		case sGameManager.InnerGameLoop.endInnerGameLoop:
-			boardView.mm.UpdateGameState((int)sGameManager.GeneralGameState.endScreen);
+			boardView.mm.UpdateGameState((int)sGameManager.GeneralGameState.endScreenWithPoints);
 			boardView.UpdateCounters();
 			break;
 		}
