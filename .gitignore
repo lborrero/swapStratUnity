@@ -1,6 +1,10 @@
-swapStratUnity/Library
-swapStratUnity/Assembly-CSharp-vs.csproj
-swapStratUnity/Assembly-CSharp.csproj
-swapStratUnity/swapStratUnity-csharp.sln
-swapStratUnity/swapStratUnity.sln
-swapStratUnity/Temp
+swapStratUnity/[Ll]ibrary
+swapStratUnity/[Tt]emp
+
+.DS_Store
+*.csproj
+*.unityproj
+*.sln
+*.bak
+*.userprefs
+*.pidb
