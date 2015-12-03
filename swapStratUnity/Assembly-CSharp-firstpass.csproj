@@ -73,6 +73,24 @@
      <None Include="Assets\Plugins\Android\unityads\res\layout\unityads_button_pause.xml" />
      <None Include="Assets\Plugins\Android\unityads\res\layout\unityads_view_video_paused.xml" />
      <None Include="Assets\Plugins\Android\unityads\AndroidManifest.xml" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\Attributes\RangedTooltipAttribute.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\Attributes\TooltipAttribute.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\Field.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\Fields.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\GAIHandler.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\GoogleAnalyticsAndroidV3.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\GoogleAnalyticsMPV3.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\GoogleAnalyticsV3.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\GoogleAnalyticsiOSV3.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\AppViewHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\EventHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\ExceptionHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\HitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\ItemHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\SocialHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\TimingHitBuilder.cs" />
+     <Compile Include="Assets\Plugins\GoogleAnalyticsV3\HitBuilders\TransactionHitBuilder.cs" />
+     <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
  <Reference Include="UnityEngine.Networking">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
  </Reference>
