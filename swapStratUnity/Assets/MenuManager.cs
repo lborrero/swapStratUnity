@@ -86,6 +86,7 @@ public class MenuManager : MonoBehaviour {
 			InfoScreen.SetActive(false);
 			break;
 		case sGameManager.GeneralGameState.endScreenWithPoints:
+			ShowAd();
 			StartScreen.SetActive(false);
 			InfoScreen.SetActive(false);
 			if(sbm.currentPlayerTurn.currentTurnMoveCount == sbm.currentPlayerTurn.currentTurnMoveLimit &&
@@ -229,6 +230,21 @@ public class MenuManager : MonoBehaviour {
 			googleAnalytics.LogScreen("portfolio");
 		}
 		Application.OpenURL("http://leonardobluz.com/");
+	}
+
+	public void QuiteGame()
+	{
+		Application.LoadLevel (Application.loadedLevel);
+	}
+
+	int counter = 0;
+	public void ReloadScene()
+	{
+		if(counter > 0)
+		{
+			Application.LoadLevel (Application.loadedLevel);
+		}
+		counter++;
 	}
 }
 
