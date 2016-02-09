@@ -40,11 +40,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   androidTrackingCode: UA-70994910-1
-  IOSTrackingCode: UA-70994910-1
+  IOSTrackingCode: UA-70994910-2
   otherTrackingCode: UA-70994910-1
   productName: Bord Blokr
-  bundleIdentifier: com.Luz.swapStratUnity
-  bundleVersion: 8
+  bundleIdentifier: com.leonardobluz.bordblokr
+  bundleVersion: 0
   dispatchPeriod: 5
   sampleFrequency: 100
   logLevel: 1
