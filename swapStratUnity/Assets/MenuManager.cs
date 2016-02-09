@@ -15,9 +15,9 @@ public class MenuManager : MonoBehaviour {
 
 	public GameAI gameAi;
 
-	public GoogleAnalyticsV3 googleAnalytics;
 	// Use this for initialization
 	void Start () {
+		Advertisement.Initialize ("1010373");
 		sgm = sGameManager.Instance;
 		sbm = sBoardManager.Instance;
 		UpdateGameState ((int)defaultGameState);
@@ -45,48 +45,33 @@ public class MenuManager : MonoBehaviour {
 		switch(sgm.currentGeneralGameState)
 		{
 		case sGameManager.GeneralGameState.startScreen:
-			if (googleAnalytics != null)
-			{
-				googleAnalytics.LogScreen("startScreen");
-			}
 			StartScreen.SetActive(true);
 			EndScreen.SetActive(false);
 			InfoScreen.SetActive(false);
 			break;
 		case sGameManager.GeneralGameState.infoScreen:
-			if (googleAnalytics != null)
-			{
-				googleAnalytics.LogScreen("infoScreen");
-			}
 			StartScreen.SetActive(false);
 			EndScreen.SetActive(false);
 			InfoScreen.SetActive(true);
 			break;
 		case sGameManager.GeneralGameState.gameMode:
-			if(GoogleAnalyticsV3.instance)
-			{
 				switch((PlayerVO.PlayerType)gameAi.aiPt)
 				{
 				case PlayerVO.PlayerType.none:
 					Debug.Log("HumanVsHuman");
-					GoogleAnalyticsV3.instance.LogScreen("gameMode-HumanVsHuman");
 					break;
 				case PlayerVO.PlayerType.enemy:
 					Debug.Log("BlueVsAi");
-					GoogleAnalyticsV3.instance.LogScreen("gameMode-BlueVsAi");
 					break;
 				case PlayerVO.PlayerType.friend:
 					Debug.Log("RedVsAi");
-					GoogleAnalyticsV3.instance.LogScreen("gameMode-RedVsAi");
 					break;
 				}
-			}
 			StartScreen.SetActive(false);
 			EndScreen.SetActive(false);
 			InfoScreen.SetActive(false);
 			break;
 		case sGameManager.GeneralGameState.endScreenWithPoints:
-			ShowAd();
 			StartScreen.SetActive(false);
 			InfoScreen.SetActive(false);
 			if(sbm.currentPlayerTurn.currentTurnMoveCount == sbm.currentPlayerTurn.currentTurnMoveLimit &&
@@ -94,46 +79,34 @@ public class MenuManager : MonoBehaviour {
 			{
 				if(sbm.currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend)
 				{
-					if(GoogleAnalyticsV3.instance)
-					{
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
 							Debug.Log("HumanVsHuman");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-HvH-red");
 							break;
 						case PlayerVO.PlayerType.enemy:
 							Debug.Log("BlueVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-BlueVsAi-PlayerLoses");
 							break;
 						case PlayerVO.PlayerType.friend:
 							Debug.Log("RedVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-RedVsAi-PlayerWins");
 							break;
 						}
-					}
 					winnerLabel.text = "Red Wins!";
 				}
 				else
 				{
-					if(GoogleAnalyticsV3.instance)
-					{
-						switch((PlayerVO.PlayerType)gameAi.aiPt)
+					switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
 							Debug.Log("HumanVsHuman");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-HvH-blue");
 							break;
 						case PlayerVO.PlayerType.enemy:
 							Debug.Log("BlueVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-BlueVsAi-PlayerWins");
 							break;
 						case PlayerVO.PlayerType.friend:
 							Debug.Log("RedVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-RedVsAi-PlayerLoses");
 							break;
 						}
-					}
 					winnerLabel.text = "Blue Wins!";
 				}
 			}
@@ -141,68 +114,51 @@ public class MenuManager : MonoBehaviour {
 			{
 				if(sbm.player1.currentTurnPointCount > sbm.player2.currentTurnPointCount)
 				{
-					if(GoogleAnalyticsV3.instance)
-					{
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
 							Debug.Log("HumanVsHuman");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-HvH-blue");
 							break;
 						case PlayerVO.PlayerType.enemy:
 							Debug.Log("BlueVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-BlueVsAi-PlayerWins");
 							break;
 						case PlayerVO.PlayerType.friend:
 							Debug.Log("RedVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-RedVsAi-PlayerLoses");
 							break;
 						}
-					}
 					winnerLabel.text = "Blue Wins!";
 				}
 				else if(sbm.player1.currentTurnPointCount < sbm.player2.currentTurnPointCount)
 				{
-					if(GoogleAnalyticsV3.instance)
-					{
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
 							Debug.Log("HumanVsHuman");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-HvH-red");
 							break;
 						case PlayerVO.PlayerType.enemy:
 							Debug.Log("BlueVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-BlueVsAi-PlayerLoses");
 							break;
 						case PlayerVO.PlayerType.friend:
 							Debug.Log("RedVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-RedVsAi-PlayerWins");
 							break;
 						}
-					}
+
 					winnerLabel.text = "Red Wins!";
 				}
 				else
 				{
-					if(GoogleAnalyticsV3.instance)
-					{
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
 							Debug.Log("HumanVsHuman");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-HvH-tie");
 							break;
 						case PlayerVO.PlayerType.enemy:
 							Debug.Log("BlueVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-BlueVsAi-tie");
 							break;
 						case PlayerVO.PlayerType.friend:
 							Debug.Log("RedVsAi");
-							GoogleAnalyticsV3.instance.LogScreen("endScreen-RedVsAi-tie");
 							break;
 						}
-					}
 					winnerLabel.text = "Tie Game";
 				}
 			}
@@ -211,24 +167,25 @@ public class MenuManager : MonoBehaviour {
 		}
 	}
 
-	public void ShowAd()
+	IEnumerator ShowAdWhenReady()
 	{
-		if (Advertisement.IsReady())
-		{
-			if (googleAnalytics != null)
-			{
-				googleAnalytics.LogScreen("ads");
-			}
-			Advertisement.Show();
-		}
+		while (!Advertisement.IsReady())
+			yield return null;
+		
+		Advertisement.Show ();
+	}
+
+	public void RateThisGame()
+	{
+		#if UNITY_ANDROID
+		Application.OpenURL("market://details?id=YOUR_ID");
+		#elif UNITY_IPHONE
+		Application.OpenURL("itms-apps://itunes.apple.com/app/idYOUR_ID");
+		#endif
 	}
 
 	public void ShowPortfolio()
 	{
-		if (googleAnalytics != null)
-		{
-			googleAnalytics.LogScreen("portfolio");
-		}
 		Application.OpenURL("http://leonardobluz.com/");
 	}
 
@@ -240,11 +197,12 @@ public class MenuManager : MonoBehaviour {
 	int counter = 0;
 	public void ReloadScene()
 	{
-		if(counter > 0)
-		{
+//		if(counter > 0)
+//		{
+			StartCoroutine (ShowAdWhenReady ());
 			Application.LoadLevel (Application.loadedLevel);
-		}
-		counter++;
+//		}
+//		counter++;
 	}
 }
 
