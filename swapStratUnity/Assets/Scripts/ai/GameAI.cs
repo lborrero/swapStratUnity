@@ -892,7 +892,7 @@ public class GameAI : MonoBehaviour {
 		while(!isConcluded)
 		{
 			//canGiveAMatch
-			int? tokenIndex = ReturnNextPossibleMoveableToken((solutionPermutation[indexWeAreChecking] == int.MinValue)? listOrder.First():solutionPermutation[indexWeAreChecking], 
+			int? tokenIndex = (int?)ReturnNextPossibleMoveableToken((solutionPermutation[indexWeAreChecking] == int.MinValue)? listOrder.First():solutionPermutation[indexWeAreChecking], 
 			                                                 possibilityBubbleWithTiles.tokensForThisPossibilitySpace, 
 			                                                 emptyNeutralTilesForBubble[indexWeAreChecking],
 			                                                 new List<int>(movementSequenceShortTermMemory.Last()),

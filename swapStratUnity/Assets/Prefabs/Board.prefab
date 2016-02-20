@@ -54,6 +54,8 @@ MonoBehaviour:
   sbm: {fileID: 0}
   width: 8
   height: 8
+  xOffset: 0
+  yOffset: 0
 --- !u!114 &11453580
 MonoBehaviour:
   m_ObjectHideFlags: 1

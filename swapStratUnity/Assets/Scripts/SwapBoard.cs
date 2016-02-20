@@ -26,6 +26,8 @@ public class SwapBoard : MonoBehaviour {
 
 	public int width = 6;
 	public int height = 6;
+	public float xOffset;
+	public float yOffset;
 	private float _xOffset;
 	private float _yOffset;
 
@@ -78,6 +80,8 @@ public class SwapBoard : MonoBehaviour {
 
 		_xOffset = width / -2 + 0.5f;
 		_yOffset = height / -2 + 0.5f;
+		_xOffset += xOffset;
+		_yOffset += yOffset;
 		
 		int idCounter = 0;
 		for(int i=0; i<height; i++)
