@@ -3185,6 +3185,23 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1153392226}
+--- !u!1 &1258728634 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 100000, guid: c8ff2095486904c67b403d94293d21b7, type: 2}
+  m_PrefabInternal: {fileID: 617403561}
+--- !u!114 &1258728635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1258728634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d13232b0287a8486bb65b7b370fa899d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  random: 36
+  board: 
 --- !u!1001 &1265804128
 Prefab:
   m_ObjectHideFlags: 0
@@ -4130,7 +4147,7 @@ MonoBehaviour:
   StartScreen: {fileID: 2134150278}
   EndScreen: {fileID: 1671798260}
   InfoScreen: {fileID: 897758437}
-  defaultGameState: 1
+  defaultGameState: 0
   winnerLabel: {fileID: 1594736221}
   gameAi: {fileID: 677284625}
 --- !u!114 &1609694062
