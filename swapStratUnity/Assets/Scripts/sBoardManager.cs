@@ -309,6 +309,7 @@ public class sBoardManager : MonoBehaviour
 				HighlightingTilesToMoveTo(tileId);
 
 				boardList [tileId].currentTileType = Tile.TileType.occupied;
+				boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
 				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
 				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
@@ -375,6 +376,7 @@ public class sBoardManager : MonoBehaviour
 				List<int> pathSequenceList = asp.TraceBackPath();
 
 				boardList [tileId].currentTileType = Tile.TileType.occupied;
+				boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
 				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
 				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;

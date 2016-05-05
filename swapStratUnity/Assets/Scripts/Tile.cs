@@ -35,7 +35,9 @@ public class Tile : MonoBehaviour {
 
 	public Color emptyColor;
 	public Color blueColor;
+	public Color blueGuardedColor;
 	public Color redColor;
+	public Color redGuardedColor;
 
 	public enum TileState
 		{
@@ -59,6 +61,14 @@ public class Tile : MonoBehaviour {
 		occupied
 	}
 	public TileType currentTileType = TileType.empty;
+
+	public enum TileGuarded
+	{
+		untaken = 0,
+		taken,
+		guarded
+	}
+	public TileGuarded currentGuardState = TileGuarded.untaken;
 
 	public void SetTileId(int tildeId)
 	{
@@ -127,10 +137,24 @@ public class Tile : MonoBehaviour {
 				tile.color = emptyColor;
 				break;
 			case PlayerVO.PlayerType.friend:
-				tile.color = blueColor;
+				if (currentGuardState == TileGuarded.taken) 
+				{
+					tile.color = blueColor;
+				} 
+				else if (currentGuardState == TileGuarded.guarded)
+				{
+					tile.color = blueGuardedColor;
+				}
 				break;
 			case PlayerVO.PlayerType.enemy:
-				tile.color = redColor;
+				if (currentGuardState == TileGuarded.taken) 
+				{
+					tile.color = redColor;
+				} 
+				else if (currentGuardState == TileGuarded.guarded)
+				{
+					tile.color = redGuardedColor;
+				}
 				break;
 			}
 			break;

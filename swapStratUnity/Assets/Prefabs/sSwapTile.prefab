@@ -142,8 +142,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: .25, z: 1}
-  m_Center: {x: 0, y: -.125, z: 0}
+  m_Size: {x: 1, y: 0.25, z: 1}
+  m_Center: {x: 0, y: -0.125, z: 0}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -164,14 +164,17 @@ MonoBehaviour:
   occupyingTokenPlayerType: 0
   currentTilePlayerType: 0
   nothingColor: {r: 0, g: 0, b: 0, a: 0}
-  selectedColor: {r: .992156863, g: .745098054, b: .247058824, a: 1}
+  selectedColor: {r: 0.99215686, g: 0.74509805, b: 0.24705882, a: 1}
   unselectedColor: {r: 0, g: 0, b: 0, a: 1}
-  emptyColor: {r: .913725495, g: .913725495, b: .913725495, a: 1}
-  blueColor: {r: .325490206, g: .431372553, b: .709803939, a: 1}
-  redColor: {r: .894117653, g: .313725501, b: .31764707, a: 1}
+  emptyColor: {r: 0.9137255, g: 0.9137255, b: 0.9137255, a: 1}
+  blueColor: {r: 0.655866, g: 0.7170661, b: 0.878, a: 1}
+  blueGuardedColor: {r: 0.3254902, g: 0.43137255, b: 0.70980394, a: 1}
+  redColor: {r: 0.947, g: 0.665741, b: 0.66764146, a: 1}
+  redGuardedColor: {r: 0.89411765, g: 0.3137255, b: 0.31764707, a: 1}
   currentTileState: 0
   currentTileVisualState: 0
   currentTileType: 0
+  currentTileVacancy: 0
 --- !u!114 &11400002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -184,7 +187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: .806896567, b: 0, a: 1}
+  m_Color: {r: 1, g: 0.80689657, b: 0, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -370,6 +373,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!224 &22400000
 RectTransform:
   m_ObjectHideFlags: 1
@@ -382,11 +386,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22400006}
   m_RootOrder: 3
-  m_AnchorMin: {x: .5, y: .5}
-  m_AnchorMax: {x: .5, y: .5}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: .5, y: .5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &22400002
 RectTransform:
   m_ObjectHideFlags: 1
@@ -399,35 +403,35 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22400006}
   m_RootOrder: 4
-  m_AnchorMin: {x: .5, y: .5}
-  m_AnchorMax: {x: .5, y: .5}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: .899999976, y: .899999976}
-  m_Pivot: {x: .5, y: .5}
+  m_SizeDelta: {x: 0.9, y: 0.9}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &22400004
 RectTransform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100006}
-  m_LocalRotation: {x: .707106829, y: .707106709, z: -1.15202326e-07, w: -1.15202312e-07}
+  m_LocalRotation: {x: 0.7071068, y: 0.7071067, z: -0.000000115202326, w: -0.00000011520231}
   m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 22400006}
   m_RootOrder: 0
-  m_AnchorMin: {x: .5, y: .5}
-  m_AnchorMax: {x: .5, y: .5}
-  m_AnchoredPosition: {x: -.0610000007, y: -.0120000001}
-  m_SizeDelta: {x: 1.00999999, y: 1.12}
-  m_Pivot: {x: .5, y: .5}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -0.061, y: -0.012}
+  m_SizeDelta: {x: 1.01, y: 1.12}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &22400006
 RectTransform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100008}
-  m_LocalRotation: {x: 1.15202326e-07, y: -.707106709, z: -.707106829, w: -1.15202312e-07}
+  m_LocalRotation: {x: 0.000000115202326, y: -0.7071067, z: -0.7071068, w: -0.00000011520231}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -442,7 +446,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: .5, y: .5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &22442548
 RectTransform:
   m_ObjectHideFlags: 1
@@ -455,35 +459,91 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22400006}
   m_RootOrder: 1
-  m_AnchorMin: {x: .5, y: .5}
-  m_AnchorMax: {x: .5, y: .5}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: .5, y: .5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &22482356
 RectTransform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 123080}
-  m_LocalRotation: {x: 0, y: 0, z: 1, w: -1.62920685e-07}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: -0.00000016292068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 22400006}
   m_RootOrder: 2
-  m_AnchorMin: {x: .5, y: .5}
-  m_AnchorMax: {x: .5, y: .5}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: .5, y: .5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
-    m_Modifications: []
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: blueGuardedColor.r
+      value: 0.3254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueGuardedColor.g
+      value: 0.43137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueGuardedColor.b
+      value: 0.70980394
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueGuardedColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redGuardedColor.r
+      value: 0.89411765
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redGuardedColor.g
+      value: 0.3137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redGuardedColor.b
+      value: 0.31764707
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redGuardedColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueColor.r
+      value: 0.655866
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueColor.g
+      value: 0.7170661
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: blueColor.b
+      value: 0.878
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redColor.g
+      value: 0.665741
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redColor.b
+      value: 0.66764146
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: redColor.r
+      value: 0.947
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 100000}

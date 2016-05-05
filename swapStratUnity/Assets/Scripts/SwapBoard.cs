@@ -100,6 +100,7 @@ public class SwapBoard : MonoBehaviour {
 				{
 					tmp.GetComponent<Tile>().currentTileType = Tile.TileType.empty;
 				}
+				tmp.GetComponent<Tile>().currentGuardState = Tile.TileGuarded.untaken;
 				tmp.GetComponent<Tile>().UpdateState();
 				
 				sBoardManager.Instance.boardList.Add(tmp.GetComponent<Tile>());
@@ -125,6 +126,7 @@ public class SwapBoard : MonoBehaviour {
 		
 		//occupy tile
 		tmpTile.currentTileType = Tile.TileType.occupied;
+		tmpTile.currentGuardState = Tile.TileGuarded.taken;
 		
 		//set selected bench token as used
 		playerPlaying.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.disabled);
@@ -149,6 +151,7 @@ public class SwapBoard : MonoBehaviour {
 
 		//occupy tile
 		tmpTile.currentTileType = Tile.TileType.occupied;
+		tmpTile.currentGuardState = Tile.TileGuarded.taken;
 
 		//set selected bench token as used
 		sb.currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.disabled);
