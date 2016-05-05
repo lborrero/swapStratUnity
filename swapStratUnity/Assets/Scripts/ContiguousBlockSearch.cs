@@ -204,4 +204,61 @@ public class ContiguousBlockSearch : MonoBehaviour {
 		}
 		return giveMeIds;
 	}
+
+	public static List<int> returnCardianlTilesFromTile(List<int> intArray, int width2, int height2, int initialCoord_x2, int initialCoord_y2){
+		int width = width2;
+		int height = height2;
+
+		int initialCoord_x = initialCoord_x2;
+		int initialCoord_y = initialCoord_y2;
+
+		List<int> giveMeIds = new List<int>();
+		int previousGiveMeIdsSize = giveMeIds.Count;
+		int placement = coordToIndex(initialCoord_x, initialCoord_y, width);
+
+		verifyCardinals(giveMeIds, intArray, placement, width, height);
+		return giveMeIds;
+	}
+
+	public static void verifyCardinals(List<int> idCollector, List<int> intArray, int placement, int width, int height)
+	{
+			//right
+			int right = placement+1;
+			int rightChecker = (right+1)%(width);
+			if (intArray [right] == 0 || rightChecker == 0 || right > (width * height) - 1) {
+				
+			} else {
+				idCollector.Add (right);
+			}
+
+			//left
+			int left = placement-1;
+			int leftChecker = (left+1)%(width);
+			if (intArray [left] == 0 || leftChecker == 0) {
+				
+			} 
+			else 
+			{
+				idCollector.Add (left);
+			}
+
+			//top
+			int top = placement - width;
+			if (intArray[top] == 0 || top < width) {
+				
+			}
+			else 
+			{
+				idCollector.Add (top);
+			}
+
+			//bottom
+			int bottom = placement + width;
+			if (intArray[bottom] == 0 || bottom > (width * height) - 1) {
+			}
+			else 
+			{
+				idCollector.Add (bottom);
+			}
+	}
 }

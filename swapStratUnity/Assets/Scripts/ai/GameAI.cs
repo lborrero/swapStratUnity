@@ -46,7 +46,7 @@ public class GameAI : MonoBehaviour {
 			DestroyTurnSequenceAll();
 			returnValue = true;
 		}
-		Debug.Log("Checking " + returnValue);
+//		Debug.Log("Checking " + returnValue);
 		return returnValue;
 	}
 
@@ -189,7 +189,7 @@ public class GameAI : MonoBehaviour {
 					sb.sbm.TileClicked(possibleTiles[rnd.Next(0, possibleTiles.Count-1)].tileId);
 
 					TileSelectionSequence.Clear();
-					Debug.Log("GenerateTurnSequence: " + TileSelectionSequence.Count + " " + currentAiProcess);
+//					Debug.Log("GenerateTurnSequence: " + TileSelectionSequence.Count + " " + currentAiProcess);
 					break;
 				}
 				case AiType.random:
@@ -201,7 +201,7 @@ public class GameAI : MonoBehaviour {
 				} 
 				case AiType.hearthstone:
 				{
-					Debug.Log("--------placeSelectedTokenFromBench");
+//					Debug.Log("--------placeSelectedTokenFromBench");
 
 					
 					if(playFinalizationSequence)
@@ -237,7 +237,7 @@ public class GameAI : MonoBehaviour {
 					{
 					if(TileSelectionSequence.Count> 0 && (int)TileSelectionSequence[0].x != -1)
 					{
-						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
+//						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
 						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);// select token with this tile id is found in the x value of the vector 2
 					}
 					else
@@ -259,7 +259,7 @@ public class GameAI : MonoBehaviour {
 				}
 				case AiType.hearthstone:
 				{
-				Debug.Log("--------selectATokenFromBoard");
+//				Debug.Log("--------selectATokenFromBoard");
 				if(playFinalizationSequence)
 				{
 					if(TileSelectionSequence.Count> 0)
@@ -324,7 +324,7 @@ public class GameAI : MonoBehaviour {
 				{
 					if(TileSelectionSequence.Count > 0)
 					{
-						Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
+//						Debug.Log("AI moveSelectedToken: " + (int)TileSelectionSequence[0].y);
 						if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))// place token on this tile id is found in the y value of the vector 2
 						{
 						DestroyTurnSequenceStep0();
@@ -359,7 +359,7 @@ public class GameAI : MonoBehaviour {
 				}
 			case AiType.hearthstone:
 			{
-				Debug.Log("--------moveSelectedToken");
+//				Debug.Log("--------moveSelectedToken");
 				if(playFinalizationSequence)
 				{
 					if(TileSelectionSequence.Count > 0)
@@ -534,7 +534,7 @@ public class GameAI : MonoBehaviour {
 
 	void DestroyTurnSequenceStep0()
 	{
-		Debug.Log ("clicks"  +TileSelectionSequence.Count + ": " + TileSelectionSequence.First().x + "," + TileSelectionSequence.First().y);
+//		Debug.Log ("clicks"  +TileSelectionSequence.Count + ": " + TileSelectionSequence.First().x + "," + TileSelectionSequence.First().y);
 		TileSelectionSequence.RemoveAt (0);
 		if(TileSelectionSequence.Count <= 0)
 		{
@@ -544,7 +544,7 @@ public class GameAI : MonoBehaviour {
 
 	void DestroyTurnSequenceAll()
 	{
-		Debug.Log ("DESTROY!");
+//		Debug.Log ("DESTROY!");
 		TileSelectionSequence.Clear ();
 		playFinalizationSequence = false;
 	}

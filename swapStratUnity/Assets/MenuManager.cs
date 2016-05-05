@@ -58,13 +58,13 @@ public class MenuManager : MonoBehaviour {
 				switch((PlayerVO.PlayerType)gameAi.aiPt)
 				{
 				case PlayerVO.PlayerType.none:
-					Debug.Log("HumanVsHuman");
+//					Debug.Log("HumanVsHuman");
 					break;
 				case PlayerVO.PlayerType.enemy:
-					Debug.Log("BlueVsAi");
+//					Debug.Log("BlueVsAi");
 					break;
 				case PlayerVO.PlayerType.friend:
-					Debug.Log("RedVsAi");
+//					Debug.Log("RedVsAi");
 					break;
 				}
 			StartScreen.SetActive(false);
@@ -82,13 +82,13 @@ public class MenuManager : MonoBehaviour {
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
-							Debug.Log("HumanVsHuman");
+//							Debug.Log("HumanVsHuman");
 							break;
 						case PlayerVO.PlayerType.enemy:
-							Debug.Log("BlueVsAi");
+//							Debug.Log("BlueVsAi");
 							break;
 						case PlayerVO.PlayerType.friend:
-							Debug.Log("RedVsAi");
+//							Debug.Log("RedVsAi");
 							break;
 						}
 					winnerLabel.text = "Red Wins!";
@@ -98,13 +98,13 @@ public class MenuManager : MonoBehaviour {
 					switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
-							Debug.Log("HumanVsHuman");
+//							Debug.Log("HumanVsHuman");
 							break;
 						case PlayerVO.PlayerType.enemy:
-							Debug.Log("BlueVsAi");
+//							Debug.Log("BlueVsAi");
 							break;
 						case PlayerVO.PlayerType.friend:
-							Debug.Log("RedVsAi");
+//							Debug.Log("RedVsAi");
 							break;
 						}
 					winnerLabel.text = "Blue Wins!";
@@ -117,13 +117,13 @@ public class MenuManager : MonoBehaviour {
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
-							Debug.Log("HumanVsHuman");
+//							Debug.Log("HumanVsHuman");
 							break;
 						case PlayerVO.PlayerType.enemy:
-							Debug.Log("BlueVsAi");
+//							Debug.Log("BlueVsAi");
 							break;
 						case PlayerVO.PlayerType.friend:
-							Debug.Log("RedVsAi");
+//							Debug.Log("RedVsAi");
 							break;
 						}
 					winnerLabel.text = "Blue Wins!";
@@ -133,13 +133,13 @@ public class MenuManager : MonoBehaviour {
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
-							Debug.Log("HumanVsHuman");
+//							Debug.Log("HumanVsHuman");
 							break;
 						case PlayerVO.PlayerType.enemy:
-							Debug.Log("BlueVsAi");
+//							Debug.Log("BlueVsAi");
 							break;
 						case PlayerVO.PlayerType.friend:
-							Debug.Log("RedVsAi");
+//							Debug.Log("RedVsAi");
 							break;
 						}
 
@@ -150,13 +150,13 @@ public class MenuManager : MonoBehaviour {
 						switch((PlayerVO.PlayerType)gameAi.aiPt)
 						{
 						case PlayerVO.PlayerType.none:
-							Debug.Log("HumanVsHuman");
+//							Debug.Log("HumanVsHuman");
 							break;
 						case PlayerVO.PlayerType.enemy:
-							Debug.Log("BlueVsAi");
+//							Debug.Log("BlueVsAi");
 							break;
 						case PlayerVO.PlayerType.friend:
-							Debug.Log("RedVsAi");
+//							Debug.Log("RedVsAi");
 							break;
 						}
 					winnerLabel.text = "Tie Game";

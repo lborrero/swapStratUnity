@@ -32,7 +32,7 @@ public class PossibilityCalculator
 		Permutations<char> P1 = new Permutations<char>(inputSet, 
 		                                               GenerateOption.WithoutRepetition);
 		string format1 = "Permutations of {{A A C}} without repetition; size = {0}";
-		Debug.Log(String.Format(format1, P1.Count));
+//		Debug.Log(String.Format(format1, P1.Count));
 //		foreach(IList<char> p in P1) {
 //			Debug.Log(String.Format("{{{0} {1} {2}}}", p[0], p[1], p[2]));
 //		}

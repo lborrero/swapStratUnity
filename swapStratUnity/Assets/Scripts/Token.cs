@@ -331,8 +331,8 @@ public class Token : MonoBehaviour {
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit;
 			if (Physics.Raycast(ray, out hit, 30)) {
-				Debug.DrawLine(ray.origin, hit.point);
-				Debug.Log(hit.collider.gameObject.name);
+//				Debug.DrawLine(ray.origin, hit.point);
+//				Debug.Log(hit.collider.gameObject.name);
 				Tile hitTile = hit.collider.gameObject.GetComponent<Tile>();
 				if(hitTile != null && !hitTile.DepositeTokenHere())
 				{

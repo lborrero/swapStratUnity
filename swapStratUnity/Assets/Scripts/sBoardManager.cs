@@ -42,7 +42,7 @@ public class sBoardManager : MonoBehaviour
 		UpdateBoard();
 
 		sGameManager sgm = sGameManager.Instance;
-		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
+//		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		switch(sgm.currentInnerGameLoop)
 		{
 		case sGameManager.InnerGameLoop.playerOneTurn:
@@ -129,6 +129,31 @@ public class sBoardManager : MonoBehaviour
 		return boardComplete;
 	}
 
+	void CheckForGuardedTiles()
+	{
+		Debug.Log ("CheckForGuardedTiles");
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if (boardList [i].currentGuardState == Tile.TileGuarded.taken || boardList [i].currentGuardState == Tile.TileGuarded.guarded) 
+			{
+				Debug.Log (ListsToStrings (getFullBoardListIntoBinaryList ()));
+				Debug.Log (ListsToStrings (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType)));
+				List<int> cardinalTiles = ContiguousBlockSearch.returnCardianlTilesFromTile (getFullBoardListIntoBinaryList(), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
+				List<int> cardinalTilesWithColor = ContiguousBlockSearch.returnCardianlTilesFromTile (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
+				Debug.Log (ListsToStrings (cardinalTiles));
+				Debug.Log (ListsToStrings (cardinalTilesWithColor));
+				Debug.Log (i + " " + cardinalTiles.Count + " " + cardinalTilesWithColor.Count);
+				if (cardinalTiles.Count == cardinalTilesWithColor.Count) {
+					boardList [i].currentGuardState = Tile.TileGuarded.guarded;
+				} 
+				else 
+				{
+					boardList [i].currentGuardState = Tile.TileGuarded.taken;
+				}
+			}
+		}
+	}
+
 	void ResetPlayersTokens(PlayerVO.PlayerType pt)
 	{
 		for(int i = 0; i<tokenList.Count; i++)
@@ -185,7 +210,7 @@ public class sBoardManager : MonoBehaviour
 	void ContinueInnerGameTurnAction()
 	{
 		sGameManager sgm = sGameManager.Instance;
-		Debug.Log (sgm.currentTurnLoop);
+//		Debug.Log (sgm.currentTurnLoop);
 		switch(sgm.currentTurnLoop)
 		{
 		case sGameManager.TurnLoop.selectATokenFromBench:
@@ -221,14 +246,14 @@ public class sBoardManager : MonoBehaviour
 				}
 				else
 				{
-					Debug.Log("A");
+//					Debug.Log("A");
 					sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
 			}
 			else
 			{
-				Debug.Log("B");
+//				Debug.Log("B");
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 				ContinueInnerGameTurnAction();
 			}
@@ -249,7 +274,7 @@ public class sBoardManager : MonoBehaviour
 			}
 			else if(CheckIfPlayerCanMove())
 			{
-				Debug.Log("C");
+//				Debug.Log("C");
 				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 				ContinueInnerGameTurnAction();
 			}
@@ -324,7 +349,7 @@ public class sBoardManager : MonoBehaviour
 
 				if(CheckToSeeIfGameIsFinished())
 				{
-					Debug.Log("D");
+//					Debug.Log("D");
 					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
@@ -406,7 +431,7 @@ public class sBoardManager : MonoBehaviour
 
 				if(CheckToSeeIfGameIsFinished())
 				{
-					Debug.Log("E");
+//					Debug.Log("E");
 					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
 					ContinueInnerGameTurnAction();
 				}
@@ -418,6 +443,7 @@ public class sBoardManager : MonoBehaviour
 				returnValue = true;
 			}
 		}
+		CheckForGuardedTiles ();
 		UpdateBoard();
 		return returnValue;
 	}
@@ -645,6 +671,16 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
+	public List<int> getFullBoardListIntoBinaryList()
+	{
+		List<int> tmpArray = new List<int> ();
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			tmpArray.Add((boardList[i].currentTileType != Tile.TileType.nothing)?1:0);
+		}
+		return tmpArray;
+	}
+
 	public List<int> boardListIntoBinaryList(int centerTileToCheck)//currentlySelectedTile.tileId
 	{
 		List<int> tmpArray = new List<int> ();
@@ -665,6 +701,15 @@ public class sBoardManager : MonoBehaviour
 		return tmpArray;
 	}
 
+	public List<int> boardListIntoBinaryOfSamePlayerType(int centerTileToCheck, PlayerVO.PlayerType playerType)
+	{
+		List<int> tmpArray = new List<int> ();
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			tmpArray.Add ((boardList [i].currentTilePlayerType == playerType || i == centerTileToCheck) ? 1 : 0);
+		}
+		return tmpArray;
+	}
 
 	public List<int> boardListIntoBinaryListForPathFinding(int source_id, int target_id)
 	{
@@ -681,6 +726,9 @@ public class sBoardManager : MonoBehaviour
 		string toPrint = "";
 		for(int i=0; i<list.Count; i++)
 		{
+			if (i % board_width == 0) {
+				toPrint = toPrint + "\n";
+			}
 			toPrint = toPrint + list[i] + ",";
 		}
 		return toPrint;
