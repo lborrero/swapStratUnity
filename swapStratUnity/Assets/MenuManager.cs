@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Advertisements;
+//using UnityEngine.Advertisements;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -17,7 +17,7 @@ public class MenuManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Advertisement.Initialize ("1010373");
+		//Advertisement.Initialize ("1010373");
 		sgm = sGameManager.Instance;
 		sbm = sBoardManager.Instance;
 		UpdateGameState ((int)defaultGameState);
@@ -167,13 +167,13 @@ public class MenuManager : MonoBehaviour {
 		}
 	}
 
-	IEnumerator ShowAdWhenReady()
-	{
-		while (!Advertisement.IsReady())
-			yield return null;
-		
-		Advertisement.Show ();
-	}
+//	IEnumerator ShowAdWhenReady()
+//	{
+//		while (!Advertisement.IsReady())
+//			yield return null;
+//		
+//		Advertisement.Show ();
+//	}
 
 	public void RateThisGame()
 	{
@@ -199,7 +199,7 @@ public class MenuManager : MonoBehaviour {
 	{
 //		if(counter > 0)
 //		{
-			StartCoroutine (ShowAdWhenReady ());
+//			StartCoroutine (ShowAdWhenReady ());
 			Application.LoadLevel (Application.loadedLevel);
 //		}
 //		counter++;

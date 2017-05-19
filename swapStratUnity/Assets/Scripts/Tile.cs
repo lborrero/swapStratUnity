@@ -13,6 +13,7 @@ public class Tile : MonoBehaviour {
 	public int occupyingTokenId = -1;
 	public PlayerVO.PlayerType occupyingTokenPlayerType = PlayerVO.PlayerType.none;
 
+	[SerializeField]
 	private int _tileId;
 	public int tileId{
 		get { return this._tileId; }

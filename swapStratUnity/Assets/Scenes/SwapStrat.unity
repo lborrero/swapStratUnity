@@ -1933,6 +1933,14 @@ Prefab:
       propertyPath: gameActionLabel
       value: 
       objectReference: {fileID: 288942539}
+    - target: {fileID: 11400000, guid: c8ff2095486904c67b403d94293d21b7, type: 2}
+      propertyPath: width
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: c8ff2095486904c67b403d94293d21b7, type: 2}
+      propertyPath: height
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: c8ff2095486904c67b403d94293d21b7, type: 2}
   m_IsPrefabParent: 0

@@ -218,8 +218,7 @@ public class GameAI : MonoBehaviour {
 					else
 					{
 						List<Tile> possibleTiles = GetCurrentlyEmptyTiles();
-						List<List<int>> emptyTilesIDsSplitByType = HearthStone_ParsePossibilitesIntoTypes(possibleTiles);
-						HearthStone_PlayUntilFold(emptyTilesIDsSplitByType);
+						HearthStone_PlayUntilFold(GivePossibleTilesInOrderOfHeuristic(possibleTiles));
 					}
 				break;
 				}
@@ -275,31 +274,46 @@ public class GameAI : MonoBehaviour {
 				}
 				else
 				{
+					//Here, because there's no possible finish, we are going to check which token should be selected to move.
+					//For this, we want to check which token has the best move option. We do that by checking it's movement bubble.
 					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
 
+					/*
+					 * shortTermMemory represents a list of the space bubbles for each token that can be moved in the game 
+					 * as an array of the id's composing those bubbles.
+					 */
 					List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
 
 					int theTileIdWhereTheTokenToMoveIs = 0;
 					int heuristic = -1;
 					int tempHeuristic = -1;
 
+					//let's loop through each tokens moveable space, and see which one has the best moves.
 					for(int i = 0; i<shortTermMemory.Count; i++)
 					{
+						// take that space bubble and give them back to me the real tiles with their actual info.
 						List<Tile> returnValueB = new List<Tile>();
 						for(int j = 0; j<shortTermMemory[i].Count; j++)
 						{
 							for(int k = 0; k<sb.sbm.boardList.Count; k++)
 							{
-								if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)
+								if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)//sb.sbm.boardList[k] represents the tiles actual info as Tile class.
 								{
-									returnValueB.Add(sb.sbm.boardList[k]);
+									returnValueB.Add(sb.sbm.boardList[k]);//the selected actual tiles are grouped in a list called returnValueB.
 								}
 							}
 						}
-
 						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
+						
+						
+						//let's analyze which token you should move first by analyzing it's moveable space.
+						//the better it's space offers, the higher the heuristic
+						//the higher the heuristic, the better chance it has for being moved selected to move first.
+//						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(returnValueB);
+//								Debug.Log ("returnValueB: " + returnValueB.Count);
 						if(heuristic < tempHeuristic)
-						{
+						{		
+//									Debug.Log ("tempHeuristic: " + tempHeuristic);
 							theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
 							heuristic = tempHeuristic;
 						}
@@ -357,38 +371,39 @@ public class GameAI : MonoBehaviour {
 					sb.sbm.TileClicked(returnedValue);
 					break;
 				}
-			case AiType.hearthstone:
-			{
-//				Debug.Log("--------moveSelectedToken");
-				if(playFinalizationSequence)
+				case AiType.hearthstone:
 				{
-					if(TileSelectionSequence.Count > 0)
+	//				Debug.Log("--------moveSelectedToken");
+					if(playFinalizationSequence)
 					{
-						if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))
+						if(TileSelectionSequence.Count > 0)
 						{
-							DestroyTurnSequenceStep0();
+							if(sb.sbm.TileClicked((int)TileSelectionSequence[0].y))
+							{
+								DestroyTurnSequenceStep0();
+							}
+							else
+							{
+								DestroyTurnSequenceAll();
+								MoveSelectedPieceHearthstoneStyle(sb.sbm.currentlySelectedTile.tileId);
+							}
 						}
 						else
 						{
-							DestroyTurnSequenceAll();
-							MoveSelectedPieceHearthstoneStyle(sb.sbm.currentlySelectedTile.tileId);
+							//do this if no finalize sequence is available.		
+							List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
+							
+							System.Random rnd = new System.Random();
+							int returnedValue = imediatePossibleTiles[rnd.Next(0, imediatePossibleTiles.Count)];
+							sb.sbm.TileClicked(returnedValue);
 						}
 					}
 					else
 					{
-						List<int> imediatePossibleTiles = sb.sbm.getTilesIdToMoveTo ();
-						
-						System.Random rnd = new System.Random();
-						int returnedValue = imediatePossibleTiles[rnd.Next(0, imediatePossibleTiles.Count)];
-						sb.sbm.TileClicked(returnedValue);
+						MoveSelectedPieceHearthstoneStyle((int)TileSelectionSequence[0].x);
 					}
+					break;
 				}
-				else
-				{
-					MoveSelectedPieceHearthstoneStyle((int)TileSelectionSequence[0].x);
-				}
-				break;
-			}
 			}
 			break;
 		}
@@ -416,7 +431,8 @@ public class GameAI : MonoBehaviour {
 		List<Tile> possibleTokensOnTile = new List<Tile>();
 		
 		List<int> shortTermMemory = sb.sbm.getPotentialTilesIdToMoveToExcludingTheTileTheTokenIsIn (currentlySelectedTokenTileId);
-		
+
+		//transform a list of tile ids into a list of actual tiles from the board. (ToDo: make a general function of this, it get's used more than once).
 		List<Tile> possibleTiles = new List<Tile>();
 		for(int k = 0; k<sb.sbm.boardList.Count; k++)
 		{
@@ -424,13 +440,58 @@ public class GameAI : MonoBehaviour {
 			{
 				if(shortTermMemory[j] == sb.sbm.boardList[k].tileId)
 				{
-					possibleTiles.Add(sb.sbm.boardList[k]);
+					possibleTiles.Add(sb.sbm.boardList[k]);//possibleTiles is the group of actual tiles from the board to which we can move to.
 				}
 			}
 		}
-		
-		HearthStone_PlayUntilFold(HearthStone_ParsePossibilitesIntoTypes(possibleTiles));
+
+		HearthStone_PlayUntilFold(GivePossibleTilesInOrderOfHeuristic (possibleTiles));
 		TileSelectionSequence.Clear();
+	}
+
+	List<List<int>> GivePossibleTilesInOrderOfHeuristic(List<Tile> possibleTiles)
+	{
+		float[] heuristicValueForEachPossibleTileSpace = new float[possibleTiles.Count];
+		int[] possibleTileIds = new int[possibleTiles.Count];
+		Debug.Log ("-----");
+		for (int m = 0; m < heuristicValueForEachPossibleTileSpace.Length; m++) 
+		{
+			float tempHeuristic = 0;
+			tempHeuristic += (possibleTiles [m].currentTilePlayerType != aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.guarded) ? (-1) : 0;
+			tempHeuristic += (possibleTiles [m].currentTilePlayerType != aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.taken) ? 2 : 0;
+			//check match for almost guarded tiles.
+			tempHeuristic += (sb.sbm.GiveMeAlmostGuardedTiles ().Exists(x => x.tileId == possibleTiles[m].tileId))?0.5f:0;
+			tempHeuristic += (possibleTiles [m].currentTilePlayerType == PlayerVO.PlayerType.none) ? 1 : 0;
+			tempHeuristic += (possibleTiles [m].currentTilePlayerType == aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.taken) ? 0 : 0;
+			tempHeuristic += (possibleTiles [m].currentTilePlayerType == aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.guarded) ? (-1) : 0;
+			Debug.Log ("heuristicValue: " + tempHeuristic);
+			heuristicValueForEachPossibleTileSpace[m] = tempHeuristic;
+			possibleTileIds [m] = possibleTiles [m].tileId;
+		}
+
+
+		//sorting them with highest heuristic
+		Array.Sort(heuristicValueForEachPossibleTileSpace, possibleTileIds);
+		Array.Reverse(heuristicValueForEachPossibleTileSpace);
+		Array.Reverse(possibleTileIds);
+
+		//tranform tiles array into an tileID array
+		List<List<int>> segmentedIds = new List<List<int>>();
+		float currentHeuristicValue = 99999;
+		int currentsegmentIndex = -1;
+		for (int i = 0; i < possibleTileIds.Length; i++) 
+		{
+			if (currentHeuristicValue != heuristicValueForEachPossibleTileSpace [i]) 
+			{
+				currentHeuristicValue = heuristicValueForEachPossibleTileSpace [i];
+				segmentedIds.Add (new List<int> ());
+				currentsegmentIndex++;
+			}
+			segmentedIds [currentsegmentIndex].Add (possibleTileIds [i]);
+			//			Debug.Log ("Segment: " + currentsegmentIndex + " value: " + heuristicValueForEachPossibleTileSpace [i]);
+		}
+
+		return segmentedIds;
 	}
 
 	List<Tile> GetNonMoveableTokensList()
@@ -563,8 +624,10 @@ public class GameAI : MonoBehaviour {
 		return shortTermMemory;
 	}
 
+//	int Evaluate_HearthStone_HeuristicForPossibilityTypes(List<Tile> input)
 	int Evaluate_HearthStone_HeuristicForPossibilityTypes(List<List<int>> input)
 	{
+		//here we are returning a heuristic to inform what space offers the best moves.
 		int returnValue = 0;
 //		Debug.Log("1): " + input[0].Count);
 		if(input[0].Count > 0)
@@ -595,6 +658,15 @@ public class GameAI : MonoBehaviour {
 			}
 		}
 
+//		List<List<int>> data = new List<List<int>> ();
+//		data = HearthStone_ParsePossibilitesIntoTypes(input);
+//		//add the enemy tiles that can be changed and give them a 2 multiplier as a heuristic.
+//		returnValue += (data [(aiPt == PlayerVO.PlayerType.enemy)?0:2].Count/*all enemy Tiles*/ - data [(aiPt == PlayerVO.PlayerType.enemy)?3:4].Count/*all enemy tile that are guarded*/) * 2/*a positive heuristic because it's better to remove enemy tiles.*/;
+//		//add the empty tiles with a 1 multiplier as a heuristic.
+//		returnValue += data [1].Count/*all neutral Tiles*/ * 1/*a neutral heuristic value for empty tiles.*/;
+
+//		Debug.Log ("movement:" + input.Count + "; heuristic: " + returnValue);
+		//total heuristic value for this pocket bubble.
 		return returnValue;
 	}
 
@@ -604,19 +676,28 @@ public class GameAI : MonoBehaviour {
 		List<int> pointCountingEnemy = new List<int>(); //these are tileID
 		List<int> pointCountingNone = new List<int>(); //these are tileID
 		List<int> pointCountingFriend = new List<int>(); //these are tileID
+		List<int> pointCountingEnemyThatAreGuarded = new List<int>(); //these are tileID
+		List<int> pointCountingFriendThatAreGuarded = new List<int>(); //these are tileID
 		for(int i = 0; i<possibleTilesToPlayOn.Count; i++)
 		{
 			switch(possibleTilesToPlayOn[i].currentTilePlayerType)
 			{
 			case PlayerVO.PlayerType.enemy:
-				pointCountingEnemy.Add(possibleTilesToPlayOn[i].tileId);
+				pointCountingEnemy.Add (possibleTilesToPlayOn [i].tileId);
+				if (possibleTilesToPlayOn [i].currentGuardState == Tile.TileGuarded.guarded) 
+				{
+					pointCountingEnemyThatAreGuarded.Add (possibleTilesToPlayOn [i].tileId);
+				}
 				break;
 			case PlayerVO.PlayerType.none:
-
 				pointCountingNone.Add(possibleTilesToPlayOn[i].tileId);
 				break;
 			case PlayerVO.PlayerType.friend:
 				pointCountingFriend.Add(possibleTilesToPlayOn[i].tileId);
+				if (possibleTilesToPlayOn [i].currentGuardState == Tile.TileGuarded.guarded) 
+				{
+					pointCountingFriendThatAreGuarded.Add (possibleTilesToPlayOn [i].tileId);
+				}
 				break;
 			}
 		}
@@ -626,6 +707,11 @@ public class GameAI : MonoBehaviour {
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingFriend:pointCountingEnemy);
 		returnValue.Add (pointCountingNone);
 		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingEnemy:pointCountingFriend);
+
+//		Debug.Log ("pointCountingEnemyThatAreGuarded: " + pointCountingEnemyThatAreGuarded.Count);
+//		Debug.Log ("pointCountingFriendThatAreGuarded: " + pointCountingFriendThatAreGuarded.Count);
+		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingEnemyThatAreGuarded:pointCountingFriendThatAreGuarded);
+		returnValue.Add ((aiPt == PlayerVO.PlayerType.enemy)?pointCountingFriendThatAreGuarded:pointCountingEnemyThatAreGuarded);
 		return returnValue;
 	}
 
@@ -641,7 +727,7 @@ public class GameAI : MonoBehaviour {
 				while(playList[j].Count >0)
 				{
 					thisRnd = rnd.Next(0, playList[j].Count-1);
-					if(sb.sbm.TileClicked(playList[j][thisRnd]))
+					if(sb.sbm.TileClicked(playList[j][thisRnd]))//TileClicked returns true if the play can be made.
 					{
 						playList[j].RemoveAt(thisRnd);
 						playedToken = true;

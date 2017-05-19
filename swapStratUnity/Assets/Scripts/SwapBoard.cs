@@ -125,8 +125,8 @@ public class SwapBoard : MonoBehaviour {
 		Tile tmpTile = sb.boardList [tileId];
 		
 		//occupy tile
-		tmpTile.currentTileType = Tile.TileType.occupied;
-		tmpTile.currentGuardState = Tile.TileGuarded.taken;
+		//--the sBoardManager checks to see board states including occupying tile state--//tmpTile.currentTileType = Tile.TileType.occupied;
+		//--the sBoardManager checks to see board states including guarded tile state--// tmpTile.currentGuardState = Tile.TileGuarded.taken;
 		
 		//set selected bench token as used
 		playerPlaying.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.disabled);
@@ -150,8 +150,8 @@ public class SwapBoard : MonoBehaviour {
 		Tile tmpTile = sb.boardList [tileId];
 
 		//occupy tile
-		tmpTile.currentTileType = Tile.TileType.occupied;
-		tmpTile.currentGuardState = Tile.TileGuarded.taken;
+		//--the sBoardManager checks to see board states including occupying tile state--//tmpTile.currentTileType = Tile.TileType.occupied;
+		//--the sBoardManager checks to see board states including guarded tile state--// tmpTile.currentGuardState = Tile.TileGuarded.taken;
 
 		//set selected bench token as used
 		sb.currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.disabled);

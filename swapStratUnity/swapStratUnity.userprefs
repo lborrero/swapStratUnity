@@ -1,11 +1,14 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/sBoardManager.cs">
     <Files>
-      <File FileName="Assets/Scripts/ai/GameAI.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/SwapBoard.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/sBoardManager.cs" Line="337" Column="39" />
+      <File FileName="Assets/Scripts/SwapBoard.cs" Line="154" Column="11" />
+      <File FileName="Assets/Scripts/Tile.cs" Line="144" Column="22" />
+      <File FileName="Assets/Scripts/ContiguousBlockSearch.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/ai/PossibilityCalculator.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Token.cs" Line="1" Column="1" />
       <File FileName="Assets/MenuManager.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/sBoardManager.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/sGameManager.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

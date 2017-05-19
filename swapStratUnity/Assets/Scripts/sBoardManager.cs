@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class sBoardManager : MonoBehaviour
 {
@@ -51,17 +52,20 @@ public class sBoardManager : MonoBehaviour
 				if(currentPlayerTurn.currentTurnMoveCount == currentPlayerTurn.currentTurnMoveLimit &&
 				   currentPlayerTurn.currentTurnMoveLimit != 0)
 				{
+					
 					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.endInnerGameLoop;
 					ContinueInnerGameAction();
 				}
 				else
 				{
+					//Ends player turn
 					ResetPlayersTokens(currentPlayerTurn.currentPlayerType);
 					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
 					sgm.IncrementTurnCount();
 					currentPlayerTurn = player2;
 					currentPlayerTurn.StartPlayerTurn();
 					ContinueInnerGameTurnAction();
+					CheckForGuardedTiles ();
 				}
 			}
 			else
@@ -87,6 +91,7 @@ public class sBoardManager : MonoBehaviour
 					currentPlayerTurn = player1;
 					currentPlayerTurn.StartPlayerTurn();
 					ContinueInnerGameTurnAction();
+					CheckForGuardedTiles ();
 				}
 			}
 			else
@@ -131,18 +136,18 @@ public class sBoardManager : MonoBehaviour
 
 	void CheckForGuardedTiles()
 	{
-		Debug.Log ("CheckForGuardedTiles");
+		//Debug.Log ("CheckForGuardedTiles");
 		for(int i = 0; i<boardList.Count; i++)
 		{
 			if (boardList [i].currentGuardState == Tile.TileGuarded.taken || boardList [i].currentGuardState == Tile.TileGuarded.guarded) 
 			{
-				Debug.Log (ListsToStrings (getFullBoardListIntoBinaryList ()));
-				Debug.Log (ListsToStrings (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType)));
+				//Debug.Log (ListsToStrings (getFullBoardListIntoBinaryList ()));
+				//Debug.Log (ListsToStrings (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType)));
 				List<int> cardinalTiles = ContiguousBlockSearch.returnCardianlTilesFromTile (getFullBoardListIntoBinaryList(), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
 				List<int> cardinalTilesWithColor = ContiguousBlockSearch.returnCardianlTilesFromTile (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
-				Debug.Log (ListsToStrings (cardinalTiles));
-				Debug.Log (ListsToStrings (cardinalTilesWithColor));
-				Debug.Log (i + " " + cardinalTiles.Count + " " + cardinalTilesWithColor.Count);
+				//Debug.Log (ListsToStrings (cardinalTiles));
+				//Debug.Log (ListsToStrings (cardinalTilesWithColor));
+				//Debug.Log (i + " " + cardinalTiles.Count + " " + cardinalTilesWithColor.Count);
 				if (cardinalTiles.Count == cardinalTilesWithColor.Count) {
 					boardList [i].currentGuardState = Tile.TileGuarded.guarded;
 				} 
@@ -152,6 +157,46 @@ public class sBoardManager : MonoBehaviour
 				}
 			}
 		}
+	}
+
+	public List<Tile> GiveMeAlmostGuardedTiles()
+	{
+		List<Tile> returnValue = new List<Tile> ();
+//		Debug.Log ("CheckForGuardedTiles");
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			if (boardList [i].currentGuardState == Tile.TileGuarded.taken && boardList [i].currentTilePlayerType == currentPlayerTurn.currentPlayerType) 
+			{
+				List<int> cardinalTiles = ContiguousBlockSearch.returnCardianlTilesFromTile (getFullBoardListIntoBinaryList(), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
+				int initialCardinalCount = cardinalTiles.Count;
+				int totalThatAreTheSamePlayerType = 0;
+//				List<int> cardinalTilesWithColor = ContiguousBlockSearch.returnCardianlTilesFromTile (boardListIntoBinaryOfSamePlayerType (i, boardList [i].currentTilePlayerType), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
+//				List<int> cardinalTilesWithoutColor = ContiguousBlockSearch.returnCardianlTilesFromTile (boardListIntoBinaryOfUntakenTiles (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos);
+//				string s = "";
+				for (int j = cardinalTiles.Count-1; j >= 0; j--) 
+				{
+					if (boardList [cardinalTiles [j]].currentTilePlayerType == currentPlayerTurn.currentPlayerType) 
+					{
+						totalThatAreTheSamePlayerType++;
+					}
+
+					if (boardList [cardinalTiles [j]].currentTilePlayerType == PlayerVO.PlayerType.none ||
+					    (boardList [cardinalTiles [j]].currentTilePlayerType != currentPlayerTurn.currentPlayerType &&
+					    boardList [cardinalTiles [j]].currentTileType == Tile.TileType.empty)) {
+//						s += "" + cardinalTiles [j] + boardList [cardinalTiles [j]].currentGuardState + boardList [cardinalTiles [j]].currentTilePlayerType + ",";
+					} else {
+						cardinalTiles.RemoveAt (j);
+					}
+				}
+//				Debug.Log("cardinalCount: " + s);
+				if ((initialCardinalCount - totalThatAreTheSamePlayerType) == 1 && cardinalTiles.Count > 0) 
+				{
+					Debug.Log ("count: " + cardinalTiles.Count);
+					returnValue.Add (boardList [cardinalTiles[0]]);
+				}
+			}
+		}
+		return returnValue;
 	}
 
 	void ResetPlayersTokens(PlayerVO.PlayerType pt)
@@ -321,9 +366,10 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	public bool TileClicked(int tileId)
+	public bool TileClicked(int tileId)//returns value false if tile selected doesn't meet any criteria
 	{
 		bool returnValue = false;
+		//placing piece from the bench
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 
 		   boardList [tileId].currentTileType == Tile.TileType.empty && 
 		   !currentPlayerTurn.hasPlacedPieceFromBench)
@@ -334,10 +380,14 @@ public class sBoardManager : MonoBehaviour
 				HighlightingTilesToMoveTo(tileId);
 
 				boardList [tileId].currentTileType = Tile.TileType.occupied;
-				boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
 				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
-				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+				if (boardList [tileId].currentGuardState != Tile.TileGuarded.guarded) 
+				{
+					boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
+					boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+				}
+
 
 				//this makes the token that was added to the board not be moveable for this turn.
 				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
@@ -361,6 +411,7 @@ public class sBoardManager : MonoBehaviour
 				returnValue = true;
 			}
 		}
+		//select a token to move from the board
 		else if((sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken || sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard) && 
 		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
 		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType /*&&
@@ -391,6 +442,7 @@ public class sBoardManager : MonoBehaviour
 				}
 			}
 		}
+		//move selected token
 		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
 		{
 			if(CheckIfCanMoveToTileId(tileId))
@@ -401,10 +453,13 @@ public class sBoardManager : MonoBehaviour
 				List<int> pathSequenceList = asp.TraceBackPath();
 
 				boardList [tileId].currentTileType = Tile.TileType.occupied;
-				boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
 				boardList [tileId].occupyingTokenId = currentlySelectedToken.tokenId;
 				boardList [tileId].occupyingTokenPlayerType = currentlySelectedToken.tokenPlayerType;
-				boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+				if (boardList [tileId].currentGuardState != Tile.TileGuarded.guarded) 
+				{
+					boardList [tileId].currentGuardState = Tile.TileGuarded.taken;
+					boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
+				}
 
 				currentlySelectedTile.currentTileState = Tile.TileState.unselected;
 				currentlySelectedTile.currentTileVisualState = Tile.TileVisualState.unselected;
@@ -443,7 +498,6 @@ public class sBoardManager : MonoBehaviour
 				returnValue = true;
 			}
 		}
-		CheckForGuardedTiles ();
 		UpdateBoard();
 		return returnValue;
 	}
@@ -697,6 +751,19 @@ public class sBoardManager : MonoBehaviour
 		for(int i = 0; i<boardList.Count; i++)
 		{
 			tmpArray.Add((boardList[i].currentTileType == Tile.TileType.empty || i == centerTileToCheck || boardList[i].occupyingTokenPlayerType == boardList[centerTileToCheck].occupyingTokenPlayerType)?1:0);
+		}
+		return tmpArray;
+	}
+
+	public List<int> boardListIntoBinaryOfUntakenTiles(int centerTileToCheck)
+	{
+		List<int> tmpArray = new List<int> ();
+		for(int i = 0; i<boardList.Count; i++)
+		{
+			tmpArray.Add (((boardList [i].currentTilePlayerType == PlayerVO.PlayerType.none ||
+//							boardList [i].currentTilePlayerType != boardList [centerTileToCheck].currentTilePlayerType ||
+							i == centerTileToCheck)
+							&& boardList [i].currentTileType != Tile.TileType.nothing) ? 1 : 0);
 		}
 		return tmpArray;
 	}
