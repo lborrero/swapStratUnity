@@ -29,7 +29,7 @@ public class TokenBench : MonoBehaviour {
 	public void SetTokenAsUsed(int tokenId)
 	{
 		benchedTokens [tokenId].GetComponent<Token> ().isTokenOnBoard = true;
-		benchedTokens [tokenId].GetComponent<Token> ().currentTokenState = Token.TokenState.hideToken;
+		benchedTokens [tokenId].GetComponent<Token> ().CurrentTokenState = Token.TokenState.hideToken;
 		benchedTokens [tokenId].GetComponent<Token> ().UpdateState ();
 	}
 
@@ -77,7 +77,7 @@ public class TokenBench : MonoBehaviour {
 		{
 			if(benchedTokens[i].GetComponent<Token>().tokenId == tokenId)
 			{
-				benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.selected;
+				benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.selected;
 			}
 			else
 			{
@@ -108,18 +108,18 @@ public class TokenBench : MonoBehaviour {
 			{
 				if(!benchedTokens[i].GetComponent<Token>().isTokenOnBoard && !aTokenHasBeenSuggested)
 				{
-					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.highlighted;
+					benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.highlighted;
 					aTokenHasBeenSuggested = true;
 				}
 				else
 				{
 					if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
 					{
-						benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.hideToken;
+						benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.hideToken;
 					}
 					else
 					{
-						benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.disabled;
+						benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.disabled;
 					}
 				}
 				benchedTokens[i].GetComponent<Token>().UpdateState();
@@ -131,11 +131,11 @@ public class TokenBench : MonoBehaviour {
 			{
 				if(benchedTokens[i].GetComponent<Token>().isTokenOnBoard)
 				{
-					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.hideToken;
+					benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.hideToken;
 				}
 				else
 				{
-					benchedTokens[i].GetComponent<Token>().currentTokenState = Token.TokenState.disabled;
+					benchedTokens[i].GetComponent<Token>().CurrentTokenState = Token.TokenState.disabled;
 				}
 				benchedTokens[i].GetComponent<Token>().UpdateState();
 			}

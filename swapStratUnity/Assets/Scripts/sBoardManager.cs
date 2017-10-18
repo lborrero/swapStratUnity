@@ -43,7 +43,7 @@ public class sBoardManager : MonoBehaviour
 		UpdateBoard();
 
 		sGameManager sgm = sGameManager.Instance;
-//		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
+		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		switch(sgm.currentInnerGameLoop)
 		{
 		case sGameManager.InnerGameLoop.playerOneTurn:
@@ -66,6 +66,7 @@ public class sBoardManager : MonoBehaviour
 					currentPlayerTurn.StartPlayerTurn();
 					ContinueInnerGameTurnAction();
 					CheckForGuardedTiles ();
+					UpdateLockedTokens ();
 				}
 			}
 			else
@@ -92,6 +93,7 @@ public class sBoardManager : MonoBehaviour
 					currentPlayerTurn.StartPlayerTurn();
 					ContinueInnerGameTurnAction();
 					CheckForGuardedTiles ();
+					UpdateLockedTokens ();
 				}
 			}
 			else
@@ -132,6 +134,33 @@ public class sBoardManager : MonoBehaviour
 		}
 
 		return boardComplete;
+	}
+
+	void UpdateLockedTokens()
+	{
+		Debug.Log("Update");
+		for(int i = 0; i<tokenList.Count; i++)
+		{
+			if (tokenList[i].CurrentTokenState == Token.TokenState.lockedToken &&
+				tokenList[i].tokenPlayerType == currentPlayerTurn.currentPlayerType) 
+			{
+				tokenList [i].UpdateLockedTime ();
+			}
+		}
+	}
+
+	void CheckForLockedTokens()
+	{
+		//Debug.Log("Check");
+		for(int i = 0; i<tokenList.Count; i++)
+		{
+			if (!isThisTokenMoveable (tokenList [i]) && 
+				tokenList[i].CurrentTokenState != Token.TokenState.lockedToken && 
+				tokenList[i].tokenPlayerType != currentPlayerTurn.currentPlayerType) 
+			{
+				tokenList [i].StartLockToken ();
+			}
+		}
 	}
 
 	void CheckForGuardedTiles()
@@ -232,7 +261,7 @@ public class sBoardManager : MonoBehaviour
 		return yesHeDoes;
 	}
 
-	bool isThisTokenMoveable(Token tkn)
+	bool isThisTokenMoveable(Token tkn)//canTokenMove
 	{
 		bool yesItIs = false;
 		for(int i = 0; i<boardList.Count; i++)
@@ -397,6 +426,9 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.MoveMade();
 				boardView.UpdateCounters();
 
+				//Check for lockedTokens.
+				CheckForLockedTokens ();
+
 				if(CheckToSeeIfGameIsFinished())
 				{
 //					Debug.Log("D");
@@ -484,6 +516,10 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.hasMovedTokenFromBoard = true;
 				currentPlayerTurn.MoveMade();
 
+				//Check for lockedTokens.
+				CheckForLockedTokens ();
+
+				//Check if game finished.
 				if(CheckToSeeIfGameIsFinished())
 				{
 //					Debug.Log("E");
@@ -620,13 +656,13 @@ public class sBoardManager : MonoBehaviour
 					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (i), board_width, board_height, boardList [i].xPos, boardList [i].yPos); 
 					if(contiguousTiles.Count > 1)
 					{
-						tmptoken.currentTokenState = Token.TokenState.highlighted;
+						tmptoken.CurrentTokenState = Token.TokenState.highlighted;
 						tmptoken.UpdateState();
 					}
 				}
 				else
 				{
-					tmptoken.currentTokenState = Token.TokenState.disabled;
+					tmptoken.CurrentTokenState = Token.TokenState.disabled;
 					tmptoken.UpdateState();
 				}
 			}
@@ -637,11 +673,10 @@ public class sBoardManager : MonoBehaviour
 	{
 		for(int i = 0; i<tokenList.Count; i++)
 		{
-			tokenList[i].currentTokenState = Token.TokenState.unselected;
+			tokenList[i].CurrentTokenState = Token.TokenState.unselected;
 			tokenList[i].UpdateState();
 		}
 	}
-
 
 	void SelectOneTokenOnBoardById(Token tkn)
 	{
@@ -650,7 +685,7 @@ public class sBoardManager : MonoBehaviour
 			if(tkn.tokenId == tokenList[i].tokenId && tkn.tokenPlayerType == tokenList[i].tokenPlayerType)
 			{
 				//players selected token
-				tokenList[i].currentTokenState = Token.TokenState.selected;
+				tokenList[i].CurrentTokenState = Token.TokenState.selected;
 			}
 			else
 			{
@@ -660,23 +695,30 @@ public class sBoardManager : MonoBehaviour
 					//can token move?
 					if(!tokenList[i].hasTokenBeenMoved)
 					{
-						if(isThisTokenMoveable(tokenList[i]))
+						if (!tokenList [i].isTokenLocked ()) 
 						{
-							tokenList[i].currentTokenState = Token.TokenState.highlighted;
+							if (isThisTokenMoveable (tokenList [i])) 
+							{
+								tokenList [i].CurrentTokenState = Token.TokenState.highlighted;
+							} 
+							else 
+							{
+								tokenList [i].CurrentTokenState = Token.TokenState.unselected;
+							}
 						}
-						else
+						else 
 						{
-							tokenList[i].currentTokenState = Token.TokenState.unselected;
+							tokenList [i].CurrentTokenState = Token.TokenState.lockedToken;
 						}
 					}
 					else
 					{
-						tokenList[i].currentTokenState = Token.TokenState.disabled;
+						tokenList[i].CurrentTokenState = Token.TokenState.disabled;
 					}
 				}
 				else
 				{
-					tokenList[i].currentTokenState = Token.TokenState.unselected;
+					tokenList[i].CurrentTokenState = Token.TokenState.unselected;
 				}
 			}
 			tokenList[i].UpdateState();
@@ -717,7 +759,7 @@ public class sBoardManager : MonoBehaviour
 		return counter;
 	}
 
-	void UpdateBoard()
+	public void UpdateBoard()
 	{
 		for(int i = 0; i<boardList.Count; i++)
 		{

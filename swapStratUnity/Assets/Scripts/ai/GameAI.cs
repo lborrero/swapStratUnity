@@ -9,6 +9,8 @@ using System.Timers;
 
 public class GameAI : MonoBehaviour {
 
+	public bool automaticAiStop = false;
+
 	public enum AiType
 	{
 		random = 0,
@@ -62,7 +64,7 @@ public class GameAI : MonoBehaviour {
 
 	void Update()
 	{
-		if(sGameManager.Instance.currentInnerGameLoop != sGameManager.InnerGameLoop.endInnerGameLoop)
+		if(automaticAiStop == false && sGameManager.Instance.currentInnerGameLoop != sGameManager.InnerGameLoop.endInnerGameLoop)
 		{
 			PercieveLoop ();
 		}
@@ -168,7 +170,7 @@ public class GameAI : MonoBehaviour {
 			for (int i = 0; i < tokensLeft; i++)
 			{		
 				Token tk = tempPVO.playerTokenBench.benchedTokens[i].GetComponent<Token>();
-				if (!tk.isTokenOnBoard && tk.currentTokenState != Token.TokenState.disabled) 
+				if (!tk.isTokenOnBoard && tk.CurrentTokenState != Token.TokenState.disabled) 
 				{
 					sb.sbm.TokenClicked(tk.tokenId, tk.currentTokenType);
 					break;
@@ -464,11 +466,10 @@ public class GameAI : MonoBehaviour {
 			tempHeuristic += (possibleTiles [m].currentTilePlayerType == PlayerVO.PlayerType.none) ? 1 : 0;
 			tempHeuristic += (possibleTiles [m].currentTilePlayerType == aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.taken) ? 0 : 0;
 			tempHeuristic += (possibleTiles [m].currentTilePlayerType == aiPt && possibleTiles [m].currentGuardState == Tile.TileGuarded.guarded) ? (-1) : 0;
-			Debug.Log ("heuristicValue: " + tempHeuristic);
+			//Debug.Log ("heuristicValue: " + tempHeuristic);
 			heuristicValueForEachPossibleTileSpace[m] = tempHeuristic;
 			possibleTileIds [m] = possibleTiles [m].tileId;
 		}
-
 
 		//sorting them with highest heuristic
 		Array.Sort(heuristicValueForEachPossibleTileSpace, possibleTileIds);
@@ -504,7 +505,7 @@ public class GameAI : MonoBehaviour {
 			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (tmptoken.hasTokenBeenMoved || tmptoken.currentTokenState == Token.TokenState.disabled)
+				if (tmptoken.hasTokenBeenMoved || tmptoken.CurrentTokenState == Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -523,7 +524,7 @@ public class GameAI : MonoBehaviour {
 			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (tmptoken.currentTokenState != Token.TokenState.disabled)
+				if (tmptoken.CurrentTokenState != Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -542,7 +543,7 @@ public class GameAI : MonoBehaviour {
 			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (tmptoken.currentTokenState == Token.TokenState.disabled)
+				if (tmptoken.CurrentTokenState == Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -561,7 +562,7 @@ public class GameAI : MonoBehaviour {
 			    sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (tmptoken.currentTokenState != Token.TokenState.disabled)
+				if (tmptoken.CurrentTokenState != Token.TokenState.disabled)
 				{
 					possibleTokensOnTile.Add (sb.sbm.boardList [i]);
 				}
@@ -580,7 +581,7 @@ public class GameAI : MonoBehaviour {
 				sb.sbm.boardList [i].occupyingTokenPlayerType == aiPt) 
 			{
 				tmptoken = sb.sbm.getTokenFromTokenListWithIdAndType (sb.sbm.boardList [i].occupyingTokenId, sb.sbm.boardList [i].occupyingTokenPlayerType);
-				if (!tmptoken.hasTokenBeenMoved && tmptoken.currentTokenState != Token.TokenState.disabled)
+				if (!tmptoken.hasTokenBeenMoved && tmptoken.CurrentTokenState != Token.TokenState.disabled)
 				{
 					List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (sb.sbm.boardListIntoBinaryList (i), sb.sbm.board_width, sb.sbm.board_height, sb.sbm.boardList [i].xPos, sb.sbm.boardList [i].yPos); 
 					if(contiguousTiles.Count > 1)

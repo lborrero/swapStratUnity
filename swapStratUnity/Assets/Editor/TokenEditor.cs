@@ -11,6 +11,10 @@ public class TokenEditor : Editor
 		DrawDefaultInspector ();
 
 		Token myscript = (Token)target;
+
+
+		EditorGUILayout.LabelField("Level", myscript.CurrentTokenState.ToString());
+
 		if (GUILayout.Button ("Update Token"))
 		{
 			myscript.UpdateState ();

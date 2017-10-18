@@ -6,7 +6,6 @@ using System;
 
 public class Token : MonoBehaviour {
 
-
 	public Image TokenShadow;
 	public Image TokenSupport;
 	public Image TokenSupportShadow;
@@ -89,7 +88,6 @@ public class Token : MonoBehaviour {
 		previousPosition = this.gameObject.transform.position;
 	}
 
-
 	private int _tokenId;
 	public int tokenId{
 		get { return this._tokenId; }
@@ -121,6 +119,24 @@ public class Token : MonoBehaviour {
 		lockedToken
 	}
 	public TokenState currentTokenState = TokenState.unselected;
+	public TokenState CurrentTokenState
+	{
+		get
+		{
+			return currentTokenState;
+		}
+		set
+		{ 
+			if (isTokenLocked()) 
+			{
+				currentTokenState = TokenState.lockedToken;
+			}
+			else
+			{
+				currentTokenState = value;
+			}
+		}
+	}
 
 	public bool hasTokenBeenMoved = false;
 	public bool isTokenOnBoard = false;
@@ -157,15 +173,19 @@ public class Token : MonoBehaviour {
 		yPos = y;
 	}
 
-	public void LockToken ()
+	public bool isTokenLocked()
 	{
-		currentTokenState = TokenState.lockedToken;
+		return (lockedCounter > 0);
+	}
+
+	public void StartLockToken ()
+	{
+		lockedCounter = lockedTime;
 	}
 
 	public void UpdateLockedTime()
 	{
-		if (lockedCounter > 0) 
-		{
+		if (lockedCounter > 0) {
 			lockedCounter--;
 		}
 	}
