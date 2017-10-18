@@ -96,6 +96,8 @@ public class Token : MonoBehaviour {
 	}
 	public int xPos;
 	public int yPos;
+	public int lockedTime = 1;
+	public int lockedCounter;
 	
 	public Color blueColor;
 	public Color disabledBlueColor;
@@ -105,6 +107,7 @@ public class Token : MonoBehaviour {
 	public Color selectedColor;
 	public Color unselectedColor;
 	public Color disabledUnselectedColor;
+	public Color lockedColor;
 
 	public Color selectionMarkerColor;
 
@@ -114,7 +117,8 @@ public class Token : MonoBehaviour {
 		selected,
 		highlighted,
 		disabled,
-		hideToken
+		hideToken,
+		lockedToken
 	}
 	public TokenState currentTokenState = TokenState.unselected;
 
@@ -151,6 +155,19 @@ public class Token : MonoBehaviour {
 	{
 		xPos = x;
 		yPos = y;
+	}
+
+	public void LockToken ()
+	{
+		currentTokenState = TokenState.lockedToken;
+	}
+
+	public void UpdateLockedTime()
+	{
+		if (lockedCounter > 0) 
+		{
+			lockedCounter--;
+		}
 	}
 
 	public void UpdateState()
@@ -236,6 +253,10 @@ public class Token : MonoBehaviour {
 			physicalToken.color = disabledUnselectedColor;
 			TokenSupport.color = disabledUnselectedColor;
 			selectionMarker.gameObject.SetActive(false);
+			break;
+		case TokenState.lockedToken:
+			physicalToken.color = lockedColor;
+			TokenSupport.color = lockedColor;
 			break;
 		case TokenState.hideToken:
 			dot.gameObject.SetActive(false);
