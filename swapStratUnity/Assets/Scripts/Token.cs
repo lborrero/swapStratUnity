@@ -94,7 +94,7 @@ public class Token : MonoBehaviour {
 	}
 	public int xPos;
 	public int yPos;
-	public int lockedTime = 1;
+	int lockedTime = 1;
 	public int lockedCounter;
 	
 	public Color blueColor;
@@ -181,6 +181,7 @@ public class Token : MonoBehaviour {
 	public void StartLockToken ()
 	{
 		lockedCounter = lockedTime;
+		currentTokenState = TokenState.lockedToken;
 	}
 
 	public void UpdateLockedTime()

@@ -139,7 +139,7 @@ public class SwapBoard : MonoBehaviour {
 		tmpToken.currentTokenType = sb.currentlySelectedToken.currentTokenType;
 		tmpToken.xPos = tmpTile.xPos;
 		tmpToken.yPos = tmpTile.yPos;
-		tmpToken.UpdateState ();
+		//tmpToken.UpdateState ();
 		sBoardManager.Instance.tokenList.Add(tmp.GetComponent<Token>());
 	}
 
@@ -164,7 +164,7 @@ public class SwapBoard : MonoBehaviour {
 		tmpToken.currentTokenType = sb.currentlySelectedToken.currentTokenType;
 		tmpToken.xPos = tmpTile.xPos;
 		tmpToken.yPos = tmpTile.yPos;
-		tmpToken.UpdateState ();
+		//tmpToken.UpdateState ();
 		sBoardManager.Instance.tokenList.Add(tmp.GetComponent<Token>());
 	}
 
