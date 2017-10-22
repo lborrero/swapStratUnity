@@ -243,7 +243,7 @@ public class Token : MonoBehaviour {
 			selectionMarker.gameObject.SetActive(true);
 			if(anim != null)
 			{
-				if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard &&
+				if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectAToken &&
 				   sGameManager.Instance.TurnCount < 4)
 				{
 					anim.ResetTrigger(ShakeAnimationTrigger);

@@ -67,7 +67,7 @@ public class sBoardManager : MonoBehaviour
 					sgm.IncrementTurnCount();
 					currentPlayerTurn = player2;
 					currentPlayerTurn.StartPlayerTurn();
-					ContinueInnerGameTurnAction();
+					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
 				}
 			}
@@ -93,7 +93,7 @@ public class sBoardManager : MonoBehaviour
 					sgm.IncrementTurnCount();
 					currentPlayerTurn = player1;
 					currentPlayerTurn.StartPlayerTurn();
-					ContinueInnerGameTurnAction();
+					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
 				}
 			}
@@ -283,76 +283,43 @@ public class sBoardManager : MonoBehaviour
 		return yesItIs;
 	}
 	
-	void ContinueInnerGameTurnAction()
+	void ContinueTurnAction(sGameManager.TurnLoop tlValue)
 	{
 		sGameManager sgm = sGameManager.Instance;
+		sgm.currentTurnLoop = tlValue;
 //		Debug.Log (sgm.currentTurnLoop);
 		switch(sgm.currentTurnLoop)
 		{
-		case sGameManager.TurnLoop.selectATokenFromBench:
-			if(currentPlayerTurn.hasSelectedTokenFromBench)
-			{
-				sgm.currentTurnLoop = sGameManager.TurnLoop.placeSelectedTokenFromBench;
+		case sGameManager.TurnLoop.selectAToken:
+			//Highlight necessary tokens
+			HighlightCurrentPlayerMovableToken ();
+			if (currentPlayerTurn.HasAvailableTokensOnBench () &&
+				!currentPlayerTurn.hasPlacedPieceFromBench) {
+				currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay (TokenBench.benchState.suggestAToken);
 			}
-			else
+
+			//player can't move
+			if (!doesPlayerHaveMoveableTokens (currentPlayerTurn) && 
+				(!currentPlayerTurn.HasAvailableTokensOnBench () ||
+					currentPlayerTurn.hasPlacedPieceFromBench)) 
 			{
-				if(!currentPlayerTurn.HasAvailableTokensOnBench())
-				{
-					sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
-					HighlightCurrentPlayerMovableToken();
-					if(!doesPlayerHaveMoveableTokens(currentPlayerTurn))
-					{
-						sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-						ContinueInnerGameTurnAction();
-					}
-				}
-				else
-				{
-					currentPlayerTurn.playerTokenBench.UpdateTokenBenchDisplay(TokenBench.benchState.suggestAToken);
-				}
+				ContinueTurnAction (sGameManager.TurnLoop.endLoopTurn);
 			}
 			break;
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
-			if(currentPlayerTurn.hasPlacedPieceFromBench && currentPlayerTurn.HasAvailableMoves())
-			{
-				if(doesPlayerHaveMoveableTokens(currentPlayerTurn))
-				{
-					sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
-					HighlightCurrentPlayerMovableToken();
-				}
-				else
-				{
-//					Debug.Log("A");
-					sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-					ContinueInnerGameTurnAction();
-				}
-			}
-			else
-			{
-//				Debug.Log("B");
-				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-				ContinueInnerGameTurnAction();
-			}
-			break;
-		case sGameManager.TurnLoop.selectATokenFromBoard:
-			if(currentPlayerTurn.hasSelectedTokenFromBoard)
-			{
-				sgm.currentTurnLoop = sGameManager.TurnLoop.moveSelectedToken;
-			}
+			
 			break;
 		case sGameManager.TurnLoop.moveSelectedToken:
 			if(currentPlayerTurn.hasMovedTokenFromBoard && currentPlayerTurn.HasAvailableMoves() && doesPlayerHaveMoveableTokens(currentPlayerTurn))
 			{
-				sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBoard;
+				sgm.currentTurnLoop = sGameManager.TurnLoop.selectAToken;
 				currentPlayerTurn.hasSelectedTokenFromBoard = false;
 				currentPlayerTurn.hasMovedTokenFromBoard = false;
 				HighlightCurrentPlayerMovableToken();
 			}
-			else if(CheckIfPlayerCanMove())
+			else if(!CheckIfPlayerCanMove() && currentPlayerTurn.hasPlacedPieceFromBench)
 			{
-//				Debug.Log("C");
-				sgm.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-				ContinueInnerGameTurnAction();
+				ContinueTurnAction(sGameManager.TurnLoop.endLoopTurn);
 			}
 			break;
 		case sGameManager.TurnLoop.endLoopTurn:
@@ -360,7 +327,7 @@ public class sBoardManager : MonoBehaviour
 			currentPlayerTurn.hasPlacedPieceFromBench = false;
 			currentPlayerTurn.hasSelectedTokenFromBoard = false;
 			currentPlayerTurn.hasMovedTokenFromBoard = false;
-			sgm.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+			sgm.currentTurnLoop = sGameManager.TurnLoop.selectAToken;
 
 //			currentPlayerTurn.currentTurnPointCount += CountTilesForPlayer(currentPlayerTurn.currentPlayerType);
 
@@ -401,12 +368,15 @@ public class sBoardManager : MonoBehaviour
 
 	public bool TileClicked(int tileId)//returns value false if tile selected doesn't meet any criteria
 	{
+		sGameManager sgm = sGameManager.Instance;
+		Debug.Log ("info: " + sgm.currentTurnLoop);
 		bool returnValue = false;
 		//placing piece from the bench
-		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 
+		if(sgm.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 
 		   boardList [tileId].currentTileType == Tile.TileType.empty && 
 		   !currentPlayerTurn.hasPlacedPieceFromBench)
 		{
+			Debug.Log ("placing piece from the bench");
 			if(boardList[tileId].currentTileType != Tile.TileType.nothing)
 			{
 				boardView.AddTokenOnTile (tileId);
@@ -421,6 +391,8 @@ public class sBoardManager : MonoBehaviour
 					boardList [tileId].currentTilePlayerType = currentlySelectedToken.tokenPlayerType;
 				}
 
+				UnhighlightBoard ();
+				UnSelectAllTokensOnBoard();
 
 				//this makes the token that was added to the board not be moveable for this turn.
 				Token tmptoken = getTokenFromTokenListWithIdAndType(currentlySelectedToken.tokenId, currentlySelectedToken.tokenPlayerType);
@@ -430,28 +402,21 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.MoveMade();
 				boardView.UpdateCounters();
 
-				if(CheckToSeeIfGameIsFinished())
-				{
-//					Debug.Log("D");
-					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-					ContinueInnerGameTurnAction();
-				}
-				else
-				{
-					ContinueInnerGameTurnAction();
-				}
+				ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 
 				returnValue = true;
 			}
 		}
 		//select a token to move from the board
-		else if((sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken || sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBoard) && 
+		else if((sgm.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken || 
+				sgm.currentTurnLoop == sGameManager.TurnLoop.selectAToken) && 
 		        boardList[tileId].currentTileType == Tile.TileType.occupied && 
 		        boardList[tileId].occupyingTokenPlayerType == currentPlayerTurn.currentPlayerType &&
 				//can't select lockedToken
 				getTokenFromTokenListWithIdAndType( boardList[tileId].occupyingTokenId, currentPlayerTurn.currentPlayerType).CurrentTokenState != Token.TokenState.lockedToken /*&&
 		        !currentPlayerTurn.hasSelectedTokenFromBoard*/)
 		{
+			Debug.Log ("select a token to move from the board");
 			List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 			if(contiguousTiles.Count > 1 && boardList[tileId].currentTileType != Tile.TileType.nothing)
 			{
@@ -471,15 +436,16 @@ public class sBoardManager : MonoBehaviour
 
 					currentPlayerTurn.hasSelectedTokenFromBoard = true;
 
-					ContinueInnerGameTurnAction();
+					ContinueTurnAction(sGameManager.TurnLoop.moveSelectedToken);
 
 					returnValue = true;
 				}
 			}
 		}
 		//move selected token
-		else if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
+		else if(sgm.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
 		{
+			Debug.Log ("move selected token");
 			if(CheckIfCanMoveToTileId(tileId))
 			{
 				AstarPathfinding asp = new AstarPathfinding();
@@ -519,18 +485,8 @@ public class sBoardManager : MonoBehaviour
 				currentPlayerTurn.hasMovedTokenFromBoard = true;
 				currentPlayerTurn.MoveMade();
 
-				//Check if game finished.
-				if(CheckToSeeIfGameIsFinished())
-				{
-//					Debug.Log("E");
-					sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.endLoopTurn;
-					ContinueInnerGameTurnAction();
-				}
-				else
-				{
-					ContinueInnerGameTurnAction();
-				}
-
+				ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
+				
 				returnValue = true;
 			}
 		}
@@ -544,9 +500,9 @@ public class sBoardManager : MonoBehaviour
 		if(currentPlayerTurn.hasMovedTokenFromBoard && 
 		   (!currentPlayerTurn.HasAvailableMoves() || !doesPlayerHaveMoveableTokens(currentPlayerTurn)))
 		{
-			return true;
+			return false; // can't move
 		}
-		return false;
+		return true; // can move
 	}
 
 	public bool CheckIfCanMoveToTileId(int tileId)
@@ -590,8 +546,9 @@ public class sBoardManager : MonoBehaviour
 
 	public bool TokenClicked(int tokenId, Token.TokenType tokt)
 	{
+		sGameManager sgm = sGameManager.Instance;
 		bool returnValue = false;
-		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectATokenFromBench)
+		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectAToken)
 		{
 			if(currentPlayerTurn.playerTokenBench.isTokenUsed(tokenId))
 			{
@@ -599,10 +556,10 @@ public class sBoardManager : MonoBehaviour
 				currentlySelectedToken.currentTokenType = (currentPlayerTurn.currentPlayerType == PlayerVO.PlayerType.friend) ? Token.TokenType.friendly : Token.TokenType.enemy;
 				currentPlayerTurn.playerTokenBench.SelectAToken(tokenId);
 				currentPlayerTurn.hasSelectedTokenFromBench = true;
+				HighlighEmptyTiles();
+				ContinueTurnAction(sGameManager.TurnLoop.placeSelectedTokenFromBench);
+				returnValue = true;
 			}
-			HighlighEmptyTiles();
-			ContinueInnerGameTurnAction();
-			returnValue = true;
 		}
 		return returnValue;
 	}

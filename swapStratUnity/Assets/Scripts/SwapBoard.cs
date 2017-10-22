@@ -50,7 +50,7 @@ public class SwapBoard : MonoBehaviour {
 		 * Board Layout in Chars
 		*/
 		sGameManager.Instance.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
-		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectAToken;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
 		sBoardManager.Instance.currentlySelectedToken = new Token();
 
@@ -65,7 +65,7 @@ public class SwapBoard : MonoBehaviour {
 		sbm = sBoardManager.Instance;
 
 		sGameManager.Instance.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
-		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectATokenFromBench;
+		sGameManager.Instance.currentTurnLoop = sGameManager.TurnLoop.selectAToken;
 		sBoardManager.Instance.currentlySelectedTile = new Tile();
 		sBoardManager.Instance.currentlySelectedToken = new Token();
 

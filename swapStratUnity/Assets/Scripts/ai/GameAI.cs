@@ -154,30 +154,6 @@ public class GameAI : MonoBehaviour {
 		checkIfTryingToTakeTheSameAction(sb.sgm.currentTurnLoop);
 		switch (sb.sgm.currentTurnLoop) 
 		{
-		case sGameManager.TurnLoop.selectATokenFromBench:
-		{
-			previousTurnAction = sGameManager.TurnLoop.selectATokenFromBench;
-//				Debug.Log ("AI: selectATokenFromBench");
-				PlayerVO tempPVO;
-				if (aiPt == PlayerVO.PlayerType.enemy) {
-					tempPVO = sb.sbm.player2;
-				} 
-				else 
-				{
-					tempPVO = sb.sbm.player1;
-				}
-				int tokensLeft = tempPVO.playerTokenBench.benchedTokens.Count;
-			for (int i = 0; i < tokensLeft; i++)
-			{		
-				Token tk = tempPVO.playerTokenBench.benchedTokens[i].GetComponent<Token>();
-				if (!tk.isTokenOnBoard && tk.CurrentTokenState != Token.TokenState.disabled) 
-				{
-					sb.sbm.TokenClicked(tk.tokenId, tk.currentTokenType);
-					break;
-				}
-			}
-			break;
-		}
 		case sGameManager.TurnLoop.placeSelectedTokenFromBench:
 		{
 //				Debug.Log ("AI: placeSelectedTokenFromBench");
@@ -227,106 +203,115 @@ public class GameAI : MonoBehaviour {
 			}
 			break;
 		}
-		case sGameManager.TurnLoop.selectATokenFromBoard:
+		case sGameManager.TurnLoop.selectAToken:
 		{
-			previousTurnAction = sGameManager.TurnLoop.selectATokenFromBoard;
-			switch(ait)
-			{
-				case AiType.intermediate:
-				{
-					if(currentAiProcess == AiProcesses.AiProcessCompleted)
-					{
-					if(TileSelectionSequence.Count> 0 && (int)TileSelectionSequence[0].x != -1)
-					{
-//						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
-						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);// select token with this tile id is found in the x value of the vector 2
+				if (sb.sbm.currentPlayerTurn.hasPlacedPieceFromBench) {
+					
+					//--------- SELECTING A TOKEN FROM BENCH -----------
+					previousTurnAction = sGameManager.TurnLoop.selectAToken;
+					//				Debug.Log ("AI: selectATokenFromBench");
+					PlayerVO tempPVO;
+					if (aiPt == PlayerVO.PlayerType.enemy) {
+						tempPVO = sb.sbm.player2;
+					} else {
+						tempPVO = sb.sbm.player1;
 					}
-					else
-					{
-						List<Tile> possibleTokensOnTile = GetMoveableTokensList();
-						System.Random rnd = new System.Random();
-						sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
+					int tokensLeft = tempPVO.playerTokenBench.benchedTokens.Count;
+					for (int i = 0; i < tokensLeft; i++) {		
+						Token tk = tempPVO.playerTokenBench.benchedTokens [i].GetComponent<Token> ();
+						if (!tk.isTokenOnBoard && tk.CurrentTokenState != Token.TokenState.disabled) {
+							sb.sbm.TokenClicked (tk.tokenId, tk.currentTokenType);
+							break;
+						}
 					}
-					}
-					break;
-				}
-				case AiType.random:
-				{
-					//			Debug.Log ("AI: selectATokenFromBoard");
-					List<Tile> possibleTokensOnTile = GetMoveableTokensListExcludingTheBenchTokenJustPlaced();
-					System.Random rnd = new System.Random();
-					sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
-					break;
-				}
-				case AiType.hearthstone:
-				{
-//				Debug.Log("--------selectATokenFromBoard");
-				if(playFinalizationSequence)
-				{
-					if(TileSelectionSequence.Count> 0)
-					{
-						sb.sbm.TileClicked((int)TileSelectionSequence[0].x);
-					}
-					else
-					{
-						List<Tile> possibleTokensOnTile = GetMoveableTokensList();
-						System.Random rnd = new System.Random();
-						sb.sbm.TileClicked(possibleTokensOnTile[rnd.Next(0, possibleTokensOnTile.Count)].tileId);
-					}
-				}
-				else
-				{
-					//Here, because there's no possible finish, we are going to check which token should be selected to move.
-					//For this, we want to check which token has the best move option. We do that by checking it's movement bubble.
-					List<Tile> possibleTokensOnTile = GetMoveableTokensList();
+				} 
 
-					/*
+				else {
+			
+					//--------- SELECTING A TOKEN FROM BOARD -----------
+					previousTurnAction = sGameManager.TurnLoop.selectAToken;
+					switch (ait) {
+					case AiType.intermediate:
+						{
+							if (currentAiProcess == AiProcesses.AiProcessCompleted) {
+								if (TileSelectionSequence.Count > 0 && (int)TileSelectionSequence [0].x != -1) {
+//						Debug.Log("AI selectATokenFromBoard" + (int)TileSelectionSequence[0].x);
+									sb.sbm.TileClicked ((int)TileSelectionSequence [0].x);// select token with this tile id is found in the x value of the vector 2
+								} else {
+									List<Tile> possibleTokensOnTile = GetMoveableTokensList ();
+									System.Random rnd = new System.Random ();
+									sb.sbm.TileClicked (possibleTokensOnTile [rnd.Next (0, possibleTokensOnTile.Count)].tileId);
+								}
+							}
+							break;
+						}
+					case AiType.random:
+						{
+							//			Debug.Log ("AI: selectATokenFromBoard");
+							List<Tile> possibleTokensOnTile = GetMoveableTokensListExcludingTheBenchTokenJustPlaced ();
+							System.Random rnd = new System.Random ();
+							sb.sbm.TileClicked (possibleTokensOnTile [rnd.Next (0, possibleTokensOnTile.Count)].tileId);
+							break;
+						}
+					case AiType.hearthstone:
+						{
+//				Debug.Log("--------selectATokenFromBoard");
+							if (playFinalizationSequence) {
+								if (TileSelectionSequence.Count > 0) {
+									sb.sbm.TileClicked ((int)TileSelectionSequence [0].x);
+								} else {
+									List<Tile> possibleTokensOnTile = GetMoveableTokensList ();
+									System.Random rnd = new System.Random ();
+									sb.sbm.TileClicked (possibleTokensOnTile [rnd.Next (0, possibleTokensOnTile.Count)].tileId);
+								}
+							} else {
+								//Here, because there's no possible finish, we are going to check which token should be selected to move.
+								//For this, we want to check which token has the best move option. We do that by checking it's movement bubble.
+								List<Tile> possibleTokensOnTile = GetMoveableTokensList ();
+
+								/*
 					 * shortTermMemory represents a list of the space bubbles for each token that can be moved in the game 
 					 * as an array of the id's composing those bubbles.
 					 */
-					List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement(possibleTokensOnTile);
+								List<List<int>> shortTermMemory = HearthStone_generateThePossiblityMovement (possibleTokensOnTile);
 
-					int theTileIdWhereTheTokenToMoveIs = 0;
-					int heuristic = -1;
-					int tempHeuristic = -1;
+								int theTileIdWhereTheTokenToMoveIs = 0;
+								int heuristic = -1;
+								int tempHeuristic = -1;
 
-					//let's loop through each tokens moveable space, and see which one has the best moves.
-					for(int i = 0; i<shortTermMemory.Count; i++)
-					{
-						// take that space bubble and give them back to me the real tiles with their actual info.
-						List<Tile> returnValueB = new List<Tile>();
-						for(int j = 0; j<shortTermMemory[i].Count; j++)
-						{
-							for(int k = 0; k<sb.sbm.boardList.Count; k++)
-							{
-								if(shortTermMemory[i][j] == sb.sbm.boardList[k].tileId)//sb.sbm.boardList[k] represents the tiles actual info as Tile class.
-								{
-									returnValueB.Add(sb.sbm.boardList[k]);//the selected actual tiles are grouped in a list called returnValueB.
-								}
-							}
-						}
-						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(HearthStone_ParsePossibilitesIntoTypes(returnValueB));
+								//let's loop through each tokens moveable space, and see which one has the best moves.
+								for (int i = 0; i < shortTermMemory.Count; i++) {
+									// take that space bubble and give them back to me the real tiles with their actual info.
+									List<Tile> returnValueB = new List<Tile> ();
+									for (int j = 0; j < shortTermMemory [i].Count; j++) {
+										for (int k = 0; k < sb.sbm.boardList.Count; k++) {
+											if (shortTermMemory [i] [j] == sb.sbm.boardList [k].tileId) {//sb.sbm.boardList[k] represents the tiles actual info as Tile class.
+												returnValueB.Add (sb.sbm.boardList [k]);//the selected actual tiles are grouped in a list called returnValueB.
+											}
+										}
+									}
+									tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes (HearthStone_ParsePossibilitesIntoTypes (returnValueB));
 						
 						
-						//let's analyze which token you should move first by analyzing it's moveable space.
-						//the better it's space offers, the higher the heuristic
-						//the higher the heuristic, the better chance it has for being moved selected to move first.
+									//let's analyze which token you should move first by analyzing it's moveable space.
+									//the better it's space offers, the higher the heuristic
+									//the higher the heuristic, the better chance it has for being moved selected to move first.
 //						tempHeuristic = Evaluate_HearthStone_HeuristicForPossibilityTypes(returnValueB);
 //								Debug.Log ("returnValueB: " + returnValueB.Count);
-						if(heuristic < tempHeuristic)
-						{		
+									if (heuristic < tempHeuristic) {		
 //									Debug.Log ("tempHeuristic: " + tempHeuristic);
-							theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile[i].tileId;
-							heuristic = tempHeuristic;
+										theTileIdWhereTheTokenToMoveIs = possibleTokensOnTile [i].tileId;
+										heuristic = tempHeuristic;
+									}
+								}
+
+								TileSelectionSequence.Add (new Vector2 (theTileIdWhereTheTokenToMoveIs, 0));
+								sb.sbm.TileClicked (theTileIdWhereTheTokenToMoveIs);
+							}
+							break;
 						}
 					}
-
-					TileSelectionSequence.Add(new Vector2(theTileIdWhereTheTokenToMoveIs, 0));
-					sb.sbm.TileClicked(theTileIdWhereTheTokenToMoveIs);
 				}
-				break;
-				}
-			}
 			break;
 		}
 		case sGameManager.TurnLoop.moveSelectedToken:

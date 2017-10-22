@@ -50,11 +50,10 @@ public class sGameManager : MonoBehaviour {
 
 	public enum TurnLoop
 	{
-		selectATokenFromBench = 0,
+		selectAToken = 0,
 		placeSelectedTokenFromBench,
-		selectATokenFromBoard,
 		moveSelectedToken,
 		endLoopTurn
 	}
-	public TurnLoop currentTurnLoop = TurnLoop.selectATokenFromBench;
+	public TurnLoop currentTurnLoop = TurnLoop.selectAToken;
 }
