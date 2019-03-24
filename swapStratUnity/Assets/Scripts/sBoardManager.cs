@@ -66,7 +66,8 @@ public class sBoardManager : MonoBehaviour
 					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerTwoTurn;
 					sgm.IncrementTurnCount();
 					currentPlayerTurn = player2;
-					currentPlayerTurn.StartPlayerTurn();
+                    boardView.snm.AlterTurns();
+                    currentPlayerTurn.StartPlayerTurn();
 					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
 				}
@@ -92,7 +93,8 @@ public class sBoardManager : MonoBehaviour
 					sgm.currentInnerGameLoop = sGameManager.InnerGameLoop.playerOneTurn;
 					sgm.IncrementTurnCount();
 					currentPlayerTurn = player1;
-					currentPlayerTurn.StartPlayerTurn();
+                    boardView.snm.AlterTurns();
+                    currentPlayerTurn.StartPlayerTurn();
 					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
 				}
@@ -367,9 +369,14 @@ public class sBoardManager : MonoBehaviour
 	}
 
 	public bool TileClicked(int tileId)//returns value false if tile selected doesn't meet any criteria
+    public bool isActiveOnlinePlayer()
+    {
+        Debug.Log(boardView.snm.ActivePlayer);
+        return boardView.snm.ActivePlayer == boardView.snm.connectedPlayerOrder;
+    }
+
 	{
-		sGameManager sgm = sGameManager.Instance;
-		Debug.Log ("info: " + sgm.currentTurnLoop);
+        sGameManager sgm = sGameManager.Instance;
 		bool returnValue = false;
 		//placing piece from the bench
 		if(sgm.currentTurnLoop == sGameManager.TurnLoop.placeSelectedTokenFromBench && 

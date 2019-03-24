@@ -23,6 +23,7 @@ public class SwapBoard : MonoBehaviour {
 
 	public sGameManager sgm;
 	public sBoardManager sbm;
+    public NetworkManager snm;
 
 	public int width = 6;
 	public int height = 6;
@@ -76,6 +77,9 @@ public class SwapBoard : MonoBehaviour {
 		sBoardManager.Instance.player1.InitializePlayCount (PlayerVO.PlayerType.friend, friendlyBench);
 		sBoardManager.Instance.player2.InitializePlayCount (PlayerVO.PlayerType.enemy, enemyBench);
 		sBoardManager.Instance.currentPlayerTurn = sBoardManager.Instance.player1;
+
+        snm.boardView = this;
+
 		UpdateCounters ();
 
 		_xOffset = width / -2 + 0.5f;

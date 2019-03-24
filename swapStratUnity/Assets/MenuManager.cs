@@ -8,7 +8,8 @@ public class MenuManager : MonoBehaviour {
 	sGameManager sgm;
 	sBoardManager sbm;
 	public GameObject StartScreen;
-	public GameObject EndScreen;
+    public GameObject SearchingScreen;
+    public GameObject EndScreen;
 	public GameObject InfoScreen;
 	public sGameManager.GeneralGameState defaultGameState;
 	public Text winnerLabel;
@@ -54,7 +55,10 @@ public class MenuManager : MonoBehaviour {
 			EndScreen.SetActive(false);
 			InfoScreen.SetActive(true);
 			break;
-		case sGameManager.GeneralGameState.gameMode:
+       case sGameManager.GeneralGameState.searchingForOtherPlayer:
+                SearchingScreen.SetActive(true);
+                break;
+        case sGameManager.GeneralGameState.gameMode:
 				switch((PlayerVO.PlayerType)gameAi.aiPt)
 				{
 				case PlayerVO.PlayerType.none:

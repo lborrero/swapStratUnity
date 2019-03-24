@@ -4,7 +4,7 @@ using System.Collections;
 
 public class Tile : MonoBehaviour {
 
-	public Image tileSupport;
+    public Image tileSupport;
 	public Image tile;
 	public Image tileShading;
 	public Image highlight;
@@ -84,13 +84,16 @@ public class Tile : MonoBehaviour {
 
 	void OnMouseUp()
 	{
-		sBoardManager.Instance.TileClicked (_tileId);
-	}
+        //sBoardManager.Instance.TileClicked (_tileId);
+        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].RpcTileClicked(_tileId);
+    }
 
-	public bool DepositeTokenHere()
+    public bool DepositeTokenHere()
 	{
-		return sBoardManager.Instance.TileClicked (_tileId);
-	}
+        //return sBoardManager.Instance.TileClicked (_tileId);
+        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].RpcTileClicked(_tileId);
+        return true;
+    }
 
 	public void UpdateState()
 	{
