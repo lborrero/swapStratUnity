@@ -85,13 +85,13 @@ public class Tile : MonoBehaviour {
 	void OnMouseUp()
 	{
         //sBoardManager.Instance.TileClicked (_tileId);
-        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].RpcTileClicked(_tileId);
+        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].CmdOnTileClicked(_tileId);
     }
 
     public bool DepositeTokenHere()
 	{
         //return sBoardManager.Instance.TileClicked (_tileId);
-        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].RpcTileClicked(_tileId);
+        sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].CmdOnTileClicked(_tileId);
         return true;
     }
 

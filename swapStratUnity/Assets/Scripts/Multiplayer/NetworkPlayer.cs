@@ -132,7 +132,7 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     [Command]
-    void CmdOnTokenClicked(int _tokenId, Token.TokenType tokt)
+    public void CmdOnTokenClicked(int _tokenId, Token.TokenType tokt)
     {
         RpcTokenClicked(_tokenId, tokt);
     }
@@ -142,6 +142,12 @@ public class NetworkPlayer : NetworkBehaviour
     {
         NetworkManager.Instance.onlineORderLabel.text = "tokt:" + _tokenId;
         sBoardManager.Instance.TokenClicked(_tokenId, tokt);
+    }
+
+    [Command]
+    public void CmdOnTileClicked(int tileId)
+    {
+        RpcTileClicked(tileId);
     }
 
     [ClientRpc]

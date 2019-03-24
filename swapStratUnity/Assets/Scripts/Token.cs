@@ -422,8 +422,9 @@ public class Token : MonoBehaviour {
 
 			if ((currentTokenType == TokenType.benchEnemy || currentTokenType == TokenType.benchFriendly) && !isTokenOnBoard) 
 			{
-				sBoardManager.Instance.TokenClicked (_tokenId, currentTokenType);
-			}
+				//sBoardManager.Instance.TokenClicked (_tokenId, currentTokenType);
+                sBoardManager.Instance.boardView.snm.players[sBoardManager.Instance.boardView.snm.ActivePlayer].CmdOnTokenClicked(_tokenId, currentTokenType);
+            }
 		}
 	}
 }
