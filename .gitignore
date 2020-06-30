@@ -1,5 +1,7 @@
 swapStratUnity/[Ll]ibrary
 swapStratUnity/[Tt]emp
+swapStratUnity/obj
+swapStratUnity/.vs
 builds
 
 .DS_Store
