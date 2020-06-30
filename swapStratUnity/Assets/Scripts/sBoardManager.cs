@@ -41,10 +41,6 @@ public class sBoardManager : MonoBehaviour
 //		Debug.Log (ConvertBoardToStrings (boardList));
 //		LoadBoardFormString("Turn=R;B=10;R=4;Board=00,00,00,00,00,00,00,00,00,21,12,10,10,10,10,00,00,10,21,22,10,10,10,00,00,10,22,10,10,10,10,00,00,10,10,10,10,11,10,00,00,10,10,10,11,21,10,00,00,10,10,10,10,10,11,00,00,00,00,00,00,00,00,00,;");
 		UpdateBoard();
-		UpdateLockedTokens ();
-
-		//Check for lockedTokens.
-		CheckForLockedTokens ();
 
 		sGameManager sgm = sGameManager.Instance;
 		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
@@ -70,6 +66,8 @@ public class sBoardManager : MonoBehaviour
                     currentPlayerTurn.StartPlayerTurn();
 					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
+
+					CheckForLockedTokens ();
 				}
 			}
 			else
@@ -97,6 +95,8 @@ public class sBoardManager : MonoBehaviour
                     currentPlayerTurn.StartPlayerTurn();
 					ContinueTurnAction(sGameManager.TurnLoop.selectAToken);
 					//CheckForGuardedTiles ();
+
+					CheckForLockedTokens ();
 				}
 			}
 			else
@@ -112,7 +112,6 @@ public class sBoardManager : MonoBehaviour
 		}
 //		Debug.Log ("ContinueInnerGameAction: " + sgm.currentInnerGameLoop);
 		UpdateHud ();
-		UpdateTokens ();
 	}
 
 	bool CheckToSeeIfGameIsFinished()
@@ -140,31 +139,24 @@ public class sBoardManager : MonoBehaviour
 		return boardComplete;
 	}
 
-	void UpdateLockedTokens()
-	{
-		Debug.Log("Update");
-		for(int i = 0; i<tokenList.Count; i++)
-		{
-			if (tokenList[i].CurrentTokenState == Token.TokenState.lockedToken &&
-				tokenList[i].tokenPlayerType == currentPlayerTurn.currentPlayerType) 
-			{
-				tokenList [i].UpdateLockedTime ();
-			}
-		}
-	}
-
 	void CheckForLockedTokens()
 	{
-		Debug.Log("Check");
+		Debug.Log("CheckForLockedTokens");
 		for(int i = 0; i<tokenList.Count; i++)
 		{
-			if (!isThisTokenMoveable (tokenList [i]) && 
+			if (tokenList[i].CurrentTokenState == Token.TokenState.lockedToken) 
+			{
+				tokenList [i].UpdateLockedTime ();
+			} 
+			else if (!isThisTokenMoveable (tokenList [i]) && 
 				tokenList[i].CurrentTokenState != Token.TokenState.lockedToken && 
-				tokenList[i].tokenPlayerType != currentPlayerTurn.currentPlayerType) 
+				tokenList[i].tokenPlayerType == currentPlayerTurn.currentPlayerType) 
 			{
 				tokenList [i].StartLockToken ();
 			}
 		}
+
+		UpdateTokens ();
 	}
 
 	void CheckForGuardedTiles()
@@ -368,13 +360,13 @@ public class sBoardManager : MonoBehaviour
 		}
 	}
 
-	public bool TileClicked(int tileId)//returns value false if tile selected doesn't meet any criteria
     public bool isActiveOnlinePlayer()
     {
         Debug.Log(boardView.snm.ActivePlayer);
         return boardView.snm.ActivePlayer == boardView.snm.connectedPlayerOrder;
     }
 
+    public bool TileClicked(int tileId)//returns value false if tile selected doesn't meet any criteria
 	{
         sGameManager sgm = sGameManager.Instance;
 		bool returnValue = false;
@@ -383,7 +375,6 @@ public class sBoardManager : MonoBehaviour
 		   boardList [tileId].currentTileType == Tile.TileType.empty && 
 		   !currentPlayerTurn.hasPlacedPieceFromBench)
 		{
-			Debug.Log ("placing piece from the bench");
 			if(boardList[tileId].currentTileType != Tile.TileType.nothing)
 			{
 				boardView.AddTokenOnTile (tileId);
@@ -423,7 +414,6 @@ public class sBoardManager : MonoBehaviour
 				getTokenFromTokenListWithIdAndType( boardList[tileId].occupyingTokenId, currentPlayerTurn.currentPlayerType).CurrentTokenState != Token.TokenState.lockedToken /*&&
 		        !currentPlayerTurn.hasSelectedTokenFromBoard*/)
 		{
-			Debug.Log ("select a token to move from the board");
 			List<int> contiguousTiles = ContiguousBlockSearch.returnContiguousFromTile (boardListIntoBinaryList (tileId), board_width, board_height, boardList [tileId].xPos, boardList [tileId].yPos); 
 			if(contiguousTiles.Count > 1 && boardList[tileId].currentTileType != Tile.TileType.nothing)
 			{
@@ -452,7 +442,6 @@ public class sBoardManager : MonoBehaviour
 		//move selected token
 		else if(sgm.currentTurnLoop == sGameManager.TurnLoop.moveSelectedToken)
 		{
-			Debug.Log ("move selected token");
 			if(CheckIfCanMoveToTileId(tileId))
 			{
 				AstarPathfinding asp = new AstarPathfinding();
@@ -553,7 +542,7 @@ public class sBoardManager : MonoBehaviour
 
 	public bool TokenClicked(int tokenId, Token.TokenType tokt)
 	{
-		sGameManager sgm = sGameManager.Instance;
+        sGameManager sgm = sGameManager.Instance;
 		bool returnValue = false;
 		if(sGameManager.Instance.currentTurnLoop == sGameManager.TurnLoop.selectAToken)
 		{
@@ -734,6 +723,7 @@ public class sBoardManager : MonoBehaviour
 
 	public void UpdateTokens()
 	{
+		Debug.Log ("UpdateTokens");
 		for(int i = 0; i<tokenList.Count; i++)
 		{
 			tokenList[i].UpdateState();

@@ -14,6 +14,7 @@ public class TokenEditor : Editor
 
 
 		EditorGUILayout.LabelField("Level", myscript.CurrentTokenState.ToString());
+		EditorGUILayout.LabelField("Locked Counter: ", myscript.lockedCounter.ToString());
 
 		if (GUILayout.Button ("Update Token"))
 		{

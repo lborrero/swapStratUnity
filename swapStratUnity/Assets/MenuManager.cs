@@ -195,7 +195,7 @@ public class MenuManager : MonoBehaviour {
 
 	public void QuiteGame()
 	{
-		Application.LoadLevel (Application.loadedLevel);
+        Application.LoadLevel (Application.loadedLevel);
 	}
 
 	int counter = 0;

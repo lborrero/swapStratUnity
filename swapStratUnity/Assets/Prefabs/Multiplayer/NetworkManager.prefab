@@ -135,7 +135,10 @@ MonoBehaviour:
   m_MatchHost: mm.unet.unity3d.com
   m_MatchPort: 443
   matchName: default
-  matchSize: 4
+  matchSize: 2
   isNetworkActive: 0
   matchMaker: {fileID: 0}
   players: []
+  boardView: {fileID: 0}
+  connectedPlayerOrder: 0
+  onlineORderLabel: {fileID: 0}

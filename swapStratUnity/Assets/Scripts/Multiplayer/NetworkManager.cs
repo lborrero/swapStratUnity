@@ -235,6 +235,7 @@ public class NetworkManager : UnityEngine.Networking.NetworkManager
     }
     /**/
 
+
     public override void OnDestroyMatch(bool success, string extendedInfo)
     {
         if (LogFilter.logDebug) { Debug.LogFormat("NetworkManager OnDestroyMatch Success:{0}, ExtendedInfo:{1}", success, extendedInfo); }

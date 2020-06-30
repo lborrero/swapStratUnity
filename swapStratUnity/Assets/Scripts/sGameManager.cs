@@ -29,7 +29,8 @@ public class sGameManager : MonoBehaviour {
 		endScreenWithPoints,
 		infoScreen,
 		blueWinWithBlocking,
-		redWinWithBlocking
+		redWinWithBlocking,
+        searchingForOtherPlayer
 	}
 	public GeneralGameState previousGeneralGameState;
 	public GeneralGameState currentGeneralGameState;
